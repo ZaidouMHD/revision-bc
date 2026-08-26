@@ -48,6 +48,35 @@ footer { text-align: center; padding: 20px; background: #002244; color: white; f
   }
 }
 
+/* Nav bar : sous 480px, on ne garde que les icônes pour éviter
+   que les libellés à 2 mots ("QCM Immédiat", "Quiz Complet") ne
+   retombent sur plusieurs lignes dans chaque onglet. */
+@media (max-width: 480px) {
+  .nav a {
+    font-size: 20px;
+    padding: 10px 4px;
+  }
+  .nav .nav-txt {
+    display: none;
+  }
+}
+
+/* Score du quiz : 3 colonnes fixes trop serrées sur petit téléphone */
+@media (max-width: 380px) {
+  .stats-grid {
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 10px;
+  }
+  .stat-card .sn {
+    font-size: 22px;
+  }
+  .stat-card .sl {
+    font-size: 11px;
+  }
+}
+
 /* ════════════════════════════════════════ */
 /* STYLES POUR LES FICHES EN GRILLE */
 /* ════════════════════════════════════════ */
