@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Complet — Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Style pour le sélecteur de questions */
+    .quiz-selector {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .quiz-selector h3 {
+      margin-top: 0;
+      color: #003366;
+    }
+    .quiz-selector select {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: 2px solid #003366;
+      border-radius: 5px;
+      margin: 10px 0;
+      background: white;
+    }
+    .quiz-selector button {
+      background: #003366;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+    .quiz-selector button:hover {
+      background: #002244;
+    }
+    
+    /* Style pour les checkboxes */
+    .quiz-options {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+    
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .checkbox-wrapper label {
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    /* Style pour le chronomètre */
+    .timer-display {
+      font-size: 24px;
+      font-weight: bold;
+      color: #003366;
+      text-align: center;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    
+    .timer-display.warning {
+      color: #ff6b00;
+    }
+    
+    .timer-display.danger {
+      color: #d32f2f;
+    }
+
+    /* Style pour le récapitulatif des erreurs */
+    .error-review {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .error-review h3 {
+      color: #d32f2f;
+      margin-bottom: 15px;
+    }
+    .error-card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #d32f2f;
+      border-radius: 5px;
+    }
+    .error-card .question {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .error-card .answer {
+      color: #d32f2f;
+      font-style: italic;
+    }
+    .error-card .correct {
+      color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="logo-link" style="position:absolute;top:10px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:90px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));transition:transform 0.2s">
+</a>
+
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+  <p>Documentation Professionnelle PN — session 2026</p>
+</header>
+
+<nav class="nav">
+  <a href="index.html" >🏠Accueil</a>
+  <a href="fiches.html">📖 Fiches</a>
+  <a href="qcm.html">⚡ QCM Immédiat</a>
+  <a href="quiz.html" class="nav-btn active" >🏆 Quiz Complet</a>
+  <a href="glossaire.html" >📖 Glossaire</a>
+</nav>
+
+<div class="container">
+  <div id="quizarea"></div>
+</div>
+
+<footer>
+  © 2026 — Réalisé par <strong>MOHAMED Zaïdou</strong> — Révision Brigadier-Chef de Police
+</footer>
+
+<script src="data.js"></script>
+<script>
+let quizQ = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
+let quizErrors = [];
+let enableTimer = false;
+let timerInterval = null;
+let timerSeconds = 0;
+
+// ===== FONCTION POUR MÉLANGER LES RÉPONSES ET RECALCULER L'INDEX =====
+function shuffleAndUpdateAnswer(options, correctAnswerIndex) {
+  const shuffled = [...options];
+  const correctAnswer = options[correctAnswerIndex];
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  const newIndex = shuffled.indexOf(correctAnswer);
+  return { options: shuffled, correctIndex: newIndex };
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if(hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`;
+  } else if(minutes > 0) {
+    return `${minutes}m ${secs}s`;
+  } else {
+    return `${secs}s`;
+  }
+}
+
+function startTimer() {
+  timerSeconds = 0;
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  if(timerInterval) clearInterval(timerInterval);
+}
+
+function updateTimerDisplay() {
+  const timerEl = document.getElementById('timerDisplay');
+  if(timerEl) {
+    timerEl.textContent = '⏱️ ' + formatTime(timerSeconds);
+  }
+}
+
+function startQuiz(numQuestions = 20, withTimer = false) {
+  enableTimer = withTimer;
+  const maxQuestions = Math.min(numQuestions, Q.length);
+  quizQ = shuffle([...Q]).slice(0, maxQuestions);
+  
+  // ===== MÉLANGE LES RÉPONSES DE TOUTES LES QUESTIONS =====
+  quizQ.forEach((question, index) => {
+    const shuffled = shuffleAndUpdateAnswer(question.o, question.a);
+    quizQ[index].o = shuffled.options;
+    quizQ[index].a = shuffled.correctIndex;
+  });
+  
+  quizIdx = 0;
+  quizScore = 0;
+  quizErrors = [];
+  quizAnswered = false;
+  
+  if(enableTimer) {
+    startTimer();
+  }
+  
+  showQuizQ();
+}
+
+function showQuizQ(){
+  if(quizIdx >= quizQ.length){ 
+    stopTimer();
+    showScore(); 
+    return; 
+  }
+  
+  quizAnswered = false;
+  const q = quizQ[quizIdx];
+  const pct = Math.round((quizIdx/quizQ.length)*100);
+  
+  let timerHTML = '';
+  if(enableTimer) {
+    timerHTML = `<div class="timer-display" id="timerDisplay">⏱️ ${formatTime(timerSeconds)}</div>`;
+  }
+  
+  let html = `
+  <div class="quiz-top">
+    ${timerHTML}
+    <div style="font-size:13px;color:#666">Question ${quizIdx+1} / ${quizQ.length} — Thème ${q.t}</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>
+  </div>
+  <div class="qcard">
+    <h3>${q.q}</h3>`;
+  
+  q.o.forEach((opt,j) => {
+    html += `<button class="opt" onclick="answerQuiz(this,${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
+  });
+  
+  html += `<div class="expl" id="qexpl">💡 ${q.e}</div>
+    <button class="btn green" id="qnextbtn" style="display:none;margin-top:12px" onclick="nextQuizQ()">Question suivante ➡️</button>
+  </div>`;
+  
+  document.getElementById('quizarea').innerHTML = html;
+}
+
+function answerQuiz(btn, chosen){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const q = quizQ[quizIdx];
+  const card = btn.closest('.qcard');
+  
+  card.querySelectorAll('.opt').forEach((b,j) => {
+    b.disabled = true;
+    if(j === q.a) b.classList.add('correct');
+    else if(j === chosen) b.classList.add('wrong');
+  });
+
+  if(chosen !== q.a) {
+    quizErrors.push({
+      question: q.q,
+      userAnswer: q.o[chosen],
+      correctAnswer: q.o[q.a],
+      explanation: q.e
+    });
+  }
+  
+  if(chosen === q.a) quizScore++;
+  document.getElementById('qexpl').style.display = 'block';
+  document.getElementById('qnextbtn').style.display = 'block';
+}
+
+function nextQuizQ(){
+  quizIdx++;
+  showQuizQ();
+}
+
+function showScore(){
+  const pct = Math.round((quizScore/quizQ.length)*100);
+  const mention = pct>=80 ? '🏆 Excellent !' : pct>=60 ? '👍 Bien' : '📚 À revoir';
+  
+  let timerInfo = '';
+  if(enableTimer) {
+    timerInfo = `<p style="margin:10px 0;opacity:0.9">⏱️ Temps utilisé : <strong>${formatTime(timerSeconds)}</strong></p>`;
+  }
+  
+  let html = `
+  <div class="score-box">
+    <div class="big">${pct}%</div>
+    <h2>${mention}</h2>
+    <p style="margin:10px 0;opacity:0.9">${quizScore} bonnes réponses sur ${quizQ.length}</p>
+    ${timerInfo}
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sn">${quizScore}</div><div class="sl">✅ Correctes</div></div>
+      <div class="stat-card"><div class="sn">${quizQ.length-quizScore}</div><div class="sl">❌ Erreurs</div></div>
+      <div class="stat-card"><div class="sn">${pct}%</div><div class="sl">📊 Score</div></div>
+    </div>`;
+
+  if(quizErrors.length > 0) {
+    html += `<button class="btn" style="margin-top:20px;background:#d32f2f;color:white" onclick="showErrorReview()">🔍 Voir mes erreurs (${quizErrors.length})</button>`;
+  }
+
+  html += `<button class="btn" style="margin-top:10px;background:white;color:#003366" onclick="showQuizSelector()">🔄 Recommencer</button>
+  </div>`;
+
+  document.getElementById('quizarea').innerHTML = html;
+}
+
+function showErrorReview() {
+  let html = `
+  <div class="error-review">
+    <h3>🔍 Révision de tes erreurs (${quizErrors.length})</h3>
+    <p style="margin-bottom:15px">Voici les questions où tu as fait des erreurs. Relis bien les explications pour progresser !</p>
+    <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-bottom:20px" onclick="showQuizSelector()">⬅️ Retour au menu</button>
+    <div id="errorList"></div>
+  </div>`;
+
+  document.getElementById('quizarea').innerHTML = html;
+
+  const errorList = document.getElementById('errorList');
+  quizErrors.forEach((error, index) => {
+    errorList.innerHTML += `
+    <div class="error-card">
+      <div class="question">Question ${index+1} : ${error.question}</div>
+      <div class="answer">Ta réponse : <strong>${error.userAnswer}</strong></div>
+      <div class="correct">Bonne réponse : <strong>${error.correctAnswer}</strong></div>
+      <div style="margin-top:10px;color:#555;font-size:14px">💡 Explication : ${error.explanation}</div>
+    </div>`;
+  });
+}
+
+function showQuizSelector() {
+  document.getElementById('quizarea').innerHTML = `
+  <div class="quiz-selector">
+    <h3>🏆 Mode Quiz Complet</h3>
+    <p>Choisis le nombre de questions (20 à 50) :</p>
+    <select id="numQuestions">
+      <option value="20">20 questions</option>
+      <option value="30">30 questions</option>
+      <option value="40">40 questions</option>
+      <option value="50">50 questions</option>
+    </select>
+    
+    <div class="quiz-options">
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="enableTimerCheckbox">
+        <label for="enableTimerCheckbox">⏱️ Activer le chronomètre</label>
+      </div>
+    </div>
+    
+    <button onclick="startQuiz(parseInt(document.getElementById('numQuestions').value), document.getElementById('enableTimerCheckbox').checked)">▶️ Commencer le Quiz</button>
+  </div>`;
+}
+
+// Affiche le menu au chargement
+showQuizSelector();
+</script>
+
+</body>
+</html>

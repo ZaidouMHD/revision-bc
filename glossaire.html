@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiches — Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+   <style>
+    /* ── Onglets de catégorie ── */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 18px 16px 0;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border: 2px solid #003189;
+      border-radius: 30px;
+      background: transparent;
+      color: #003189;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover {
+      background: #003189;
+      color: #fff;
+    }
+    .tab-btn.active {
+      background: #003189;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(0,49,137,0.25);
+    }
+
+    /* ── Sections de contenu ── */
+    .tab-section {
+      display: none;
+    }
+    .tab-section.active {
+      display: block;
+    }
+
+    /* ── Bandeau de titre de section ── */
+    .section-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #003189;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin: 24px auto 6px;
+      max-width: 1100px;
+      padding: 0 16px;
+    }
+    .section-title span {
+      display: inline-block;
+      border-bottom: 3px solid #003189;
+      padding-bottom: 4px;
+    }
+
+    /* ── Message placeholder pour sections vides ── */
+    .placeholder {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      padding: 60px 20px;
+      font-size: 1.05rem;
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="logo-link" style="position:absolute;top:10px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:90px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));transition:transform 0.2s">
+</a>
+
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+  <p>Documentation Professionnelle PN — session 2026</p>
+</header>
+
+<nav class="nav">
+  <a href="index.html" >🏠Accueil</a>
+  <a href="fiches.html"> 📚 Fiches </a>
+  <a href="qcm.html">⚡ QCM Immédiat</a>
+  <a href="quiz.html">🏆 Quiz Complet</a>
+  <a href="glossaire.html"📖 class="nav-btn active">📖 Glossaire</a>
+</nav>
+
+
+
+<!-- ══════════════════════════════════════════
+          SECTION : ONGLETS
+══════════════════════════════════════════ -->
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('tab-temps', event)">⏱️ Temps de Travail</button>
+  <button class="tab-btn" onclick="showTab('tab-tsi', event)">🔬Contenus TSI</button>
+  <button class="tab-btn" onclick="showTab('tab-management')">👥 Management</button>
+  <button class="tab-btn" onclick="showTab('tab-deontologie')">⚖️ Déontologie</button>
+  <button class="tab-btn" onclick="showTab('tab-ppi')">🚔 Principes Professionnels d'Intervention</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+          SECTION : Temps de Travail
+══════════════════════════════════════════ -->
+<div id="tab-temps" class="tab-section active">
+  <div class="container">
+    <div class="fiche">
+      <h2>⏱️ Temps de Travail</h2>
+      <table>
+        <tr><th>Sigle / Terme</th><th>Définition</th></tr>
+        <tr><td><strong>RTT</strong></td><td>Réduction du Temps de Travail</td></tr>
+        <tr><td><strong>ASA</strong></td><td>Autorisation Spéciale d'Absence</td></tr>
+        <tr><td><strong>CET</strong></td><td>Compteur Épargne Temps</td></tr>
+        <tr><td><strong>CTI</strong></td><td>Compteur de Temps Individualisé</td></tr>
+        <tr><td><strong>NS</strong></td><td>Nuit Spéciale (service de nuit)</td></tr>
+        <tr><td><strong>HS</strong></td><td>Heures Supplémentaires</td></tr>
+        <tr><td><strong>ICS</strong></td><td>Indemnité pour Confort du Service</td></tr>
+        <tr><td><strong>IFTS</strong></td><td>Indemnité Forfaitaire pour Travaux Supérieurs</td></tr>
+        <tr><td><strong>PDH</strong></td><td>Prime dedienstheid Herstel (primes du fonctionnaire)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+          SECTION : TSI 
+══════════════════════════════════════════ -->
+
+<div id="tab-tsi" class="tab-section">
+  <div class="container">
+    <div class="fiche">
+      <h2>🔬️ TSI - Les techniques et la sécurité en intervention</h2>
+      <table>
+        <tr><th>Sigle / Terme</th><th>Définition</th></tr>
+        <tr><td><strong>Briefité</strong></td><td>Principe d'intervention brève et ciblée. L'agent doit intervenir dans un temps optimal tout en maintenant la maîtrise de la situation.</td></tr>
+        <tr><td><strong>Devoir de loyauté</strong></td><td>Obligation pour l'agent de soutenir sa hiérarchie, de respecter les instructions et de ne pas entraver le fonctionnement du service.</td></tr>
+        <tr><td><strong>État de nécessité</strong></td><td>Cause d'exonération de responsabilité pénale (art. 122-7 CP) permettant d'agir pour préserver d'un danger actuel ou imminent un intérêt public ou privé majeur.</td></tr>
+        <tr><td><strong>Proportionnalité</strong></td><td>Principe selon lequel la force employée doit être proportionnée à la menace ou à la résistance rencontrée. L'agent doit utiliser le moyen le moins coercitif efficace.</td></tr>
+        <tr><td><strong>Attroupement</strong></td><td>Groupe de personnes réunies sur la voie publique susceptible de troubler l'ordre public (art. 431-3 CP).</td></tr>
+        <tr><td><strong>Palpation de sécurité</strong></td><td>Fouille sommaire consistant à détecter des objets dangereux portée sur les vêtements extérieurs, autorisée en cas de risque immédiat.</td></tr>
+        <tr><td><strong>Ordre manifestement illegal</strong></td><td>Ordre contraire aux lois, décrets ou instructions générales. Le subordonné n'a pas à exécuter un tel ordre.</td></tr>
+        <tr><td><strong>Art. 122-7 CP</strong></td><td>Article du Code Pénal relatif à l'état de nécessité.</td></tr>
+        <tr><td><strong>Art. 431-3 CP</strong></td><td>Article du Code Pénal relatif aux attroupements.</td></tr>
+        <tr><td><strong>Art. 225-1 CP</strong></td><td>Article du Code Pénal relatif aux discriminations.</td></tr>
+        <tr><td><strong>Art. 222-14-1 CP</strong></td><td>Article du Code Pénal relatif aux violences en réunion par personne dépositaire de l'autorité publique.</td></tr>
+        <tr><td><strong>Art. 433-3 CP</strong></td><td>Article du Code Pénal relatif à l'outrage et la rébellion.</td></tr>
+
+<!-- Procédure d'emploi des armes  -->
+
+		<tr><td><strong>AFI</strong></td>
+      <td>Arme de Force Intermédiaire. Terme générique désignant les armes non létales (générateurs aérosols, grenades lacrymogènes, etc.) utilisées pour neutraliser ou disperser une menace sans recourir à une arme à feu.</td></tr>
+
+      <tr><td><strong>Condor GL-304</strong></td>
+      <td>Modèle de grenade lacrymogène (CS) utilisée par les forces de l'ordre. Elle libère un nuage irritant (durée d'efficacité : 15 à 30 secondes) pour neutraliser ou disperser une foule.</td></tr>
+
+      <tr><td><strong>COP</strong></td>
+      <td>Centre d'Opérations et de Planification. Structure chargée de coordonner les interventions et de centraliser les informations en cas d'emploi d'une arme.</td></tr>
+
+      <tr><td><strong>Générateur aérosol (CS/OC)</strong></td>
+      <td>Dispositif projetant un nuage chimique irritant (CS : lacrymogène ; OC : incapacitant) pour neutraliser une menace sans recourir à une arme létale. Utilisé en cas de dispersion de foule ou d'interpellation risquée.</td></tr>
+
+      <tr><td><strong>GR MA EF SON</strong></td>
+      <td>Grenade à main à effet de souffle ou de neutralisation. Utilisée pour créer une zone de répulsion ou neutraliser un individu dangereux sans recourir à une arme à feu.</td></tr>
+
+      <tr><td><strong>HK UMP</strong></td>
+      <td>Pistolet mitrailleur allemand (Heckler & Koch Universal Machine Pistol) en calibre 9mm Parabellum. Arme standard des forces de l'ordre, disponible en modes semi-automatique, rafale contrôlée (3 coups) ou rafale.</td></tr>
+
+      <tr><td><strong>L.435-1 CSI</strong></td>
+      <td>Article du Code de la sécurité intérieure définissant les conditions d'emploi des armes par les policiers. Il encadre la légitime défense, l'absolue nécessité et la proportionnalité.</td></tr>
+
+      <tr><td><strong>Périple meurtrier</strong></td>
+      <td>Termes utilisé dans le cadre juridique pour désigner une situation où un individu menace de tuer ou blesse gravement des policiers ou des civils, justifiant l'emploi d'une arme à feu en légitime défense.</td></tr>
+
+      <tr><td><strong>Proportionnalité</strong></td>
+      <td>Principe selon lequel la réponse (usage de la force) doit être adaptée à la menace. Par exemple, un tir de neutralisation est proportionné face à une menace de mort, mais pas face à une menace mineure.</td></tr>
+
+       <tr><td><strong>RGS</strong></td>
+      <td>Règle Générale de sécurité des Armes à Feu. Document encadrant l'usage, le stockage et la maintenance des armes à feu par les forces de l'ordre. Il inclut les règles de sécurité et les procédures d'emploi.</td></tr>
+
+      <tr><td><strong>Sélecteur de tir</strong></td>
+      <td>Mécanisme sur une arme permettant de choisir le mode de tir (semi-automatique, rafale contrôlée, rafale). Sur le HK UMP, il est situé près de la détente.</td></tr>
+
+      <tr><td><strong>Sûreté manuelle</strong></td>
+      <td>Dispositif mécanique sur une arme permettant de bloquer le mécanisme de tir pour éviter un départ accidentel. Toujours vérifier qu'elle est engagée avant de manipuler une arme.</td></tr>
+
+      <tr><td><strong>Témoin de chambre vide</strong></td>
+      <td>Indicateur visuel sur une arme confirmant qu'aucune cartouche n'est présente dans la chambre. Vérifier systématiquement avant et après usage pour éviter les tirs accidentels.</td></tr>
+
+      <tr><td><strong>TSUA</strong></td>
+      <td>Traitement relatif au suivi de l'usage des Armes. Document obligatoire pour tout policier utilisant une arme de service, valable 5 ans. Il atteste de l'habilitation et des conditions d'emploi de l'arme.</td></tr>
+
+<!-- ===== NOUVELLES DÉFINITIONS TSI : RGEPN ===== -->
+<tr><td><strong>RGEPN</strong></td>
+      <td>Règlement Général d'Emploi des Personnels et des Armes de la Police Nationale. Il encadre les principes d'usage de la force, les obligations des agents, et les règles relatives aux armes individuelles et collectives.</td></tr>
+
+<tr><td><strong>Principe de proportionnalité (RGEPN)</strong></td>
+      <td>Principe selon lequel l'usage de la force doit être <strong>strictement nécessaire</strong> et <strong>proportionné</strong> à l'objectif poursuivi. Toute mesure coercitive doit être justifiée par un danger objectif (Art. 113-4 RGEPN).</td></tr>
+
+<tr><td><strong>Arme individuelle (RGEPN)</strong></td>
+      <td>Arme de dotation personnelle attribuée aux agents habilités. Son port est autorisé en service et hors service, sous réserve d'une <strong>déclaration obligatoire</strong>. L'agent en est responsable (Art. 114-4 RGEPN).</td></tr>
+
+<tr><td><strong>Arme collective (RGEPN)</strong></td>
+      <td>Arme attribuée à l'administration pour des missions spécifiques (ex : fusils d'assaut). Elle est conservée en armurerie sécurisée et remise uniquement pour des opérations particulières, avec traçabilité obligatoire (Art. 114-8 RGEPN).</td></tr>
+
+<tr><td><strong>Moyens de force intermédiaire (RGEPN)</strong></td>
+      <td>Moyens non létaux utilisés pour le contrôle de foule ou l'immobilisation : menottes, bâtons de défense, aérosols lacrymogènes, LBD, TASER. Leur usage est encadré et nécessite une <strong>formation obligatoire</strong> (Art. 114-5 RGEPN).</td></tr>
+
+<tr><td><strong>Traçabilité des armes (RGEPN)</strong></td>
+      <td>Obligation de signaler et justifier tout usage d'arme dans un compte-rendu d'intervention (CRI) ou un procès-verbal, conformément aux règles du RGEPN.</td></tr>
+
+<tr><td><strong>Devoir de soins (RGEPN)</strong></td>
+      <td>Obligation pour les agents de porter assistance aux personnes blessées ou vulnérables sous garde à vue ou en détention, et de signaler toute blessure ou suspicion de maltraitance (Art. 113-6 RGEPN).</td></tr>
+
+<!-- ===== DÉFINITIONS TSI - SCHÉMA NATIONAL D'INTERVENTION ===== -->
+
+  <tr>
+    <td><strong>Intervention de police</strong></td>
+    <td>Toute action de police de maintien de la paix et de la sécurité publiques, dans un cadre de police judiciaire, administrative ou de renseignement.</td>
+  </tr>
+  <tr>
+    <td><strong>Intervention élémentaire</strong></td>
+    <td>Premier niveau d'intervention correspondant à l'action des policiers de proximité gérant des situations fortuites au quotidien.</td>
+  </tr>
+  <tr>
+    <td><strong>Intervention intermédiaire</strong></td>
+    <td>Deuxième niveau d'intervention pour les situations complexes et/ou évolutives nécessitant un équipement et une technicité supérieurs.</td>
+  </tr>
+  <tr>
+    <td><strong>Intervention spécialisée</strong></td>
+    <td>Troisième niveau d'intervention pour les situations fortement dégradées nécessitant des moyens de très haute technicité (RAID, GIPN).</td>
+  </tr>
+  <tr>
+    <td><strong>RETEX (Retour d'Expérience)</strong></td>
+    <td>Analyse à froid visant à tirer les enseignements des interventions pour améliorer les pratiques et enrichir la doctrine.</td>
+  </tr>
+  <tr>
+    <td><strong>Débriefing opérationnel</strong></td>
+    <td>Analyse réalisée à chaud, immédiatement après l'intervention, par la hiérarchie ayant dirigée l'action.</td>
+  </tr>
+  <tr>
+    <td><strong>Commandant des opérations de police (COP)</strong></td>
+    <td>Cadre territorialement compétent qui dirige les opérations et coordonne l'ensemble des moyens humains et materielles engagés.</td>
+  </tr>
+  <tr>
+    <td><strong>Dimensionnement</strong></td>
+    <td>Détermination du nombre de policiers, du niveau d'équipement et du recours aux unités spécialisées en fonction de la situation.</td>
+  </tr>
+  <tr>
+    <td><strong>Intervention planifiée</strong></td>
+    <td>Intervention préparée en amont, permettant de maîtriser le moment de déclenchement et de bénéficier de l'effet de surprise.</td>
+  </tr>
+  <tr>
+    <td><strong>Intervention inopinée</strong></td>
+    <td>Intervention ne pouvant être préparée par essence, nécessitant une réaction immédiate selon les schémas tactiques doctrinaux.</td>
+  </tr>
+  <tr>
+    <td><strong>Filière d'intervention</strong></td>
+    <td>Organisation de l'intervention selon trois domaines : voie publique, judiciaire ou renseignement.</td>
+  </tr>
+  <tr>
+    <td><strong>Schéma tactique</strong></td>
+    <td>Plan d'action défini lors de la préparation ou prévu par les doctrines pour guider la conduite de l'intervention.</td>
+  </tr>
+  
+  <tr><td><strong>SNMO</strong></td><td>Schéma National du Maintien de l'Ordre. Document de doctrine commun aux forces de sécurité (Police Nationale et Gendarmerie) définissant les principes et procédures de gestion des manifestations. Entrée en vigueur : décembre 2021.</td></tr>
+
+<tr><td><strong>ROP (Responsable de l'Ordre Public)</strong></td><td>Généralement le Préfet de département ou Préfet de Police. Définit la stratégie de gestion de l'ordre public et fixe le cadre juridique et les grandes orientations pour le service d'ordre.</td></tr>
+
+<tr><td><strong>DSO (Directeur du Service d'Ordre)</strong></td><td>Chef territorial de la police ou de la gendarmerie. Assure la direction et la coordination de l'ensemble des opérations de maintien de l'ordre. Peut diriger depuis un centre opérationnel ou sur le terrain.</td></tr>
+
+<tr><td><strong>CSO (Chef de Secteur Opérationnel)</strong></td><td>Désigné par le DSO. Dispose d'une marge d'initiative tactique et opérative pour accomplir la mission fixée par le DSO.</td></tr>
+
+<tr><td><strong>CFP (Chef de Force Publique)</strong></td><td>Responsable d'une unité engagée en maintien de l'ordre. Responsable de la STRICTE exécution de la réquisition de l'AHEF et décide des moyens humains et matériels.</td></tr>
+
+<tr><td><strong>AHEF (Autorité Habilitée à l'Emploi de la Force)</strong></td><td>Généralement l'autorité civile (Préfet, maire). Doit être sur place, porter l'écharpe tricolore, réaliser les sommations et constater le délit d'attroupement. Est la seule à pouvoir ordonner l'usage de la force.</td></tr>
+
+<tr><td><strong>Sommation</strong></td><td>Acte juridique par lequel l'AHEF intime l'ordre de dispersion à un attroupement. Deux sommations légales sont obligatoires (première et dernière) avant usage de la force.</td></tr>
+
+<tr><td><strong>AFI (Armes de Force Intermédiaire)</strong></td><td>Équipements utilisés en maintien de l'ordre pour contenir ou disperser un attroupement : GAIL, grenades lacrymogènes, GENL, grenades sonores, lanceurs de grenades, LBD 40mm.</td></tr>
+
+<tr><td><strong>LBD 40mm (Lanceur de Balles de Défense)</strong></td><td>Arme de force intermédiaire utilisée après réintégration de la deuxième et dernière sommation, sur ordre, avec obligation d'un binôme Superviseur-Tireur. Chaque usage est enregistré au TSUA.</td></tr>
+
+<tr><td><strong>Binôme Superviseur-Tireur</strong></td><td>Deux agents associés : le Superviseur contrôle et valide l'usage du LBD (évalue la proportionnalité), le Tireur exécute les ordres sous supervision. Obligation mise en place par la DGPN (TG 2020).</td></tr>
+
+<tr><td><strong>RIO (Référentiel des Identités et de l'Organisation)</strong></td><td>Numéro d'identification individuelle porté obligatoirement par chaque policier intervenant en maintien de l'ordre, même sur la tenue de maintien de l'ordre. Obligation imposée par le SNMO.</td></tr>
+
+<tr><td><strong>TSUA (Traitement informatique du Suivi de l'Usage des Armes)</strong></td><td>Système informatique de collecte et de documentation de chaque utilisation d'armes en maintien de l'ordre (notamment LBD). Permet la traçabilité et le contrôle des usages.</td></tr>
+
+<tr><td><strong>RETEX (Retour d'Expérience)</strong></td><td>Analyse à froid (non immédiate) des interventions de maintien de l'ordre réalisée par la hiérarchie ou une autorité administrative. Vise à tirer les enseignements et partager les bonnes pratiques.</td></tr>
+
+<tr><td><strong>GENL (Grenade à Main de Désencerclement)</strong></td><td>Grenade utilisable à l'initiative du CFP en cas de voies de fait, violences ou pour défendre le terrain occupé par les forces.</td></tr>
+
+<tr><td><strong>GAIL (Générateur d'Aérosols Incapacitants ou Lacrymogènes)</strong></td><td>Arme de force intermédiaire utilisable après deux sommations, sur ordre. Utilisée pour disperser des attroupements pacifiquement.</td></tr>
+
+
+<tr><td><strong>État de dangerosité</strong></td><td>Situation où un agent présente des risques pour lui-même ou pour autrui en termes de maîtrise d'arme. Peut entraîner le retrait de l'arme de service (article 114-6 du RGEPN).</td></tr>
+
+<tr><td><strong>Livret individuel de formation</strong></td><td>Document automatiquement renseigné via l'application informatique de gestion de la formation PN qui enregistre toutes les séances d'entraînement suivies par chaque agent.</td></tr>
+
+<tr><td><strong>Techniques d'optimisation du potentiel (TOP)</strong></td><td>Méthodes d'amélioration mentale et de gestion du stress opérationnel (respiration contrôlée, visualisation, etc.) autorisées pendant le temps de service depuis le 1er octobre 2024.</td></tr>
+
+<tr><td><strong>RGEPN (Règlement Général d'Emploi de la Police Nationale)</strong></td><td>Cadre réglementaire général. L'article 114-6 y est mentionné concernant le retrait de l'arme de service.</td></tr>
+
+<tr><td><strong>TSUA (Traitement informatique du Suivi de l'Usage des Armes)</strong></td><td>Application informatique utilisée pour enregistrer chaque séance d'entraînement et renseigner automatiquement le livret individuel de formation des agents.</td></tr>
+
+
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECTION : Management
+══════════════════════════════════════════ -->
+<div id="tab-management" class="tab-section">
+  <div class="container">
+      <div class="fiche">
+      <h2>👥 Management</h2>
+      <table>
+        <tr><th>Sigle / Terme</th><th>Définition</th></tr>
+      <tr><td><strong>DUERMI</strong></td>
+      <td>Document Unique d'Évaluation des Risques Professionnels du Ministère de l'Intérieur. Obligatoire pour tout service public, il identifie les risques professionnels et propose des mesures de prévention.</td></tr>
+
+      <tr><td><strong>PMS</strong></td>
+      <td>Programme de Management de la Santé. Démarche visant à améliorer la santé physique et mentale des agents, en prévenant les risques psychosociaux (RPS) et en favorisant la qualité de vie au travail (QVT).</td></tr>
+
+      <tr><td><strong>QVT</strong></td>
+      <td>Qualité de Vie au Travail. Démarche globale visant à améliorer le bien-être des agents et l'efficacité des services, en agissant sur l'organisation du travail, les conditions de travail et le management.</td></tr>
+
+      <tr><td><strong>RIME</strong></td>
+      <td>Répertoire Interministériel des Métiers de l'État. Outil de référence décrivant les emplois-référence (ER) et les domaines fonctionnels (DF) de la fonction publique, servant de base pour les entretiens professionnels et les formations.</td></tr>
+
+      <tr><td><strong>RPS</strong></td>
+      <td>Risques Psychosociaux. Risques professionnels liés au stress, aux conflits, à la charge de travail ou à l'environnement de travail, pouvant impacter la santé mentale et physique des agents.</td></tr>
+
+      <tr><td><strong>Droit à l'erreur</strong></td>
+      <td>Principe managérial qui permet aux agents et aux managers de reconnaître leurs erreurs sans crainte de sanction, favorisant une culture de l'apprentissage et de l'innovation.</td></tr>
+
+      <tr><td><strong>Tableau de suivi</strong></td>
+      <td>Outil de management permettant de suivre l'activité, les priorités et les échéances d'une équipe. Peut être un tableau de bord physique ou numérique.</td></tr>
+
+      <tr><td><strong>RGEPN</strong></td>
+      <td>Règlement Général des Emplois de la Police Nationale. Document décrivant les missions et l'organisation de la Direction des Ressources et des Compétences de la Police Nationale (DRCPN).</td></tr>
+
+      <tr><td><strong>Référent QVT</strong></td>
+      <td>Agent désigné dans une unité pour identifier les leviers d'amélioration de la QVT et proposer des actions concrètes pour favoriser le bien-être des agents.</td></tr>
+
+      <tr><td><strong>Signal faible</strong></td>
+      <td>Indice ou symptôme (stress, absentéisme, conflit) permettant d'identifier une problématique de risques psychosociaux (RPS) ou de management dans une équipe.</td></tr>
+
+      <tr><td><strong>Fixation d'objectifs</strong></td>
+      <td>Principe managérial consistant à définir des objectifs individuels et collectifs clairs, mesurables et réalistes pour motiver les collaborateurs et évaluer leurs performances.</td></tr>
+
+      <tr><td><strong>Délégation</strong></td>
+      <td>Principe managérial consistant à confier des responsabilités aux collaborateurs pour favoriser leur autonomie, leur développement et leur engagement.</td></tr>
+
+      <tr><td><strong>Management-commandement</strong></td>
+      <td>Ensemble des principes et outils visant à encadrer une équipe, fixer des priorités, motiver les collaborateurs et garantir l'efficacité opérationnelle.</td></tr>
+
+      <tr><td><strong>Plan d'action</strong></td>
+      <td>Document formalisant les mesures à mettre en place pour atteindre un objectif (ex : réduction des RPS, amélioration de la QVT).</td></tr>
+    </table>
+ 
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION : Déontologie
+══════════════════════════════════════════ -->
+<div id="tab-deontologie" class="tab-section">
+    <div class="container">
+      <div class="fiche">
+      <h2>⚖️ Déontologie</h2>
+      <table>
+	   <tr><th>Sigle / Terme</th><th>Définition</th></tr>
+          <!-- ===== NOUVELLES DÉFINITIONS DÉONTOLOGIE ===== -->
+          <tr><td><strong>Déontologie policière</strong></td>
+          <td>Ensemble des règles éthiques et professionnelles encadrant le comportement des agents de police et de gendarmerie, issues du Code de la sécurité intérieure (CSI), du Code pénal et des principes constitutionnels.</td></tr>
+
+          <tr><td><strong>Probité (Art. R. 434-9 CSI)</strong></td>
+          <td>Devoir d'intégrité absolue imposant à un policier d'agir avec honnêteté, transparence financière et absence de corruption. Tout avantage supérieur à 30€ doit être déclaré.</td></tr>
+
+          <tr><td><strong>Impartialité (Art. R. 434-11 CSI)</strong></td>
+          <td>Obligation de traiter tous les citoyens de manière égale, sans discrimination, et de rester neutre dans les conflits personnels ou professionnels.</td></tr>
+
+          <tr><td><strong>Protection fonctionnelle (Art. R. 434-7 CSI)</strong></td>
+          <td>Mécanisme juridique permettant à un policier poursuivi pour des faits liés à son service d'être assisté juridiquement et couvert financièrement pour ses frais de justice.</td></tr>
+
+          <tr><td><strong>Manquement déontologique</strong></td>
+          <td>Tout comportement d'un policier qui ne respecte pas les règles de déontologie (probité, impartialité, dignité, etc.), pouvant entraîner des sanctions disciplinaires ou pénales.</td></tr>
+
+          <tr><td><strong>Code de la sécurité intérieure (CSI)</strong></td>
+          <td>Code juridique français qui regroupe les dispositions relatives à la sécurité intérieure, incluant les règles déontologiques applicables aux policiers et gendarmes (Art. R. 434-1 à R. 434-21).</td></tr>
+
+          <tr><td><strong>Devoir d'intervention (Art. R. 434-19 CSI)</strong></td>
+          <td>Obligation pour tout policier d'intervenir pour porter assistance à une personne en danger ou victime d'une infraction, sous peine de sanctions disciplinaires.</td></tr>
+
+          <tr><td><strong>Ordre manifestement illégal</strong></td>
+          <td>Ordre contraire aux lois, décrets ou instructions générales. Le subordonné n'a pas à l'exécuter et doit le signaler à sa hiérarchie.</td></tr>
+
+          <tr><td><strong>Blâme</strong></td>
+          <td>Sanction disciplinaire mineure consistant en un avertissement écrit, pouvant être inscrit au dossier de l'agent.</td></tr>
+
+          <tr><td><strong>Rétrogradation</strong></td>
+          <td>Sanction disciplinaire consistant à rétrograder un policier à un grade inférieur, avec une baisse de rémunération.</td></tr>
+
+          <tr><td><strong>Révocation</strong></td>
+          <td>Sanction disciplinaire maximale, consistant à mettre fin aux fonctions de l'agent. Peut être assortie d'une interdiction de réintégration.</td></tr>
+
+          <tr><td><strong>Recours gracieux</strong></td>
+          <td>Recours administratif permettant à un agent de contester une sanction devant l'autorité ayant pris la décision (ex : préfet, directeur général).</td></tr>
+
+          <tr><td><strong>Recours contentieux</strong></td>
+          <td>Recours devant le Tribunal administratif pour contester une sanction disciplinaire. L'agent peut être assisté par un avocat.</td></tr>
+
+          <tr><td><strong>Fichiers de données personnelles</strong></td>
+          <td>Fichiers policiers (ex : TAJ, FPR, STIC, FNAEG) dont l'utilisation est strictement encadrée par la loi (Art. R. 434-21 CSI). Toute utilisation abusive est un manquement à la probité.</td></tr>
+
+          <tr><td><strong>Devoir de réserve (Art. R. 434-13 CSI)</strong></td>
+          <td>Obligation pour un policier de faire preuve de discrétion et de neutralité dans ses propos publics, afin de ne pas nuire à l'image de l'institution.</td></tr>
+
+          <tr><td><strong>Conflit d'intérêts</strong></td>
+          <td>Situation où les intérêts personnels d'un policier entrent en contradiction avec ses obligations professionnelles, pouvant entraîner un manquement à la probité.</td></tr>
+
+          <tr><td><strong>CNDS (Commission nationale de déontologie de la sécurité)</strong></td>
+          <td>Autorité indépendante chargée de contrôler le respect de la déontologie par les forces de l'ordre et de formuler des recommandations (devenue CNDS en 2011).</td></tr>
+
+          <tr><td><strong>IGPN (Inspection générale de la police nationale)</strong></td>
+          <td>Service chargé de contrôler la déontologie des policiers, d'enquêter sur les manquements et de formuler des recommandations pour améliorer les pratiques professionnelles.</td></tr>
+
+          <tr><td><strong>RGPD (Règlement Général sur la Protection des Données)</strong></td>
+          <td>Règlement européen encadrant le traitement des données personnelles, applicable aux fichiers policiers (ex : TAJ, FPR) et imposant des obligations strictes de confidentialité.</td></tr>
+
+          <tr><td><strong>Référent déontologue</strong></td>
+          <td>Agent désigné dans une unité pour conseiller, former et recueillir les signalements de manquements déontologiques auprès des collègues.</td></tr>
+
+          <tr><td><strong>Référent RGPD</strong></td>
+          <td>Agent chargé de veiller au respect du RGPD dans le traitement des données personnelles par les policiers et de former les agents sur les bonnes pratiques.</td></tr>
+
+          <tr><td><strong>Défenseur des droits</strong></td>
+          <td>Autorité indépendante chargée de veiller au respect des droits fondamentaux par les forces de l'ordre et de traiter les réclamations des citoyens.</td></tr>
+
+          <tr><td><strong>CNDAD (Commission nationale de déontologie et des affaires disciplinaires)</strong></td>
+          <td>Autorité issue de la fusion de la CNDS et de la Commission nationale de discipline, chargée de contrôler la déontologie et de prononcer des sanctions disciplinaires.</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<!-- ══════════════════════════════════════════
+          SECTION : Principes Professionnels d'Intervention
+══════════════════════════════════════════ -->
+<div id="tab-ppi" class="tab-section">
+  <div class="container">
+    <div class="fiche">
+	<h2>🚔 Principes Professionnels d'Intervention</h2>
+      <table>
+        <tr><th>Sigle / Terme</th><th>Définition</th></tr>
+	      <!-- ===== SECTION PPI : MENOTTAGE ===== -->
+<tr><td><strong>Menottage</strong></td>
+<td>Mesure de contrainte et de sûreté consistant à placer des menottes à une personne. Encadré par l'article 803 du CPP, il ne peut être utilisé que si la personne est dangereuse pour autrui, dangereuse pour elle-même ou susceptible de tenter une fuite.</td></tr>
+
+<tr><td><strong>Article 803 CPP</strong></td>
+<td>Article du Code de Procédure Pénale encadrant strictement l'utilisation des menottes. Énonce trois conditions alternatives : dangerosité pour autrui, dangerosité pour soi-même, ou risque de fuite. Une seule condition suffit à justifier le menottage.</td></tr>
+
+<tr><td><strong>Proportionnalité du menottage</strong></td>
+<td>Principe selon lequel le menottage doit être adapté à la dangerosité réelle de la personne et aux circonstances. Il ne doit jamais être systématique ou automatique (Instruction DGPN du 9 juin 2008).</td></tr>
+
+<tr><td><strong>Dangerosité pour autrui</strong></td>
+<td>Risque que la personne menace ou blesse les policiers, les tiers ou d'autres personnes interpellées. Critère justifiant le menottage selon l'article 803 CPP.</td></tr>
+
+<tr><td><strong>Dangerosité pour soi-même</strong></td>
+<td>Risque que la personne se blesse elle-même ou tente de s'automutiler. Critère justifiant le menottage selon l'article 803 CPP.</td></tr>
+
+<tr><td><strong>Risque de fuite</strong></td>
+<td>Risque que la personne interpellée tente de s'échapper. Critère justifiant le menottage selon l'article 803 CPP. Apprécié en fonction des conditions d'interpellation et des antécédents de fuite.</td></tr>
+
+<tr><td><strong>Menottage systématique</strong></td>
+<td>Pratique interdite consistant à menotter automatiquement toute personne interpellée sans évaluer sa dangerosité. L'Instruction DGPN du 9 juin 2008 rappelle que le menottage 'ne doit en aucun cas être systématique'.</td></tr>
+
+<tr><td><strong>Menottage excessivement serré</strong></td>
+<td>Pratique interdite causant des blessures à la personne menottée. La circulaire du 11 mars 2003 et la Note DGPN du 13 septembre 2004 prescrivent d'éviter les menottages trop serrés pour éviter les poursuites pénales.</td></tr>
+
+<tr><td><strong>Critères d'appréciation de la dangerosité</strong></td>
+<td>8 critères énumérés par l'Instruction DGPN : conditions d'interpellation (fuite/violences), nature et gravité des faits, antécédents judiciaires, âge, état de santé, agressivité (envers soi ou autrui), découverte d'objets dangereux lors de palpation, signes de consommation d'alcool/stupéfiants.</td></tr>
+
+<tr><td><strong>Menottage debout simple</strong></td>
+<td>Technique de menottage avec la personne en position verticale. L'avant-bras du policier doit se trouver AU-DESSUS de l'avant-bras menotté pour éviter tout retournement de la personne.</td></tr>
+
+<tr><td><strong>Menottage debout par les pieds</strong></td>
+<td>Technique de menottage avec la personne en position verticale et contrôle effectué par les pieds pour éviter fuite ou coup de pied. Utilisé en cas de risque particulier.</td></tr>
+
+<tr><td><strong>Menottage au sol</strong></td>
+<td>Technique de menottage avec la personne allongée au sol. Nécessite une technique spécifique de sécurisation : menottage en trinôme (2 côté tête, 1 côté pieds) ou avec saisie de la position debout depuis le sol.</td></tr>
+
+<tr><td><strong>Menottage en trinôme</strong></td>
+<td>Configuration de 3 policiers pour menotter une personne au sol : 2 policiers positionnés côté tête (contrôle et sécurité) + 1 policier côté pieds (contrôle inférieur et protection mutuelle). Technique sécurisée pour éviter fuite et blessures.</td></tr>
+
+<tr><td><strong>Clé au coude</strong></td>
+<td>Technique de menottage en cas de résistance : le policier passe un bras dans le dos de la personne et crée une clé au niveau du coude, verrouillée par crochetage des mains. Utilisée pour prendre le contrôle du dos de l'individu.</td></tr>
+
+<tr><td><strong>Contrôle à l'arête tibiale</strong></td>
+<td>Technique de contrôle lors d'un menottage au sol utilisant l'arête du tibia. EXCLUSIVEMENT autorisée sur le bassin ou l'abdomen. JAMAIS sur le cou ou le thorax (risque d'étouffement ou de blessure grave).</td></tr>
+
+<tr><td><strong>Position assise (personne menottée)</strong></td>
+<td>Technique d'agencement d'une personne menottée : saisir les bras menottés au niveau des biceps (main faible), positionner la main forte à la nuque, effectuer un mouvement arrière puis vers le sol. Maintenir le buste incliné vers l'avant.</td></tr>
+
+<tr><td><strong>Relevage personne menottée</strong></td>
+<td>Technique pour relever une personne menottée du sol : placer sa main à l'intérieur du coude pour la basculer sur le flanc, contrôler la nuque en croisé, inviter à plier la jambe du côté du policier, guider via position genou en effectuant une légère pression sur la nuque.</td></tr>
+
+<tr><td><strong>Palpation après menottage</strong></td>
+<td>Fouille de sécurité effectuée immédiatement après la pose des menottes pour détecter des objets dangereux. Doit être réalisée avec méthode et professionnalisme par une personne de même sexe, dans un local fermé et hors vue.</td></tr>
+
+<tr><td><strong>Menottage par personne de même sexe</strong></td>
+<td>Principe d'exécution : les palpations et fouilles (y compris menottage) doivent être toujours exécutées par une personne de même sexe que la personne concernée pour préserver la dignité.</td></tr>
+
+<tr><td><strong>Local fermé (menottage)</strong></td>
+<td>Obligation légale : les palpations et fouilles lors du menottage doivent être effectuées dans un local fermé et hors de la vue d'autres personnes (public ou autres gardés à vue) pour préserver la dignité.</td></tr>
+
+<tr><td><strong>Menottage sans lien de cause à effet</strong></td>
+<td>Pratique interdite : le menottage ne doit pas être justifié uniquement par le lien administratif avec l'interpellation (ex : dégrisement, mandat de justice). Une dangerosité réelle doit être évaluée.</td></tr>
+
+<tr><td><strong>Interdiction de photographier personne menottée</strong></td>
+<td>Article 803 CPP impose 'toutes mesures utiles pour éviter qu'une personne menottée soit photographiée ou fasse l'objet d'un enregistrement audiovisuel'. Violation engage la responsabilité pénale du policier.</td></tr>
+
+<tr><td><strong>Documentation du menottage en PV</strong></td>
+<td>Obligation légale : le menottage doit être documenté avec précision dans le procès-verbal (actes de résistance, moyens utilisés, leurs effets, justification de la dangerosité ou fuite).</td></tr>
+
+<tr><td><strong>Article R434-17 CSI</strong></td>
+<td>Article du Code de la sécurité intérieure imposant au policier de préserver toute personne appréhendée de violence et de traitement inhumain. Obligeait à assurer la sécurité et préserver l'intégrité physique et la dignité.</td></tr>
+
+<tr><td><strong>Instruction DGPN du 9 juin 2008</strong></td>
+<td>Instruction encadrant le menottage et la palpation. Énonce que 'le menottage ne doit en aucun cas être systématique' et que chaque menottage doit être motivé et justifié dans le procès-verbal.</td></tr>
+
+<tr><td><strong>Circulaire du 11 mars 2003</strong></td>
+<td>Circulaire relative à la dignité des personnes placées en garde à vue. Rappelle que 'un menottage excessivement serré doit être proscrit' et expose à des poursuites pénales.</td></tr>
+
+<tr><td><strong>Note DGPN n°04-10464 du 13 septembre 2004</strong></td>
+<td>Note sur les droits et devoirs des policiers concernant l'utilisation des menottes. Rappelle que le policier a 'un pouvoir d'appréciation de la dangerosité de la personne interpellée' et que ce pouvoir doit être utilisé avec discernement.</td></tr>
+
+<tr><td><strong>Menottes à l'étui</strong></td>
+<td>Positionnement des menottes sur l'agent de police. Doivent être positionnées à l'étui pour rester accessibles rapidement par la main forte. Placement au niveau du creux lombaire est formellement INTERDIT (risque de blessures graves en cas de chute).</td></tr>
+
+<tr><td><strong>Responsabilité policier (personne menottée)</strong></td>
+<td>Toute personne menottée est placée sous l'entière responsabilité des policiers. Ces derniers ont le devoir d'assurer sa sécurité et de préserver son intégrité physique, sa vie et sa dignité (Art. R434-17 CSI).</td></tr>
+
+<tr><td><strong>Saisir ou agir sur les menottes (interdit)</strong></td>
+<td>Pratique expressément interdite par l'Instruction DGPN : saisir ou agir sur les menottes pour relever ou asseoir une personne menottée peut engendrer des douleurs ou blessures inutiles et n'est pas nécessaire à la réalisation des techniques.</td></tr>
+
+<tr><td><strong>Communication entre policiers (menottage)</strong></td>
+<td>Facteur primordial dans l'exécution des techniques de menottage. La communication entre les policiers est essentielle au bon déroulement et à la réussite du schéma tactique.</td></tr>
+
+<tr><td><strong>Incident menottage</strong></td>
+<td>Tout incident ou accident lors du menottage (ex : blessure de l'individu menotté) doit être mentionné avec précision dans le procès-verbal et faire l'objet d'un signalement.</td></tr>
+
+
+<!-- ===== SECTION PPI : PALPATION DE SÉCURITÉ ===== -->
+
+
+<tr><td><strong>Palpation de sécurité</strong></td>
+<td>Mesure administrative de sûreté ayant pour finalité la protection des policiers, des tiers et de la personne contrôlée. Consiste à détecter visuellement et/ou tactilement sur une personne ou ses accessoires tout objet susceptible de constituer un danger. Encadrée par l'article R.434-16 du CSI.</td></tr>
+
+<tr><td><strong>Article R.434-16 CSI</strong></td>
+<td>Article du Code de la Sécurité Intérieure encadrant la palpation de sécurité. Stipule que la palpation 'ne revêt pas un caractère systématique', qu'elle 'apparaît nécessaire à la garantie de la sécurité' et doit être 'pratiquée à l'abri du regard du public chaque fois que les circonstances le permettent'.</td></tr>
+
+<tr><td><strong>Caractère non systématique de la palpation</strong></td>
+<td>Principe fondamental : la palpation de sécurité ne doit jamais être pratiquée automatiquement. Elle doit être fondée sur des circonstances objectives démontrant une dangerosité potentielle (Art. R.434-16 CSI et Instruction DGPN 2014-140-D).</td></tr>
+
+<tr><td><strong>Nécessité et discernement (palpation)</strong></td>
+<td>Principes directeurs encadrant la mise en œuvre de la palpation de sécurité. La palpation doit être motivée par une dangerosité potentielle réelle et non être systématique lors des contrôles d'identité (Instruction DGPN 2014-140-D).</td></tr>
+
+<tr><td><strong>Dangerosité potentielle (palpation)</strong></td>
+<td>Critère justifiant la palpation de sécurité. Fondée sur : indice apparent (forme sous vêtement), comportement (imprégnation alcoolique, agressivité), ou personnalité (antécédents judiciaires). Doit être objective et documentée (Instruction DGPN 2014-140-D, Annexe 1).</td></tr>
+
+<tr><td><strong>Situations justifiant la palpation de sécurité</strong></td>
+<td>3 cas énumérés par Instruction DGPN 2014-140-D : (1) contrôle d'identité en raison du comportement (Art. 78-2 CPP) ; (2) suite à une interpellation (quel que soit le motif) ; (3) contrôles d'identité sur réquisition du parquet en présence d'éléments démontrant une dangerosité potentielle.</td></tr>
+
+<tr><td><strong>Palpation systématique (cas autorisés)</strong></td>
+<td>Situations où la palpation peut être pratiquée de manière plus systématique selon Instruction DGPN 2014-140-D : après interpellation (quel qu'en soit le motif), avant prise en charge en véhicule administratif, lors des déplacements de personne gardée à vue ou retenue, ou avant retrait d'entraves.</td></tr>
+
+<tr><td><strong>Personne de même sexe (palpation)</strong></td>
+<td>Principe obligatoire pour certains cas (personnes gardées à vue, retenues, détenues) selon Art. 2 arrêté du 1er juin 2011. Dans les autres cas, la palpation doit être pratiquée par une personne de même sexe 'chaque fois que possible'. Toute dérogation doit être justifiée (Instruction DGPN 2014-140-D).</td></tr>
+
+<tr><td><strong>Abri du regard du public (palpation)</strong></td>
+<td>Obligation : la palpation de sécurité doit être 'pratiquée à l'abri du regard du public chaque fois que les circonstances le permettent' (Art. R.434-16 CSI). Rechercher le lieu le plus approprié pour préserver la dignité de la personne palpée.</td></tr>
+
+<tr><td><strong>Technique de palpation arrière</strong></td>
+<td>Technique privilégiée de palpation selon fiche technique DCRF PN 2021. Policier positionné derrière la personne (moins exposé aux coups vulnérants). Comprend contrôle du creux lombaire, ceinture abdominale, aisselles, avec contrôle systématique du coude. 'MAINS = DANGER' à surveiller.</td></tr>
+
+<tr><td><strong>Technique de palpation avant</strong></td>
+<td>Technique imposée par situation (grands contrôles collectifs) ou localisation restreinte selon fiche technique DCRF PN 2021. Apparence moins coercitive mais sécurité minimale du policier (directement exposé aux coups vulnérants). Comprend contrôle systématique de l'avant-bras.</td></tr>
+
+<tr><td><strong>Palpation par pressions successives</strong></td>
+<td>Méthode obligatoire de palpation : appliquer les mains par pressions successives avec la partie interne des mains, NON par glissement (risque de blessure : piqûre, coupure). Permet meilleure détection tout en minimisant les risques (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Port de gants (palpation)</strong></td>
+<td>Autorisé et parfois imposé lors de palpation pour raisons de sécurité, d'hygiène ou de préservation des traces et indices. Peut impliquer perte de sensibilité digitale mais justifié dans contexte sécuritaire (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Effets vestimentaires et accessoires (palpation)</strong></td>
+<td>Éléments également soumis à palpation : sac, sacoche, parapluie, coiffe, gants, etc. que la personne porte par-devers elle. Contrôle visuel des objets peut exonérer du contrôle tactile si décidé par le policier (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Palpation d'une personne menottée</strong></td>
+<td>Obligation : toute personne menottée doit être palpée dès que possible et avant le retrait des entraves. Si menottée au sol en position ventrale, palpation de creux lombaire et ceinture dorsale suit immédiatement. Personne basculée sur les flancs pour compléter palpation ceinture abdominale (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Zones prioritaires palpation</strong></td>
+<td>Zones directement accessibles et susceptibles de dissimuler arme ou objet dangereux selon fiche technique DCRF PN 2021 : creux des mains, creux lombaire, ceinture abdominale, aisselles. Puis poursuivre de la partie haute du corps jusqu'aux membres inférieurs de manière complète.</td></tr>
+
+<tr><td><strong>Contrôle du creux des mains (palpation)</strong></td>
+<td>Première étape de palpation selon fiche technique DCRF PN 2021. S'assurer que personne ne dissimule rien dans le creux de ses mains. Vérification d'abord visuelle, peut être accompagnée d'injonctions verbales si mains non immédiatement visibles.</td></tr>
+
+<tr><td><strong>Contrôle du coude (palpation arrière)</strong></td>
+<td>Contrôle systématique effectué lors de palpation arrière selon fiche technique DCRF PN 2021. Zone accessible susceptible de dissimuler objet dangereux. Fait partie des zones prioritaires dans technique palpation arrière.</td></tr>
+
+<tr><td><strong>Contrôle de l'avant-bras (palpation avant)</strong></td>
+<td>Contrôle systématique effectué lors de palpation avant selon fiche technique DCRF PN 2021. Zone accessible susceptible de dissimuler objet dangereux. Fait partie des zones prioritaires dans technique palpation avant.</td></tr>
+
+<tr><td><strong>Position ventrale prolongée (palpation menottée)</strong></td>
+<td>Interdite selon Instruction DGPN/CAB/DDPR/n°15-5295-D du 4 novembre 2015. Personne menottée au sol doit être immédiatement basculée sur flanc après palpation zones lombaires. Toute compression thoracique doit être exceptionnelle et courte (risque d'asphyxie).</td></tr>
+
+<tr><td><strong>Palpation en action collective</strong></td>
+<td>Configuration où un policier effectue la palpation pendant que un ou plusieurs équipiers assurent protection de l'intervention et environnement. Rôles évoluent selon comportement de personne ou modification environnement (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Objet dangereux détecté à la palpation</strong></td>
+<td>Procédure selon fiche technique DCRF PN 2021 : policier signale immédiatement par tous moyens (oral, gestuel) à coéquipiers. Si danger vital et immédiatement accessible, policier appréhende l'objet. Si non accessible, menottage avant appréhension. Nouvelle palpation effectuée après découverte.</td></tr>
+
+<tr><td><strong>Restitution objets palpation</strong></td>
+<td>Obligation : objets découverts lors palpation (sauf ceux caractérisant infraction ou à conserver à titre probatoire) doivent être restitués. À l'issue du contrôle ou garde à vue, restitution sauf s'ils doivent être conservés par procédure judiciaire/administrative (Instruction DGPN 2014-140-D, Annexe 2).</td></tr>
+
+<tr><td><strong>Politesse et discernement (palpation)</strong></td>
+<td>Principes fondamentaux d'exécution de palpation selon fiche technique DCRF PN 2021. Policiers avisent personne de palpation, sa finalité, et sollicitent concours. Mesure doit être réalisée sans agressivité ni violence, minutieusement et méthodiquement.</td></tr>
+
+<tr><td><strong>Éviter démonstrations ostensibles (palpation)</strong></td>
+<td>Recommandation fiche technique DCRF PN 2021 : éviter bras levés, palpation avec appuis, amené au sol. Ces démonstrations génèrent image négative, diminuent efficacité interventions policières ou exposent agents au danger (sauf situations subies malgré injonctions contraires).</td></tr>
+
+<tr><td><strong>Environnement sécurisé (palpation)</strong></td>
+<td>Condition requise : palpation doit être réalisée dans environnement sécurisé selon fiche technique DCRF PN 2021. Évaluation préalable de la situation et de la dangerosité pour assurer sécurité du policier et de la personne palpée.</td></tr>
+
+<tr><td><strong>Instruction DGPN 2014-140-D</strong></td>
+<td>Instruction intitulée 'Pratique des palpations de sécurité' datée du 12 juillet 2014. Encadre strictement la palpation de sécurité par PN et GN. Énumère conditions justifiant palpation, modalités pratiques, principes de nécessité, discernement, respect dignité (2 annexes).</td></tr>
+
+<tr><td><strong>Fiche technique DCRF PN 2021</strong></td>
+<td>Document 'Techniques de défense et d'interpellation - La palpation de sécurité' (Division formations techniques et sécurité en intervention). Détaille déroulement palpation, différentes techniques (arrière, avant, menottée), zones prioritaires, procédures face objet dangereux (version juin 2021).</td></tr>
+
+<tr><td><strong>Documentation palpation</strong></td>
+<td>Obligation : palpation de sécurité et éléments objectifs la motivant doivent être consignés dans acte administratif ou judiciaire subséquent (MCI, rapport, PV). Obligatoire même si aucun objet dangereux découvert (fiche technique DCRF PN 2021).</td></tr>
+
+<tr><td><strong>Fouille de sécurité (Art. 63-6 CPP)</strong></td>
+<td>Mesure distincte de palpation de sécurité. Peut impliquer retrait de vêtements. Encadrée par arrêté du 1er juin 2011 (NOR IOCC1114326A). Ne peut consister en fouille intégrale. Personne gardée à vue dispose d'objets nécessaires au respect de sa dignité (Instruction DGPN 2014-140-D).</td></tr>
+
+<tr><td><strong>Fouille intégrale (Art. 63-7 CPP)</strong></td>
+<td>Mesure distincte de palpation. Décidée par OPJ. Réalisée dans espace fermé par personne de même sexe. Possible uniquement si palpation ou moyens détection électronique ne peuvent être réalisés. Nécessite justification probatoire pour enquête (Instruction DGPN 2014-140-D).</td></tr>
+
+<tr><td><strong>Renouvellement palpation</strong></td>
+<td>Palpation peut être renouvelée 'chaque fois qu'elle redevient nécessaire' selon Instruction DGPN 2014-140-D : en cas de déplacement de la personne, rupture dans la surveillance, changement de situation. Nouvelle palpation obligatoire après découverte objet dangereux et appréhension provisoire.</td></tr>
+
+<tr><td><strong>Dignité personne (palpation)</strong></td>
+<td>Principe central du CSI (Art. R.434-16) : contrôle d'identité et palpation doivent se dérouler 'sans qu'il soit porté atteinte à la dignité de la personne qui en fait l'objet'. Implique : palpation par personne même sexe, à l'abri du regard public, sans agressivité, politesse constante.</td></tr>
+
+<tr><td><strong>Justification dérogation palpation</strong></td>
+<td>Toute dérogation aux principes de palpation par personne même sexe ou autre principe doit faire l'objet de 'justification détaillée dans les formes administratives ou judiciaires requises' selon Instruction DGPN 2014-140-D. Excepté situationsdangerosité ou urgence.</td></tr>
+
+<tr><td><strong>Contrôle identité comportement (Art. 78-2 CPP)</strong></td>
+<td>Fondement légal de certains contrôles d'identité : contrôle possible si 'raisons plausibles de soupçonner' que personne a commis/tenté infraction, se prépare à délit, peut fournir renseignements utiles enquête, ou fait l'objet de recherches. Palpation justifiée si en raison du comportement.</td></tr>
+
+<tr><td><strong>Contrôle réquisition parquet (palpation)</strong></td>
+<td>Situation justifiant palpation selon Instruction DGPN 2014-140-D : contrôles d'identité sur réquisition du parquet destinés à prévenir atteinte à l'ordre public (Art. 78-2 alinéas 2 et 3 CPP), EN PRÉSENCE D'ÉLÉMENTS DÉMONTRANT DANGEROSITÉ POTENTIELLE. Palpation n'est pas systématique même en ce cadre.</td></tr>
+
+<tr><td><strong>Signalement équipiers (objet dangereux)</strong></td>
+<td>Procédure immédiate selon fiche technique DCRF PN 2021 : policier qui ressent à palpation présence d'objet susceptible de représenter danger 'signale immédiatement par tous moyens (oral, gestuel)' le fait à ses coéquipiers pour coordination.</td></tr>
+
+<tr><td><strong>Appréhension provisoire objet</strong></td>
+<td>Action du policier détectant objet dangereux à palpation : 'procède à l'appréhension provisoire de l'objet décelé aux fins de remise ultérieure à l'OPJ territorialement compétent' (fiche technique DCRF PN 2021). Objet immédiatement représenté à détenteur avant remise OPJ.</td></tr>
+
+<tr><td><strong>Contrôle visuel exonération tactile (palpation)</strong></td>
+<td>Possibilité selon fiche technique DCRF PN 2021 : 'Le contrôle visuel des objets peut exonérer le policier qui le décide, d'un contrôle tactile.' Permet flexibilité en fonction du contexte et de l'accessibilité visuelle des zones à contrôler.</td></tr>
+
+
+
+<!-- ===== SECTION PPI : PALPATION DE SÉCURITÉ (GLOSSAIRE SIMPLIFIÉ) ===== -->
+
+
+<tr><td><strong>Palpation de sécurité</strong></td>
+<td>Mesure administrative ayant pour finalité la protection des policiers, tiers et personne contrôlée. Consiste à détecter visuellement et tactilement tout objet dangereux sur personne ou accessoires. Encadrée par Art. R.434-16 CSI et Instruction DGPN 2014-140-D.</td></tr>
+
+<tr><td><strong>Article R.434-16 CSI</strong></td>
+<td>Article du Code de la Sécurité Intérieure encadrant la palpation de sécurité. Stipule qu'elle 'ne revêt pas un caractère systématique', qu'elle 'apparaît nécessaire à la garantie de la sécurité', doit respecter dignité et être 'à l'abri du regard du public'.</td></tr>
+
+<tr><td><strong>Instruction DGPN 2014-140-D</strong></td>
+<td>Instruction du 12 juillet 2014 intitulée 'Pratique des palpations de sécurité'. Encadre strictement la palpation par PN et GN. Énumère conditions justifiant palpation, modalités pratiques, principes de nécessité, discernement, respect dignité.</td></tr>
+
+<tr><td><strong>Fiche technique DCRF PN 2021</strong></td>
+<td>Document 'Techniques de défense et d'interpellation - La palpation de sécurité'. Détaille déroulement palpation, différentes techniques (arrière/avant/menottée), zones prioritaires (creux mains, creux lombaire, ceinture abdominale, aisselles), procédures face objet dangereux.</td></tr>
+
+<tr><td><strong>Nécessité et discernement (palpation)</strong></td>
+<td>Principes directeurs fondamentaux encadrant la palpation. Palpation doit être motivée par dangerosité potentielle réelle et ne jamais être systématique ou automatique.</td></tr>
+
+<tr><td><strong>Caractère non systématique (palpation)</strong></td>
+<td>Principe obligatoire : palpation ne doit jamais être pratiquée automatiquement. Doit être fondée sur circonstances objectives démontrant dangerosité potentielle (comportement, indices apparents, antécédents).</td></tr>
+
+<tr><td><strong>Dangerosité potentielle (palpation)</strong></td>
+<td>Critère justifiant palpation de sécurité. Fondée sur : indice apparent (forme sous vêtement), comportement (imprégnation alcoolique, agressivité, fuite), ou personnalité (antécédents judiciaires). Doit être objective.</td></tr>
+
+<tr><td><strong>Personne de même sexe (palpation)</strong></td>
+<td>Principe obligatoire pour GAV, rétention, détention (arrêté 1er juin 2011). Pour autres cas, palpation par personne même sexe 'chaque fois que possible'. Dérogation doit être justifiée.</td></tr>
+
+<tr><td><strong>Abri du regard public (palpation)</strong></td>
+<td>Obligation légale : palpation doit être pratiquée 'à l'abri du regard du public chaque fois que les circonstances le permettent' pour préserver dignité de la personne.</td></tr>
+
+<tr><td><strong>Technique palpation arrière</strong></td>
+<td>Technique privilégiée selon fiche technique DCRF PN 2021. Policier positionné derrière personne (moins exposé aux coups). Comprend contrôle creux lombaire, ceinture abdominale, aisselles, coude.</td></tr>
+
+<tr><td><strong>Technique palpation avant</strong></td>
+<td>Technique imposée par situation (grands contrôles collectifs) ou localisation restreinte. Moins coercitive mais sécurité minimale du policier. Comprend contrôle systématique avant-bras.</td></tr>
+
+<tr><td><strong>Pressions successives (palpation)</strong></td>
+<td>Méthode obligatoire : appliquer mains par pressions successives avec partie interne des mains, NON par glissement. Permet meilleure détection et minimise risques piqûre/coupure.</td></tr>
+
+<tr><td><strong>Zones prioritaires (palpation)</strong></td>
+<td>Zones directement accessibles susceptibles dissimuler arme : creux mains, creux lombaire, ceinture abdominale, aisselles. Puis progression de haut en bas du corps.</td></tr>
+
+<tr><td><strong>Objet dangereux détecté</strong></td>
+<td>Procédure : signaler immédiatement par tous moyens aux coéquipiers. Si accessible, appréhension de l'objet. Si non accessible, menottage avant appréhension. Nouvelle palpation après découverte.</td></tr>
+
+<tr><td><strong>Palpation personne menottée</strong></td>
+<td>Obligation : toute personne menottée doit être palpée dès que possible et avant retrait entraves. Si au sol ventre, palpation creux lombaire et ceinture dorsale suit immédiatement.</td></tr>
+
+<tr><td><strong>Documentation palpation</strong></td>
+<td>Obligation : palpation et éléments la motivant doivent être consignés dans acte administratif/judiciaire subséquent (MCI, rapport, PV) même si aucun objet découvert.</td></tr>
+
+<tr><td><strong>Restitution objets (palpation)</strong></td>
+<td>Objets découverts lors palpation doivent être restitués sauf s'ils caractérisent infraction ou doivent être conservés à titre probatoire. Remise à l'OPJ territorialement compétent.</td></tr>
+
+<tr><td><strong>Art. 78-2 CPP (contrôle comportement)</strong></td>
+<td>Fondement légal de certains contrôles d'identité justifiant palpation : si raisons plausibles de soupçonner personne a commis/tenté infraction, se prépare à délit, ou peut fournir renseignements enquête.</td></tr>
+
+<tr><td><strong>Art. 63-6 CPP (fouille sécurité)</strong></td>
+<td>Mesure distincte de palpation. Peut impliquer retrait partiel de vêtements. Encadrée par arrêté 1er juin 2011. Ne peut consister en fouille intégrale.</td></tr>
+
+<tr><td><strong>Arrêté 1er juin 2011</strong></td>
+<td>Arrêté encadrant fouilles de sécurité et fouilles intégrales des personnes gardées à vue, retenues ou détenues (NOR IOCC1114326A). Impose personne même sexe et respect dignité.</td></tr>
+
+<tr><td><strong>Politesse et discernement (palpation)</strong></td>
+<td>Principes d'exécution fondamentaux : avisez personne de palpation et sa finalité, sollicitez son concours. Réalisez sans agressivité ni violence, minutieusement et méthodiquement.</td></tr>
+
+<tr><td><strong>Gants palpation</strong></td>
+<td>Autorisés et parfois imposés lors palpation pour raisons sécurité, hygiène ou préservation traces. Peut impliquer perte sensibilité digitale mais justifié en contexte sécuritaire.</td></tr>
+
+<tr><td><strong>Contrôle visuel exonération tactile</strong></td>
+<td>Possibilité selon fiche technique DCRF PN 2021 : contrôle visuel des objets peut exonérer policier d'un contrôle tactile. Permet flexibilité selon contexte et accessibilité visuelle.</td></tr>
+
+<tr><td><strong>Signalement équipiers (objet dangereux)</strong></td>
+<td>Procédure immédiate : policier ressent présence objet dangereux 'signale immédiatement par tous moyens (oral, gestuel)' le fait à coéquipiers pour coordination intervention.</td></tr>
+
+<tr><td><strong>Appréhension provisoire objet</strong></td>
+<td>Action du policier détectant objet dangereux : 'procède à l'appréhension provisoire de l'objet décelé aux fins de remise ultérieure à l'OPJ territorialement compétent'.</td></tr>
+
+<tr><td><strong>Situations palpation systématique</strong></td>
+<td>Cas où palpation peut être plus systématique : après interpellation (quel qu'en soit motif), avant prise en charge en véhicule administratif, lors déplacements GAV/rétention, avant retrait entraves.</td></tr>
+
+<tr><td><strong>Renouvellement palpation</strong></td>
+<td>Palpation peut être renouvelée 'chaque fois qu'elle redevient nécessaire' : en cas déplacement personne, rupture surveillance, changement situation. Obligatoire après découverte objet dangereux.</td></tr>
+
+<tr><td><strong>Environnement sécurisé (palpation)</strong></td>
+<td>Condition requise : palpation doit être réalisée dans environnement sécurisé. Évaluation préalable situation et dangerosité pour assurer sécurité policier et personne palpée.</td></tr>
+
+<tr><td><strong>Dignité personne (palpation)</strong></td>
+<td>Principe central CSI (Art. R.434-16) : palpation doit se dérouler 'sans qu'il soit porté atteinte à la dignité de la personne'. Implique : même sexe, abri public, sans agressivité, politesse constante.</td></tr>
+
+<tr><td><strong>Contrôle coude (palpation arrière)</strong></td>
+<td>Contrôle systématique lors palpation arrière. Zone accessible susceptible dissimuler objet dangereux. Fait partie zones prioritaires technique palpation arrière.</td></tr>
+
+<tr><td><strong>Contrôle avant-bras (palpation avant)</strong></td>
+<td>Contrôle systématique lors palpation avant. Zone accessible susceptible dissimuler objet dangereux. Fait partie zones prioritaires technique palpation avant.</td></tr>
+
+<tr><td><strong>Contrôle creux mains (palpation)</strong></td>
+<td>Première étape palpation. Assurer que personne ne dissimule rien dans creux mains. Vérification d'abord visuelle, accompagnée d'injonctions verbales si mains non immédiatement visibles.</td></tr>
+
+
+
+<!-- ===== SECTION PPI : PRISE EN CHARGE VÉHICULE EN FUITE ===== -->
+
+
+<tr><td colspan="2" style="background:#003189;color:white;font-weight:bold;text-align:center;padding:12px;">🚗 PRISE EN CHARGE VÉHICULE EN FUITE / REFUS D'OBTEMPÉRER</td></tr>
+
+<tr><td><strong>Refus d'obtempérer</strong></td>
+<td>Délit routier se caractérisant par refus d'un conducteur motorisé de se conformer à sommation de s'arrêter d'un représentant forces de l'ordre. Prévu/réprimé articles L.233-1 et suivants Code de la route. Circonstances aggravantes prévues (Art. L.233-1-1) en cas exposition directe autrui à risque mort/blessures mutilation/infirmité permanente.</td></tr>
+
+<tr><td><strong>Instruction commune DGGN-PP-DGPN 16/05/2025</strong></td>
+<td>Instruction encadrant règles d'intervention et d'interception sur refus d'obtempérer et véhicules en fuite. Abroge notes préfet police et instructions DCSP antérieures. Définit principes poursuite, prise en charge, sécurité, usage armes.</td></tr>
+
+<tr><td><strong>Poursuite avec discernement</strong></td>
+<td>Principe fondamental : poursuite véhicules en fuite doit être engagée avec discernement par un ou plusieurs équipages/patrouilles. Prise en charge relève décision concertée chef de bord/conducteur. Non-systématique, adapté circonstances.</td></tr>
+
+<tr><td><strong>Prise en charge concertée (véhicule fuite)</strong></td>
+<td>Décision collaborative entre chef de bord et conducteur véhicule forces de l'ordre concernant utilisation DIVA, poursuite, interception. Implique communication constante et validation avant chaque phase intervention.</td></tr>
+
+<tr><td><strong>DIVA (Dispositif d'Interception de Véhicules Automobiles)</strong></td>
+<td>Matériel d'interception dont l'effet basé sur décélération puis immobilisation véhicule par diminution progressive pression pneumatiques. Autorisé par Loi 23 janvier 2006, Art. 4. Permet interception conditions préservant sécurité occupants, policiers, tiers.</td></tr>
+
+<tr><td><strong>Loi 23 janvier 2006 (DIVA)</strong></td>
+<td>Loi relative à lutte contre terrorisme portant dispositions sécurité/contrôles frontaliers. Art. 4 définit conditions emploi DIVA et abroge ordonnance 58-1309 sur herses métalliques à pointes fixes (remplacées par pointes creuses amovibles).</td></tr>
+
+<tr><td><strong>Article 25-1 Loi 23 janvier 2006</strong></td>
+<td>Article autorisant personnels PN en tenue/insignes à utiliser DIVA dans 3 cas : (1) conducteur ne s'arrête pas sommations ; (2) comportement mettant délibérément en danger vie ; (3) crime/délit flagrant si immobilisation nécessaire. Matériels doivent conformer normes techniques arrêté ministériel.</td></tr>
+
+<tr><td><strong>Conditions emploi DIVA</strong></td>
+<td>3 cas alternatifs justifiant utilisation DIVA : non-arrêt aux sommations, comportement mettant délibérément en danger la vie, crime/délit flagrant nécessitant immobilisation. À chaque cas notice d'accompagnement spécifique matériel définit catégories véhicules, caractéristiques techniques, limites emploi.</td></tr>
+
+<tr><td><strong>Instruction d'emploi DIVA DGPN 2008</strong></td>
+<td>Instruction DGPN/DGGN 2014-140-0 définissant règles/principes/modalités emploi DIVA dans PN. Complétée notices d'accompagnement matériels. Objective fournir information claire aux responsables unités/fonctionnaires utilisant DIVA pour efficacité et sécurité.</td></tr>
+
+<tr><td><strong>Protocole d'emploi DIVA</strong></td>
+<td>Procédures spécifiques chaque type matériel DIVA. Notices d'accompagnement précisent catégories véhicules concernées, caractéristiques techniques, limites emploi. DIVA déployés uniquement personnels en tenue ou distinctement porteurs insignes apparents qualité policiers.</td></tr>
+
+<tr><td><strong>Inspection DIVA semestrielle</strong></td>
+<td>Obligation : vérification semestrielle chaque DIVA (date précise jour/mois/année, nom/prénom/grade/service inspecteur consignés). Remplacement éléments défectueux documenté sur fiche inspection. Immédiatement après emploi : vérification même ordre, quelconque utilisation (même sans roulement).</td></tr>
+
+<tr><td><strong>Compte-rendu utilisation DIVA</strong></td>
+<td>Formulaire obligatoire pour chaque DIVA utilisé dynamiquement (exclut positionnement sans utilisation effective). Toutes rubriques obligatoirement renseignées : utilisateur, matériel, n° DIVA, date/heure, cadre juridique, type utilisation, environnement, luminosité, météo, sol, dégâts DIVA, véhicules impliqués, blessés, éléments utiles. Inscrire '?' si ignoré.</td></tr>
+
+<tr><td><strong>Transmission données DIVA</strong></td>
+<td>Formulaires utilisation DIVA transmis trimestriellement à DFPN (bureau activités physiques/professionnelles) pour exploitation/retours d'expérience. Fiches inspection transmission DAPN (bureau armement/matériels techniques) détection faiblesses fabrication/conception.</td></tr>
+
+<tr><td><strong>Avertisseurs sonores et lumineux (intervention)</strong></td>
+<td>Équipements obligatoires à actionner lors intervention refus d'obtempérer. Constitue signal légal sommation s'arrêter. Améliore visibilité intervention, alerte tiers circulation.</td></tr>
+
+<tr><td><strong>Caméra piéton / moyen vidéo (intervention)</strong></td>
+<td>Déclencher obligatoirement lors intervention refus d'obtempérer. Assure traçabilité intervention, capture faits/comportements pertinents, protection légale policiers.</td></tr>
+
+<tr><td><strong>Ceinture de sécurité (intervention véhicule fuite)</strong></td>
+<td>Port systématique obligatoire ceinture par forces de l'ordre lors intervention refus d'obtempérer. Principe sécurité élément, préserve intégrité physique en cas décélération brusque/choc.</td></tr>
+
+<tr><td><strong>Géolocalisation véhicule (intervention)</strong></td>
+<td>Système activé lors intervention refus d'obtempérer. Permet suivi véhicule temps réel, transmission position CIC, facilite coordination renforts/DIVA sur itinéraires potentiels.</td></tr>
+
+<tr><td><strong>Distance de sécurité (poursuite)</strong></td>
+<td>Véhicule poursuivant doit conserver distance sécurité limitant risques choc en cas arrêt brutal volontaire/non du véhicule fuite. Évaluation permanente basée état chaussée, conditions météo, visibilité, flux circulation.</td></tr>
+
+<tr><td><strong>Ne pas dépasser véhicule fuite</strong></td>
+<td>Principe sécurité fondamental : véhicule police ne doit jamais chercher dépasser véhicule poursuivi. Expose à risques choc frontal, perte contrôle. Déploiement DIVA renforts itinéraires privilégié.</td></tr>
+
+<tr><td><strong>Distance entre véhicules police (poursuite)</strong></td>
+<td>Obligation d'accroître distance sécurité entre véhicules police engagés poursuite. Réduit risques collisions multiples, donne temps anticipation freinage, facilite manœuvres défensive.</td></tr>
+
+<tr><td><strong>Répartition actions (poursuite)</strong></td>
+<td>Équipages engagés doivent se répartir actions : pilotage conducteur, signalement dangers (véhicules axes latéraux, éléments topographiques), réitération informations radio, annonce CIC infractions MEC (mise danger, feux rouges, dégradations).</td></tr>
+
+<tr><td><strong>Annonce arrêt véhicule fuite</strong></td>
+<td>Immédiate sur ondes précisant caractère arrêt (volontaire/non), localisation. Permet : autres véhicules itinéraires anticiper freinage, véhicules itinéraires bis adapter intervention (réduction risques, repositionnement).</td></tr>
+
+<tr><td><strong>Descente concertée et coordonnée</strong></td>
+<td>Procédure après arrêt véhicule fuite : annonce conducteur que véhicule administratif arrêté, annonce décision interpellation, positionnement sécurisé avant descente. Ne détacher ceinture que validation chauffeur/chef de bord.</td></tr>
+
+<tr><td><strong>Zones dangereuses interception (positionnement)</strong></td>
+<td>NE JAMAIS se positionner devant ou derrière véhicule tant que conducteur au volant, même si apparemment arrêté. Danger : redémarrage involontaire/volontaire, éjectile véhicule. Adopter latéral ou flanc position.</td></tr>
+
+<tr><td><strong>Environnement intervention (paramètres)</strong></td>
+<td>Prise en compte permanente durant intervention : environnement (urbain/rural/suburbain), dangerosité MEC connue, niveau risques, flux circulation, état chaussée, conditions météo, luminosité, tout paramètre créant danger policiers/tiers.</td></tr>
+
+<tr><td><strong>Article L.435-1 CSI (usage arme)</strong></td>
+<td>Article Code Sécurité Intérieure encadrant usage arme service. Lors intervention refus d'obtempérer, usage exclusivement légitime défense (Art. 122-5 CP) ET L.435-1 CSI. Critères : absolue nécessité ET proportionnalité obligatoires.</td></tr>
+
+<tr><td><strong>Absolue nécessité et proportionnalité (arme)</strong></td>
+<td>Deux critères cumulatifs obligatoires usage arme refus d'obtempérer : absolue nécessité (menace vitale immédiate), proportionnalité (réponse adaptée à nature menace). Encadrage strict Instruction DGGN-PP-DGPN 2025.</td></tr>
+
+<tr><td><strong>Légitime défense (Art. 122-5 CP)</strong></td>
+<td>Cause d'exonération responsabilité pénale. Lors intervention refus d'obtempérer, usage arme justifié si répond légitime défense : action indispensable repousser attaque injuste aidé forces de l'ordre ou tiers.</td></tr>
+
+<tr><td><strong>Déploiement renforts DIVA</strong></td>
+<td>À annonce poursuite, rechercher déploiement renforts itinéraires potentiels pour favoriser utilisation DIVA dans strict respect protocoles emploi. Coordination CIC essentielle.</td></tr>
+
+<tr><td><strong>Formulaire de retour d'expérience DIVA</strong></td>
+<td>Document type joint Instruction DGPN 2008 rempli après chaque utilisation dynamique DIVA. Évalue efficacité au cas par cas. Directions/services transmettent copies DFPN trimestriellement minimum exploitation et amélioration continue.</td></tr>
+
+<tr><td><strong>Sécurité occupants véhicule fuite</strong></td>
+<td>Principe fondamental : emploi DIVA destiné préserver sécurité occupants véhicule, policiers et tiers. Après utilisation, assistance médicale selon règles générales secours assistance si dommages corporels.</td></tr>
+
+<tr><td><strong>Mèmo Académie Police intervention</strong></td>
+<td>Document synthétique émanant Académie Police détaillant règles sécurité intervention refus d'obtempérer/véhicules fuite. Énumère principes généraux, équipements obligatoires, zones dangers, rôles chef bord/conducteur.</td></tr>
+
+<tr><td><strong>Prise en compte flux circulation</strong></td>
+<td>Paramètre constant évaluation lors intervention refus d'obtempérer : densité trafic, directions véhicules tiers, intersection risques. Détermine utilisation DIVA, zones interception, vitesses engagées.</td></tr>
+
+<tr><td><strong>Prise en compte conditions météorologiques</strong></td>
+<td>Paramètre évaluation permanente intervention : pluie, grêle, neige, verglas, visibilité réduite, vent. Influe capacité DIVA, distances sécurité, manœuvrabilité véhicules, vitesses engagées.</td></tr>
+
+<!-- ===== SECTION PPI : TUERIES DE MASSE ===== -->
+<tr><td colspan="2" style="background:#003189;color:white;font-weight:bold;text-align:center;padding:12px;">🔫 TUERIES DE MASSE</td></tr>
+
+<tr><td><strong>Tuerie de masse</strong></td>
+<td>Acte criminel commis par un ou plusieurs individus qui tuent plusieurs personnes d'affilée et de façon continue dans une même unité de temps et de lieu ou dans plusieurs lieux dans un temps rapproché voire concomitant (DPN-3.1 du 19 avril 2016).</td></tr>
+
+<tr><td><strong>COP (Commandant Opérations Police)</strong></td>
+<td>Officier de police désigné immédiatement par CIC pour coordonner l'ensemble de l'intervention policière lors tuerie de masse ou crise majeure. Responsable prise de décision tactique et liaison autorités civiles/services secours.</td></tr>
+
+<tr><td><strong>DÉTECTER</strong></td>
+<td>Première étape protocole intervention tuerie : identification menace (localisation tireurs, nombre auteurs, type armes, présence EEI). Objectif : obtenir rapidement informations tactiques exploitables.</td></tr>
+
+<tr><td><strong>SE PROTÉGER</strong></td>
+<td>Deuxième étape : mise à l'abri intervenants par identification ondes, stationnement hors zone tir, équipement balistique, utilisation abris naturels. Principe : « Pas un pas sans soutien ».</td></tr>
+
+<tr><td><strong>ALERTER/ÉVACUER</strong></td>
+<td>Troisième étape : incitation population à quitter immédiatement zone intervention, focalisation attention agresseurs. Moyens : haut-parleurs, annonces verbales, guidage, mise à l'abri bâtiments.</td></tr>
+
+<tr><td><strong>RENDRE COMPTE</strong></td>
+<td>Quatrième étape : communication radio permanente avec CIC signalant position, nombre tireurs, actions entreprises, type armes, EEI, victimes, besoins renforts. Fréquence : continue sans délai.</td></tr>
+
+<tr><td><strong>FIXER</strong></td>
+<td>Cinquième étape : entraver manœuvre auteurs tuerie aux fins réduire champ d'action (champ ouvert) ou confiner (lieu clos). S'effectue sous soutien feu autres intervenants.</td></tr>
+
+<tr><td><strong>NEUTRALISER</strong></td>
+<td>Sixième étape : rendre inopérant auteurs tuerie par action ciblée pour mettre fin acte criminel. Cadre juridique : légitime défense (Art. 122-5 CP) ou état de nécessité (Art. 122-7 CP).</td></tr>
+
+<tr><td><strong>Primo-intervenants</strong></td>
+<td>Niveau 1 intervention tuerie : policiers localités (PAT, BAC, polices municipales) arrivant premiers sur zone. Rôle : DÉTECTER, SE PROTÉGER, ALERTER/ÉVACUER sous protocole complet.</td></tr>
+
+<tr><td><strong>Intervenants opérationnels</strong></td>
+<td>Niveau 2 intervention tuerie : compagnies sécurité (CRS), BRI, CIS. Rôle : soutenir primo-intervenants et participer neutralisation progressive.</td></tr>
+
+<tr><td><strong>Intervenants spécialisés</strong></td>
+<td>Niveau 3 intervention tuerie : RAID, BRI spécialisées, forces armées. Rôle : neutralisation auteurs et résolution crise haute intensité. Pénétration lieux clos.</td></tr>
+
+<tr><td><strong>Sur-attentat</strong></td>
+<td>Risque nouvelle attaque terroriste ciblant public, forces police, services secours ou autorités dans période suivant attentat/tuerie. Prévention : zones d'intervention strictes, contrôle accès, sécurisation 360°/3D.</td></tr>
+
+<tr><td><strong>BBS (Bouclier Balistique Souple)</strong></td>
+<td>Équipement protection individuelle pesant environ 20 kg équipé plaques additionnelles, utilisé lors pénétration milieu clos ou présence EEI. Limitation : ne constitue PAS protection balistique absolue porteur ni autres intervenants.</td></tr>
+
+<tr><td><strong>Levée de doute</strong></td>
+<td>Processus technique exclusif services déminage permettant déterminer exactement contenu objet/véhicule déclaré suspect. Mise en œuvre après identification objet ou véhicule suspect contenant potentiellement EEI.</td></tr>
+
+<tr><td><strong>Objet suspect</strong></td>
+<td>Objet abandonné dont propriétaire légitime n'a pu être identifié après premières recherches, ou dont circonstances suscitent doute sur contenu. Gestion : relevée exclusivement par unités spécialisées déminage.</td></tr>
+
+<tr><td><strong>Véhicule suspect</strong></td>
+<td>Véhicule abandonné/suspecte contenant potentiellement EEI. Traitement identique objet suspect. Périmètre sécurité : 200 mètres minimum rayon à couvert autour véhicule suspect.</td></tr>
+
+<tr><td><strong>EEI (Engin Explosif Improvisé)</strong></td>
+<td>Dispositif explosif fabriqué artisanalement, non réglementaire, dissimulé ou apparent, utilisé ou soupçonné utilisation malveillante. Détection impose protocole DÉTECTER - SE PROTÉGER - ALERTER/ÉVACUER - RENDRE COMPTE - FIXER - NEUTRALISER.</td></tr>
+
+<tr><td><strong>Dégagement d'urgence</strong></td>
+<td>Retrait exceptionnel victime zone crise avant premiers secours standard, uniquement cas danger vital immédiat incontrôlable. Principle : exceptionnel, jamais déplacer victime sauf danger immédiat plus grave que traumatisme déplacement.</td></tr>
+
+<tr><td><strong>Zone d'exclusion</strong></td>
+<td>Périmètre immédiat autour événement tuerie, lieu engagement principal et neutralisation. Accès interdit sauf personnel autorisé et armé. Délimitation : définie COP fonction situation tactique.</td></tr>
+
+<tr><td><strong>Zone contrôlée (tampon)</strong></td>
+<td>Périmètre autour zone d'exclusion où
+
+</table>
+    </div>
+  </div>
+</div>
+<footer>
+  © 2026 — Réalisé par <strong>MOHAMED Zaïdou</strong> — Révision Brigadier-Chef de Police
+</footer>
+
+<script>
+  function showTab(id, event) {
+    // Masquer toutes les sections
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    // Désactiver tous les boutons
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    // Afficher la section cible
+    document.getElementById(id).classList.add('active');
+    // Activer le bouton correspondant
+    if (event && event.target) {
+      event.target.classList.add('active');
+    }
+  }
+</script>
+
+</body>
+</html>

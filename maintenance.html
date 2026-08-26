@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Site en maintenance — Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Onglets de catégorie ── */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      padding: 18px 16px 0;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border: 2px solid #003189;
+      border-radius: 30px;
+      background: transparent;
+      color: #003189;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover {
+      background: #003189;
+      color: #fff;
+    }
+    .tab-btn.active {
+      background: #003189;
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(0,49,137,0.25);
+    }
+
+    /* ── Sections de contenu ── */
+    .tab-section {
+      display: none;
+    }
+    .tab-section.active {
+      display: block;
+    }
+
+    /* ── Bandeau de titre de section ── */
+    .section-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #003189;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin: 24px auto 6px;
+      max-width: 1100px;
+      padding: 0 16px;
+    }
+    .section-title span {
+      display: inline-block;
+      border-bottom: 3px solid #003189;
+      padding-bottom: 4px;
+    }
+
+    /* ── Message placeholder pour sections vides ── */
+    .placeholder {
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      padding: 60px 20px;
+      font-size: 1.05rem;
+    }
+
+    /* ── Sous-onglets TSI ── */
+    .sub-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      padding: 14px 16px 0;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .sub-tab-btn {
+      padding: 8px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sub-tab-btn:hover {
+      background: #e2e8f0;
+      color: #003189;
+    }
+    .sub-tab-btn.active {
+      background: #003189;
+      color: #fff;
+      border-color: #003189;
+    }
+
+    /* ── Sous-sections TSI ── */
+    .sub-section {
+      display: none;
+    }
+    .sub-section.active {
+      display: block;
+    }
+
+    /* ══════════════════════════════════════════
+       PAGE MAINTENANCE
+    ══════════════════════════════════════════ */
+    .maintenance-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      padding: 40px 20px;
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .maintenance-image {
+      max-width: 100%;
+      width: 1100px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,49,137,0.15);
+      margin-bottom: 30px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+
+    .maintenance-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #003189;
+      margin-bottom: 15px;
+      letter-spacing: 0.02em;
+    }
+
+    .maintenance-subtitle {
+      font-size: 1.3rem;
+      color: #475569;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    /* ── Barre de progression ── */
+    .progress-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 30px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #003189, #0055b3, #003189);
+      background-size: 200% 100%;
+      border-radius: 30px;
+      animation: progressGradient 2s linear infinite, progressFill 4s ease-in-out infinite;
+    }
+
+    @keyframes progressGradient {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+
+    @keyframes progressFill {
+      0% { width: 0%; }
+      50% { width: 75%; }
+      100% { width: 100%; }
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .progress-dots span {
+      animation: dotPulse 1.5s ease-in-out infinite;
+    }
+
+    .progress-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .progress-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    .maintenance-message {
+      font-size: 1.1rem;
+      color: #64748b;
+      margin-top: 20px;
+    }
+
+    /* ── Icône maintenance animée ── */
+    .maintenance-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: spin 3s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+      100% { transform: rotate(-5deg); }
+    }
+
+    /* ── Instructions ── */
+    .instructions {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+      max-width: 600px;
+      text-align: left;
+    }
+
+    .instructions h4 {
+      color: #003189;
+      margin-bottom: 10px;
+    }
+
+    .instructions code {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .instructions ol {
+      margin: 10px 0 0 20px;
+      color: #475569;
+    }
+
+    .instructions li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+<a href="index.html" class="logo-link" style="position:absolute;top:0px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:80px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));transition:transform 0.2s">
+</a>
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+</header>
+
+<nav class="nav">
+  <a href="index.html"  title="Accueil">🏠Accueil</a>
+  <a href="fiches.html">📖 Fiches</a>
+  <a href="maintenance.html" >⚡ QCM Immédiat</a>
+  <a href="maintenance.html">🏆 Quiz Complet</a>
+  <a href="maintenance.html" >📖 Glossaire</a>
+</nav>
+
+<!-- ══ CONTENU MAINTENANCE ══ -->
+<div class="maintenance-container">
+  
+  <h2 class="maintenance-title">🔧 Site en maintenance</h2>
+  <p class="maintenance-subtitle">Cette partie est en maintenance. Je fais de mon mieux, Promis ! !<br>On revient très vite ✨</p>
+
+
+  <img 
+    src="assets/images/maintenance.png" alt="Maintenance en cours" class="maintenance-image"" 
+    alt="Image de maintenance" 
+    class="maintenance-image"
+  >
+
+  <!-- Barre de progression animée -->
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="progress-dots">
+      <span>●</span>
+      <span>●</span>
+      <span>●</span>
+    </div>
+  </div>
+
+  <p class="maintenance-message">⏳ Merci de votre patience</p>
+
+
+</div>
+
+<footer>
+  <p>© 2026 — Préparation au concours Brigadier-Chef de Police Nationale</p>
+</footer>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"8607d2a720d14b038279025b2b5a82e5","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

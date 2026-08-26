@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QCM Immédiat — Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ===== DROPDOWN TEMPS DE TRAVAIL ===== */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-main-btn {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 2px solid #1a3a6b;
+      background: white;
+      color: #1a3a6b;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dropdown-main-btn:hover,
+    .dropdown-main-btn.af {
+      background: #1a3a6b;
+      color: white;
+    }
+
+    .dropdown-main-btn .arrow {
+      font-size: 0.7rem;
+      transition: transform 0.2s;
+    }
+
+    .dropdown-main-btn.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: white;
+      border: 2px solid #1a3a6b;
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 999;
+      min-width: 180px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .dropdown-menu.open {
+      display: block;
+    }
+
+    .dropdown-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 16px;
+      border: none;
+      background: white;
+      color: #1a3a6b;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #e8edf5;
+    }
+
+    .dropdown-menu button:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-menu button:hover {
+      background: #e8edf5;
+    }
+
+    .dropdown-menu button.af {
+      background: #1a3a6b;
+      color: white;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<a href="index.html" class="logo-link" style="position:absolute;top:10px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:90px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));transition:transform 0.2s">
+</a>
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+  <p>Documentation Professionnelle PN — session 2026</p>
+</header>
+
+<nav class="nav">
+  <a href="index.html" title="Accueil">🏠Accueil</a>
+  <a href="fiches.html">📖 Fiches</a>
+  <a href="qcm.html" class="nav-btn active">⚡ QCM Immédiat</a>
+  <a href="quiz.html">🏆 Quiz Complet</a>
+  <a href="glossaire.html">📖 Glossaire</a>
+</nav>
+
+<div class="container">
+  <div class="filter-bar" id="filterbar"></div>
+  <div id="qcmlist"></div>
+</div>
+
+<footer>
+  © 2026 — Réalisé par <strong>MOHAMED Zaïdou</strong> — Révision Brigadier-Chef de Police
+</footer>
+
+<script src="data.js"></script>
+<script>
+
+// ===== CONFIG DES FILTRES =====
+const tempsDeTravailSubs = ['A','B','C','D','E'];
+const tempsDeTravailLabels = {
+  'A':'A – Régimes',
+  'B':'B – Supp.',
+  'C':'C – Congés',
+  'D':'D – Astreinte',
+  'E':'E – RPS'
+};
+const autresFilters = ['F','G','H'];
+const autresLabels = {
+  'F':'F – TSI',
+  'G':'G – Déontologie',
+  'H':'H – Management'
+};
+
+let currentFilter = 'all';
+let dropdownOpen = false;
+
+// ===== MÉLANGER LES RÉPONSES AU CHARGEMENT =====
+function shuffleQuestionsOnLoad() {
+  Q.forEach((question, index) => {
+    const shuffled = shuffleAndUpdateAnswer(question.o, question.a);
+    Q[index].o = shuffled.options;
+    Q[index].a = shuffled.correctIndex;
+  });
+}
+shuffleQuestionsOnLoad();
+
+// ===== CONSTRUCTION DE LA BARRE DE FILTRES =====
+function buildFilterBar() {
+  const bar = document.getElementById('filterbar');
+
+  // Bouton "Tous"
+  const btnTous = document.createElement('button');
+  btnTous.id = 'fball';
+  btnTous.className = 'af';
+  btnTous.textContent = 'Tous';
+  btnTous.onclick = () => filterQCM('all');
+  bar.appendChild(btnTous);
+
+  // ---- Dropdown "Temps de travail" ----
+  const wrapper = document.createElement('div');
+  wrapper.className = 'dropdown-wrapper';
+
+  const mainBtn = document.createElement('button');
+  mainBtn.className = 'dropdown-main-btn';
+  mainBtn.id = 'dropdownMainBtn';
+  mainBtn.innerHTML = '⏱ Temps de travail <span class="arrow">▼</span>';
+  mainBtn.onclick = (e) => {
+    e.stopPropagation();
+    toggleDropdown();
+  };
+
+  const menu = document.createElement('div');
+  menu.className = 'dropdown-menu';
+  menu.id = 'dropdownMenu';
+
+  tempsDeTravailSubs.forEach(f => {
+    const btn = document.createElement('button');
+    btn.id = 'fb' + f;
+    btn.textContent = tempsDeTravailLabels[f];
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      filterQCM(f);
+      closeDropdown();
+    };
+    menu.appendChild(btn);
+  });
+
+  wrapper.appendChild(mainBtn);
+  wrapper.appendChild(menu);
+  bar.appendChild(wrapper);
+
+  // ---- Autres filtres (F, G, H) ----
+  autresFilters.forEach(f => {
+    const btn = document.createElement('button');
+    btn.id = 'fb' + f;
+    btn.textContent = autresLabels[f];
+    btn.onclick = () => filterQCM(f);
+    // Style inline pour matcher vos boutons existants
+    btn.style.cssText = `
+      cursor:pointer; padding:8px 16px; border-radius:20px;
+      border:2px solid #1a3a6b; background:white; color:#1a3a6b;
+      font-weight:600; font-size:0.9rem; transition:all 0.2s;
+    `;
+    btn.onmouseover = () => { if(!btn.classList.contains('af')) { btn.style.background='#e8edf5'; } };
+    btn.onmouseout = () => { if(!btn.classList.contains('af')) { btn.style.background='white'; } };
+    bar.appendChild(btn);
+  });
+}
+
+// ===== GESTION DU DROPDOWN =====
+function toggleDropdown() {
+  dropdownOpen = !dropdownOpen;
+  document.getElementById('dropdownMenu').classList.toggle('open', dropdownOpen);
+  document.getElementById('dropdownMainBtn').classList.toggle('open', dropdownOpen);
+}
+
+function closeDropdown() {
+  dropdownOpen = false;
+  document.getElementById('dropdownMenu').classList.remove('open');
+  document.getElementById('dropdownMainBtn').classList.remove('open');
+}
+
+// Ferme le dropdown si clic ailleurs
+document.addEventListener('click', () => closeDropdown());
+
+// ===== FILTRE ACTIF =====
+function filterQCM(f) {
+  currentFilter = f;
+
+  // Reset tous les boutons
+  document.getElementById('fball').classList.remove('af');
+  document.getElementById('fball').style.background = '';
+  document.getElementById('fball').style.color = '';
+
+  tempsDeTravailSubs.forEach(s => {
+    const b = document.getElementById('fb' + s);
+    if(b) b.classList.remove('af');
+  });
+
+  autresFilters.forEach(s => {
+    const b = document.getElementById('fb' + s);
+    if(b) {
+      b.classList.remove('af');
+      b.style.background = 'white';
+      b.style.color = '#1a3a6b';
+    }
+  });
+
+  // Bouton "Temps de travail" parent actif si sous-catégorie sélectionnée
+  const mainBtn = document.getElementById('dropdownMainBtn');
+  if(tempsDeTravailSubs.includes(f)) {
+    mainBtn.classList.add('af');
+    document.getElementById('fb' + f).classList.add('af');
+  } else {
+    mainBtn.classList.remove('af');
+  }
+
+  if(f === 'all') {
+    const btnTous = document.getElementById('fball');
+    btnTous.classList.add('af');
+  } else if(autresFilters.includes(f)) {
+    const b = document.getElementById('fb' + f);
+    b.classList.add('af');
+    b.style.background = '#1a3a6b';
+    b.style.color = 'white';
+  }
+
+  renderQCM(f);
+}
+
+// ===== RENDU DES QUESTIONS =====
+function renderQCM(f) {
+  const list = f === 'all' ? Q : Q.filter(q => q.t === f);
+  let html = '';
+  list.forEach((q, i) => {
+    const gi = Q.indexOf(q);
+    html += `<div class="qcard">
+      <div class="num">Question ${i+1}/${list.length} — Thème ${q.t}</div>
+      <h3>${q.q}</h3>`;
+    q.o.forEach((opt, j) => {
+      html += `<button class="opt" onclick="answerQ(this,${gi},${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
+    });
+    html += `<div class="expl" id="expl${gi}">💡 ${q.e}</div></div>`;
+  });
+  document.getElementById('qcmlist').innerHTML = html;
+}
+
+// ===== RÉPONSE =====
+function answerQ(btn, gi, chosen) {
+  const q = Q[gi];
+  const card = btn.closest('.qcard');
+  if(card.querySelector('.opt.correct') || card.querySelector('.opt.wrong')) return;
+  card.querySelectorAll('.opt').forEach((b, j) => {
+    b.disabled = true;
+    if(j === q.a) b.classList.add('correct');
+    else if(j === chosen) b.classList.add('wrong');
+  });
+  document.getElementById('expl' + gi).style.display = 'block';
+}
+
+buildFilterBar();
+renderQCM('all');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QCM Immédiat — Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a href="index.html" class="logo-link" style="position:absolute;top:10px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:90px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));transition:transform 0.2s">
+</a>
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+  <p>Documentation Professionnelle PN — session 2026</p>
+</header>
+
+<nav class="nav">
+  <a href="index.html"  title="Accueil">🏠Accueil</a>
+  <a href="fiches.html">📖 Fiches</a>
+  <a href="qcm.html" class="nav-btn active">⚡ QCM Immédiat</a>
+  <a href="quiz.html">🏆 Quiz Complet</a>
+  <a href="maintenance.html" >📖 Glossaire</a>
+</nav>
+
+<div class="container">
+  <div class="filter-bar" id="filterbar"></div>
+  <div id="qcmlist"></div>
+</div>
+
+<footer>
+  © 2026 — Réalisé par <strong>MOHAMED Zaïdou</strong> — Révision Brigadier-Chef de Police
+</footer>
+
+<script src="data.js"></script>
+<script src="data.js"></script>
+<script>
+const filters = ['all','A','B','C','D','E','F','G','H','I'];
+const labels = {'all':'Tous','A':'A – Régimes','B':'B – Supp.','C':'C – Congés','D':'D – Astreinte','E':'E – RPS','F':'F - TSI','G':'G - Déontologie','H':'H - Management','I':'I - PRINCIPE PROFESSIONNELS D NTERVENTION '};
+let currentFilter = 'all';
+
+// ===== MÉLANGER LES RÉPONSES DE TOUTES LES QUESTIONS AU CHARGEMENT =====
+function shuffleQuestionsOnLoad() {
+  Q.forEach((question, index) => {
+    const shuffled = shuffleAndUpdateAnswer(question.o, question.a);
+    Q[index].o = shuffled.options;
+    Q[index].a = shuffled.correctIndex;
+  });
+}
+
+// Appelle la fonction au chargement
+shuffleQuestionsOnLoad();
+
+function buildFilterBar(){
+  let html = '';
+  filters.forEach(f => {
+    html += `<button onclick="filterQCM('${f}')" id="fb${f}" class="${f==='all'?'af':''}">${labels[f]}</button>`;
+  });
+  document.getElementById('filterbar').innerHTML = html;
+}
+
+function filterQCM(f){
+  currentFilter = f;
+  document.querySelectorAll('.filter-bar button').forEach(b => b.classList.remove('af'));
+  document.getElementById('fb'+f).classList.add('af');
+  renderQCM(f);
+}
+
+function renderQCM(f){
+  const list = f==='all' ? Q : Q.filter(q => q.t===f);
+  let html = '';
+  list.forEach((q,i) => {
+    const gi = Q.indexOf(q);
+    html += `<div class="qcard">
+      <div class="num">Question ${i+1}/${list.length} — Thème ${q.t}</div>
+      <h3>${q.q}</h3>`;
+    q.o.forEach((opt,j) => {
+      html += `<button class="opt" onclick="answerQ(this,${gi},${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
+    });
+    html += `<div class="expl" id="expl${gi}">💡 ${q.e}</div></div>`;
+  });
+  document.getElementById('qcmlist').innerHTML = html;
+}
+
+function answerQ(btn, gi, chosen){
+  const q = Q[gi];
+  const card = btn.closest('.qcard');
+  if(card.querySelector('.opt.correct') || card.querySelector('.opt.wrong')) return;
+  card.querySelectorAll('.opt').forEach((b,j) => {
+    b.disabled = true;
+    if(j === q.a) b.classList.add('correct');
+    else if(j === chosen) b.classList.add('wrong');
+  });
+  document.getElementById('expl'+gi).style.display = 'block';
+}
+
+buildFilterBar();
+renderQCM('all');
+</script>
+
+
+</body>
+</html>
