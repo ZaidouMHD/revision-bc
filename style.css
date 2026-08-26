@@ -96,6 +96,31 @@ footer { text-align: center; padding: 20px; background: #002244; color: white; f
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
 }
 
+.fiche.type-E {
+  border-left-color: #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.fiche.type-F {
+  border-left-color: #0891b2;
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.fiche.type-G {
+  border-left-color: #b91c1c;
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.fiche.type-H {
+  border-left-color: #ca8a04;
+  background: linear-gradient(135deg, rgba(202, 138, 4, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.fiche.type-I {
+  border-left-color: #4f46e5;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
 /* En-tête de la fiche */
 .fiche h3 {
   margin: 0 0 16px 0;
@@ -135,6 +160,26 @@ footer { text-align: center; padding: 20px; background: #002244; color: white; f
 
 .fiche.type-D .type-badge {
   background: #8b5cf6;
+}
+
+.fiche.type-E .type-badge {
+  background: #10b981;
+}
+
+.fiche.type-F .type-badge {
+  background: #0891b2;
+}
+
+.fiche.type-G .type-badge {
+  background: #b91c1c;
+}
+
+.fiche.type-H .type-badge {
+  background: #ca8a04;
+}
+
+.fiche.type-I .type-badge {
+  background: #4f46e5;
 }
 
 
