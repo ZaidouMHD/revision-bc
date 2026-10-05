@@ -1,6 +1,6 @@
 // Service worker — Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `revision-bc-${VERSION}`;
 
 const PAGES = ['/', '/jeu', '/fiches', '/qcm', '/quiz', '/glossaire'];
@@ -78,12 +78,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // style.css et data.js : réseau d'abord pour avoir les dernières questions
-  const isCode = url.origin === self.location.origin && /\.(css|js)$/i.test(url.pathname);
+  // style.css, data.js et pages lues par le jeu (fiches) : réseau d'abord pour rester à jour
+  const isCode = url.origin === self.location.origin && (/\.(css|js|html)$/i.test(url.pathname) || !/\.[a-z0-9]+$/i.test(url.pathname));
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    const cached = await cache.match(req, { ignoreSearch: isCode });
+    const cached = (await cache.match(req, { ignoreSearch: isCode })) || (isCode ? await cache.match(pageKey(req.url)) : null);
     const network = fetch(req).then((res) => {
       if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
       return res;
