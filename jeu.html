@@ -105,7 +105,12 @@
     #bCombo { font-family: var(--px); font-size: 8px; color: #b33; margin-top: 6px; min-height: 10px; }
     #qbox { margin: 12px; background: var(--paper); color: #1a1a1a; border: 4px solid #1a1a1a; border-radius: 10px;
       box-shadow: inset 0 0 0 3px #c8b88a; padding: 14px; }
-    #qMeta { font-family: var(--px); font-size: 8px; color: #6a5a2a; margin-bottom: 8px; line-height: 1.5; }
+    #qMeta { font-family: var(--px); font-size: 8px; color: #6a5a2a; margin-bottom: 10px; line-height: 1.5; }
+    .qprog { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 6px 10px; background: #efe3c2; border-radius: 8px; font-family: system-ui, sans-serif; font-size: 14px; font-weight: 700; color: #4a3f20; }
+    .stars { display: inline-flex; gap: 1px; line-height: 1; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: 0; vertical-align: middle; }
+    .st { display: inline-block; width: 1em; text-align: center; }
+    .st { color: #c9bfa6; -webkit-text-stroke: 1px #8a7b55; }
+    .st.on { color: #f4c430; -webkit-text-stroke: 1px #9a6e00; text-shadow: 0 0 6px rgba(244,196,48,.6); }
     #qTxt { font-size: 17px; font-weight: 700; line-height: 1.4; margin-bottom: 12px; }
     #qOpts { display: flex; flex-direction: column; gap: 8px; }
     .opt { text-align: left; font-size: 15px; line-height: 1.35; padding: 12px; border-radius: 8px; border: 3px solid #1a1a1a;
@@ -423,6 +428,7 @@ function counts(themes) {
   return { m, c, n, total: p.length };
 }
 function stars(l) { return '★'.repeat(l) + '☆'.repeat(3 - l); }
+function starsHtml(l, size = 26) { let h = ''; for (let i = 0; i < 3; i++) h += `<span class="st ${i < l ? 'on' : ''}" style="font-size:${size}px">${i < l ? '★' : '☆'}</span>`; return `<span class="stars">${h}</span>`; }
 function countsLine(k) { return `⭐ ${k.m} maîtrisée${k.m > 1 ? 's' : ''} · 🔄 ${k.c} en cours · ⚪ ${k.n} à travailler`; }
 
 /* =========================================================
@@ -1124,7 +1130,7 @@ function nextQ() {
   const q = B.qs[B.i];
   const order = q.o.map((_, i) => i); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   const st = S.q[q.id], l = st ? st.l : 0;
-  document.getElementById('qMeta').innerHTML = `${q.t} – ${THEME_LABEL[q.t]}<br>${l === 0 ? (st ? 'À retravailler' : 'Nouvelle question') : l >= 3 ? 'Maîtrisée' : 'En cours'} : <span style="color:#c99a00;font-size:11px">${stars(l)}</span> ${l}/3`;
+  document.getElementById('qMeta').innerHTML = `${q.t} – ${THEME_LABEL[q.t]}<div class="qprog">${starsHtml(l)}<span>${l === 0 ? (st ? 'À retravailler' : 'Nouvelle question') : l >= 3 ? 'Maîtrisée !' : 'En cours'} · ${l}/3</span></div>`;
   document.getElementById('qTxt').textContent = q.q;
   const box = document.getElementById('qOpts'); box.innerHTML = '';
   order.forEach(oi => {
@@ -1167,9 +1173,9 @@ function answer(oi, btn) {
   }
   const exp = document.getElementById('qExp');
   const prog = ok
-    ? (st.l === 3 ? (B.justMastered ? '⭐ <b>Question maîtrisée !</b>' : '⭐ Toujours maîtrisée')
-                  : `<span style="color:#c99a00">${stars(st.l)}</span> ${st.l}/3 — encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
-    : '<span style="color:#c99a00">☆☆☆</span> 0/3 — progression de cette question remise à zéro';
+    ? (st.l === 3 ? (B.justMastered ? `${starsHtml(3, 22)} <b>Question maîtrisée !</b>` : `${starsHtml(3, 22)} Toujours maîtrisée`)
+                  : `${starsHtml(st.l, 22)} ${st.l}/3 — encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
+    : `${starsHtml(0, 22)} 0/3 — progression de cette question remise à zéro`;
   exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b>' : '❌ <b>Raté.</b>') + '<br><small>' + prog + '</small><br><br>' + escapeHtml(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   exp.style.display = 'block';
   const nx = document.getElementById('qNext'); nx.style.display = 'block';
