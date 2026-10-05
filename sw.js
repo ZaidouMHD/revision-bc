@@ -1,6 +1,6 @@
 // Service worker — Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `revision-bc-${VERSION}`;
 
 const PAGES = ['/', '/jeu', '/fiches', '/qcm', '/quiz', '/glossaire'];
