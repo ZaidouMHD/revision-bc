@@ -348,7 +348,7 @@ const THEME_LABEL = { A: 'Régimes', B: 'Services supp.', C: 'Congés', D: 'Astr
   F: 'TSI', G: 'Déontologie', H: 'Management', I: 'Pratiques pro. intervention' };
 
 const ROOMS = {
-  0: { name: 'Accueil', npc: 'Agent Sophie, accueil', look: 'gpx' },
+  0: { name: 'Accueil', npc: 'Agent Zaïdou, accueil', look: 'zaidou' },
   1: { name: 'Bureau des plannings', themes: ['A', 'D'], npc: 'Brigadière Martin, cheffe de planning', look: 'office',
        intro: 'Régimes de travail et astreintes : si tu maîtrises ça, tu feras un super planning !', foe: 'Planning en vrac' },
   2: { name: 'Service RH', themes: ['C'], npc: 'Mme Durand, RH', look: 'civilPink',
@@ -536,10 +536,25 @@ function playSong(name) {
   if (!MUS.timer) MUS.timer = setInterval(musicTick, 25);
 }
 function stopSong() { MUS.song = null; }
+// Retour dans l'app : iOS laisse le son « interrompu » → on relance, et on reconstruit si besoin
+function rebuildAudio() {
+  try { if (AC && AC.state !== 'closed') AC.close().catch(() => {}); } catch (e) {}
+  AC = null; noiseBuf = null;
+  const want = MUS.want || 'map'; MUS.song = null;
+  try { audio(); AC.resume(); playSong(want); } catch (e) {}
+}
+function wakeAudio() {
+  if (!AC || document.hidden) return;
+  if (AC.state === 'running') return;
+  const p = AC.resume(); if (p && p.catch) p.catch(() => {});
+  setTimeout(() => { if (AC && AC.state !== 'running' && !document.hidden) rebuildAudio(); }, 350);
+}
 document.addEventListener('visibilitychange', () => {
   if (!AC) return;
-  if (document.hidden) AC.suspend(); else AC.resume();
+  if (document.hidden) { try { AC.suspend(); } catch (e) {} } else wakeAudio();
 });
+window.addEventListener('pageshow', () => wakeAudio());
+window.addEventListener('focus', () => wakeAudio());
 const SFX = {
   ok: () => tone([[660, .08], [880, .12]]),
   ko: () => tone([[180, .18, 'sawtooth'], [120, .22, 'sawtooth']]),
@@ -644,10 +659,11 @@ function drawTile(g, c, x, y) {
 }
 
 /* ---------- Personnages cubiques ---------- */
-const SKIN = '#f2c39b', HAIR = '#3b2a20';
+const SKIN = '#f2c39b', HAIR = '#3b2a20', SKIN_DARK = '#6b3e22';
+const SKINS = [['Clair', '#f2c39b'], ['Mat', '#d9a06b'], ['Foncé', '#9a5a2e'], ['Noir', '#6b3e22']];
 function heroLook(r = rankIdx(), p = prestige()) {
   const L = { shirt: '#8a8f98', pants: '#3b4a6b', hat: null, band: null, vest: false, radio: false, ep: null, epN: 0,
-    stripe: false, gloves: false, armband: false, badge: false, aura: 0, hair: HAIR, belt: false };
+    stripe: false, gloves: false, armband: false, badge: false, aura: 0, hair: HAIR, belt: false, skin: S.skin || SKIN };
   if (r >= 1) Object.assign(L, { shirt: '#3d6fd0', pants: '#1f2f5c' });
   if (r >= 2) Object.assign(L, { shirt: '#1d2c5e', pants: '#1d2c5e', hat: '#1d2c5e', stripe: true });
   if (r >= 3) Object.assign(L, { shirt: '#8fb3e6', hat: '#16224a', band: '#6f97d6', stripe: false, belt: true });
@@ -660,13 +676,14 @@ function heroLook(r = rankIdx(), p = prestige()) {
 }
 const NPC_LOOKS = {
   gpx: heroLook(4, 0),
-  office: Object.assign(heroLook(4, 0), { shirt: '#8fb3e6', hat: null, hair: '#7a4b22', stripe: false }),
+  zaidou: Object.assign(heroLook(4, 0), { skin: SKIN_DARK, hair: '#111' }),
+  office: Object.assign(heroLook(4, 0), { shirt: '#8fb3e6', hat: null, hair: '#7a4b22', stripe: false, skin: SKIN }),
   civilPink: { shirt: '#c8578e', pants: '#2b2b44', hair: '#a35a1c' },
   judo: { shirt: '#f4f4f4', pants: '#f4f4f4', hair: '#111', belt: '#111' },
   civilGreen: { shirt: '#3e8e5c', pants: '#444', hair: '#111' },
   suit: { shirt: '#3a3f4c', pants: '#2a2e38', hair: '#888', tie: true },
-  chief: Object.assign(heroLook(8, 0), { aura: 0, shirt: '#16224a' }),
-  patrol: heroLook(6, 0),
+  chief: Object.assign(heroLook(8, 0), { aura: 0, shirt: '#16224a', skin: SKIN }),
+  patrol: Object.assign(heroLook(6, 0), { skin: '#9a5a2e', hair: '#111' }),
   jury: { shirt: '#111', pants: '#111', hair: '#ccc', tie: true, aura: 0 }
 };
 function drawChar(g, x, y, dir, frame, L, t = 0) {
@@ -698,7 +715,8 @@ function drawChar(g, x, y, dir, frame, L, t = 0) {
   if (L.badge && dir === 'down') R(g, '#f4c430', x + 5, y + 9, 1, 1);
   if (L.radio && dir === 'down') { R(g, '#111', x + 10, y + 8, 1, 2); R(g, '#111', x + 10, y + 7, 1, 1); }
   // bras
-  const hand = L.gloves ? '#111' : SKIN;
+  const skin = L.skin || SKIN, dark = skin !== SKIN && skin !== '#d9a06b', mouth = dark ? '#e3a08f' : '#c0605a';
+  const hand = L.gloves ? '#111' : skin;
   if (side) {
     const ax = dir === 'left' ? x + 6 : x + 8, sw = frame ? (frame === 1 ? -1 : 1) : 0;
     R(g, L.shirt, ax, y + 9 + sw, 2, 3); R(g, hand, ax, y + 12 + sw, 2, 1);
@@ -710,7 +728,7 @@ function drawChar(g, x, y, dir, frame, L, t = 0) {
   }
   if (L.ep && dir !== 'side') { for (let i = 0; i < L.epN; i++) { R(g, L.ep, x + 3 + i, y + 8, 1, 1); R(g, L.ep, x + 12 - i, y + 8, 1, 1); } }
   // tête cubique
-  R(g, SKIN, x + 3, y + 1, 10, 7);
+  R(g, skin, x + 3, y + 1, 10, 7);
   R(g, 'rgba(0,0,0,.08)', x + 3, y + 7, 10, 1);
   if (dir === 'up') { R(g, L.hair || HAIR, x + 3, y + 1, 10, 5); }
   else {
@@ -719,9 +737,9 @@ function drawChar(g, x, y, dir, frame, L, t = 0) {
     else if (dir === 'right') R(g, L.hair || HAIR, x + 3, y + 1, 3, 4);
     else { R(g, L.hair || HAIR, x + 3, y + 1, 1, 3); R(g, L.hair || HAIR, x + 12, y + 1, 1, 3); }
     const ey = y + 4;
-    if (dir === 'down') { R(g, '#111', x + 5, ey, 1, 2); R(g, '#111', x + 10, ey, 1, 2); R(g, '#c0605a', x + 7, y + 6, 2, 1); }
-    else if (dir === 'left') { R(g, '#111', x + 5, ey, 1, 2); R(g, '#c0605a', x + 4, y + 6, 2, 1); }
-    else { R(g, '#111', x + 10, ey, 1, 2); R(g, '#c0605a', x + 10, y + 6, 2, 1); }
+    if (dir === 'down') { R(g, '#111', x + 5, ey, 1, 2); R(g, '#111', x + 10, ey, 1, 2); R(g, mouth, x + 7, y + 6, 2, 1); }
+    else if (dir === 'left') { R(g, '#111', x + 5, ey, 1, 2); R(g, mouth, x + 4, y + 6, 2, 1); }
+    else { R(g, '#111', x + 10, ey, 1, 2); R(g, mouth, x + 10, y + 6, 2, 1); }
   }
   // casquette
   if (L.hat) {
@@ -994,7 +1012,7 @@ function unlockAudio() {
   if (audioOk) return;
   try { audio(); AC.resume(); audioOk = true; playSong(MUS.want || 'map'); } catch (e) {}
 }
-['pointerdown', 'touchstart', 'keydown'].forEach(ev => document.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+['pointerdown', 'touchstart', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (audioOk) wakeAudio(); else unlockAudio(); }, { capture: true, passive: true }));
 
 /* =========================================================
    DIALOGUES
@@ -1290,6 +1308,8 @@ function renderMenu() {
     m.innerHTML = `<div class="bd">` + BADGES.map(b => `<div class="${S.badges[b.id] ? 'got' : ''}"><span class="e">${b.e}</span><b>${b.n}</b>${b.d}</div>`).join('') + `</div>`;
   } else {
     m.innerHTML = `
+      <div style="padding:12px 0;border-bottom:1px solid #2a3c78"><div style="font-size:15px;margin-bottom:10px">🧑 Couleur de peau de ton perso</div>
+        <div style="display:flex;gap:8px">${SKINS.map(([n, c]) => `<button class="skinb" data-c="${c}" style="flex:1;padding:10px 0;border-radius:8px;border:3px solid ${(S.skin || SKIN) === c ? 'var(--gold)' : '#000'};background:#17244f;color:#fff;font-size:11px"><span style="display:block;width:26px;height:26px;margin:0 auto 6px;background:${c};border:2px solid #000;border-radius:4px"></span>${n}</button>`).join('')}</div></div>
       <div class="opt-row"><span>🎵 Musique</span><button class="btn ${S.musicOn ? '' : 'alt'}" id="oMus">${S.musicOn ? 'OUI' : 'NON'}</button></div>
       <div class="vol"><input type="range" min="0" max="100" step="5" id="oMusVol" value="${Math.round(S.musicVol * 100)}" ${S.musicOn ? '' : 'disabled'}><span id="oMusTxt">${Math.round(S.musicVol * 100)} %</span></div>
       <div class="opt-row"><span>🔊 Effets sonores</span><button class="btn ${S.sound ? '' : 'alt'}" id="oSnd">${S.sound ? 'OUI' : 'NON'}</button></div>
@@ -1307,6 +1327,7 @@ function renderMenu() {
       <div style="padding:6px 0 14px"><button class="btn alt" id="oReset">RECOMMENCER À ZÉRO</button></div>`;
     const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
     document.getElementById('saveCode').value = code;
+    m.querySelectorAll('.skinb').forEach(b => b.onclick = () => { S.skin = b.dataset.c; save(); updHud(); renderMenu(); });
     document.getElementById('oSnd').onclick = () => { S.sound = !S.sound; applyVolumes(); save(); renderMenu(); };
     document.getElementById('oMus').onclick = () => { S.musicOn = !S.musicOn; if (S.musicOn && !S.musicVol) S.musicVol = 0.6; applyVolumes(); updMusicBtn(); save(); renderMenu(); };
     document.getElementById('oMusVol').oninput = e => { S.musicVol = e.target.value / 100; document.getElementById('oMusTxt').textContent = e.target.value + ' %'; applyVolumes(); updMusicBtn(); save(); };
@@ -1346,10 +1367,10 @@ function confetti() {
    ========================================================= */
 window.__G = { get S() { return S; }, get B() { return B; }, get FICHES() { return FICHES; }, PIECES, get audio() { return { AC, musBus, sfxBus }; }, P, QS, ROOMS }; // utile pour le débogage
 resize(); updHud(); updMusicBtn(); requestAnimationFrame(frameLoop);
-window.__MUS = MUS;
+window.__MUS = MUS; window.__AUD = { rebuildAudio, wakeAudio, get AC() { return AC; } };
 if (!QS.length) toast('Impossible de charger les questions (data.js).', 6000);
 else if (!S.intro) {
-  setTimeout(() => dialog('Agent Sophie, accueil',
+  setTimeout(() => dialog('Agent Zaïdou, accueil',
     `Bienvenue au commissariat, recrue ! 👋<br><br>Chaque salle cache un thème de l'examen. Va parler à la personne au fond de chaque salle pour traiter son dossier : chaque bonne réponse te rapporte de l'XP.<br><br>Monte en grade jusqu'à devenir <b>Brigadier-Chef</b> ! 🎖️<br>📚 Les meubles qui scintillent cachent les fiches de révision.<br><small>Déplace-toi avec la croix, parle avec A.</small>`,
     [['C\'EST PARTI !', () => { S.intro = true; save(); }]]), 400);
 }
