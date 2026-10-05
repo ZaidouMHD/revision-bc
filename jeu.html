@@ -170,6 +170,31 @@
     .muted { font-size: 12px; color: #8f9cc8; line-height: 1.5; }
     a.lnk { color: var(--gold2); }
 
+    /* Lecteur de fiches */
+    #fiche { padding: 10px; align-items: center; }
+    #fiche .win { width: 100%; max-width: 540px; flex: 1; min-height: 0; display: flex; flex-direction: column; background: var(--paper); color: #1a1a1a;
+      border: 4px solid #1a1a1a; box-shadow: inset 0 0 0 3px #c8b88a; }
+    #fHead { padding: 12px 14px 8px; border-bottom: 3px solid #1a1a1a; background: #efe3c2; border-radius: 4px 4px 0 0; }
+    #fWhere { font-family: var(--px); font-size: 9px; line-height: 1.6; color: #6a5a2a; }
+    #fCount { font-family: var(--px); font-size: 8px; color: #6a5a2a; margin-top: 4px; display: flex; justify-content: space-between; }
+    #fBody { flex: 1; overflow-y: auto; padding: 14px; -webkit-overflow-scrolling: touch; user-select: text; -webkit-user-select: text; }
+    #fSec { font-size: 12px; color: #6a5a2a; margin-bottom: 6px; }
+    #fTitle { font-size: 19px; font-weight: 800; line-height: 1.3; margin-bottom: 12px; color: #1d2c5e; }
+    #fTitle .tb { display: inline-block; font-family: var(--px); font-size: 9px; background: #1d2c5e; color: #fff; padding: 4px 6px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
+    #fContent { font-size: 15.5px; line-height: 1.55; }
+    #fContent p { margin: 0 0 8px; }
+    #fContent ul, #fContent ol { margin: 4px 0 10px 20px; }
+    #fContent li { margin-bottom: 4px; }
+    #fContent .highlight { background: #ffe680; padding: 0 3px; border-radius: 3px; font-weight: 600; }
+    #fContent table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0; display: block; overflow-x: auto; }
+    #fContent th, #fContent td { border: 1px solid #c8b88a; padding: 5px 6px; text-align: left; vertical-align: top; }
+    #fContent th { background: #efe3c2; }
+    #fContent blockquote { border-left: 4px solid #3a56b0; padding: 4px 10px; margin: 8px 0; background: #eef3ff; }
+    #fSrc { margin-top: 14px; padding: 10px; border-radius: 8px; background: #efe3c2; font-size: 12.5px; line-height: 1.5; color: #4a3f20; }
+    #fSrc strong { display: block; margin-bottom: 4px; }
+    #fNav { display: flex; gap: 8px; padding: 10px; border-top: 3px solid #1a1a1a; flex-wrap: wrap; }
+    #fNav .btn { flex: 1; padding: 12px 6px; }
+    #fNew { color: #b33; }
     #confetti { position: fixed; inset: 0; z-index: 70; pointer-events: none; }
     @media (max-height: 640px) { #dpad { transform: scale(.82); } .rb { width: 54px; height: 54px; } #pad { padding: 4px 16px 8px; } }
   </style>
@@ -276,6 +301,23 @@
   </div>
   <div id="mBody"></div>
   <button class="btn" id="mClose">RETOUR AU JEU</button>
+</div></div>
+
+<!-- Lecteur de fiches -->
+<div class="ov" id="fiche"><div class="win">
+  <div id="fHead"><div id="fWhere"></div><div id="fCount"><span id="fPos"></span><span id="fNew"></span></div></div>
+  <div id="fBody">
+    <div id="fSec"></div>
+    <div id="fTitle"></div>
+    <div id="fContent"></div>
+    <div id="fSrc"></div>
+  </div>
+  <div id="fNav">
+    <button class="btn alt" id="fPrev">◀</button>
+    <button class="btn alt" id="fNext">▶</button>
+    <button class="btn blue" id="fQuiz">⚔️ M'ENTRAÎNER</button>
+    <button class="btn" id="fClose">FERMER</button>
+  </div>
 </div></div>
 
 <canvas id="confetti"></canvas>
@@ -733,6 +775,7 @@ function frameLoop(t) {
   cy = mapBuf.height <= vh ? Math.round((mapBuf.height - vh) / 2) : Math.max(0, Math.min(cy, mapBuf.height - vh));
   lg.fillStyle = '#0b1026'; lg.fillRect(0, 0, vw, vh);
   lg.drawImage(mapBuf, -cx, -cy);
+  drawSparkles(cx, cy, t);
 
   // personnages triés par y
   const ents = NPCS.map(n => ({ y: n.y * 16, draw: () => {
@@ -768,6 +811,8 @@ function tryMove(d, t) {
     if (t - lastBump > 900) { lastBump = t; SFX.bump(); toast('🔒 Salle d\'examen — accès à partir du grade<br>' + RANKS[EXAM_RANK].name); }
     return;
   }
+  const piece = pieceAt(nx, ny);
+  if (piece && piece.list.length) { openPiece(piece); return; }
   if (solid(nx, ny)) { if (t - lastBump > 400) { lastBump = t; SFX.bump(); } return; }
   P.fx = P.x; P.fy = P.y; P.x = nx; P.y = ny; P.t0 = t; P.moving = true;
 }
@@ -787,6 +832,121 @@ let toastT;
 function toast(html, ms = 2600) { const el = document.getElementById('toast'); el.innerHTML = html; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms); }
 
 /* =========================================================
+   FICHES DE RÉVISION DANS LES MEUBLES
+   Les fiches sont lues directement depuis fiches.html : toute mise à jour
+   des fiches sur le site apparaît automatiquement dans le jeu.
+   ========================================================= */
+const FURN_NAME = { S: 'Étagère', C: 'Ordinateur', T: 'Bureau', d: 'Table d\'examen', K: 'Voiture de patrouille' };
+function roomAt(x, y) {
+  const band = x >= 25 ? 3 : x >= 17 ? 2 : x >= 9 ? 1 : 0;
+  if (y >= 1 && y <= 5) return [1, 2, 3, 8][band];
+  if (y >= 11 && y <= 15) return [4, 5, 6, 7][band];
+  return null;
+}
+let FICHES = null, fichesErr = false;
+const PIECES = [];   // meubles interactifs : { x, y, c, room, list: [index fiche] }
+MAP.forEach((row, y) => row.forEach((c, x) => {
+  const room = roomAt(x, y);
+  if (room === null) return;
+  if (FURN_NAME[c] || c === 'B') PIECES.push({ x, y, c, room, list: [] });
+}));
+function pieceName(p) { return p.c === 'B' ? (floorAt(p.x, p.y) === '~' ? 'Sac de frappe' : 'Canapé') : FURN_NAME[p.c]; }
+async function loadFiches() {
+  try {
+    let res = await fetch('/fiches').catch(() => null);
+    if (!res || !res.ok) res = await fetch('fiches.html');
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    doc.querySelectorAll('script, style').forEach(n => n.remove());
+    doc.querySelectorAll('*').forEach(n => [...n.attributes].forEach(a => { if (/^on/i.test(a.name)) n.removeAttribute(a.name); }));
+    const list = []; let sec = '';
+    doc.querySelectorAll('h2, .fiche').forEach(el => {
+      if (el.tagName === 'H2') { sec = el.textContent.trim(); return; }
+      const m = el.className.match(/type-([A-I])/); if (!m) return;
+      const h3 = el.querySelector('h3'); if (h3) h3.querySelectorAll('.type-badge').forEach(b => b.remove());
+      const title = h3 ? h3.textContent.trim() : 'Fiche';
+      const c = el.querySelector('.contenu'), src = el.querySelector('.source-box');
+      list.push({ t: m[1], title, sec, html: c ? c.innerHTML : '', src: src ? src.innerHTML : '', id: hash(m[1] + '|' + title) });
+    });
+    if (!list.length) throw new Error('aucune fiche');
+    FICHES = list;
+    // répartition des fiches de la salle entre ses meubles, dans l'ordre du site
+    const byRoom = {};
+    PIECES.forEach(p => (byRoom[p.room] = byRoom[p.room] || []).push(p));
+    Object.entries(byRoom).forEach(([room, ps]) => {
+      const th = ROOMS[room].themes;
+      const idx = FICHES.map((f, i) => [f, i]).filter(([f]) => th === 'ALL' || th.includes(f.t)).map(([, i]) => i);
+      const per = Math.ceil(idx.length / ps.length);
+      ps.forEach((p, k) => { p.list = idx.slice(k * per, (k + 1) * per); });
+    });
+  } catch (e) { fichesErr = true; }
+}
+loadFiches();
+function unread(p) { return p.list.some(i => !(S.read && S.read[FICHES[i].id])); }
+
+let FR = null;
+function openPiece(p) {
+  held = null; releaseAll();
+  if (!FICHES) { toast(fichesErr ? 'Fiches indisponibles hors ligne pour l\'instant. Ouvre la page Fiches une fois avec du réseau.' : 'Chargement des fiches…', 2200); return; }
+  if (!p.list.length) { toast(pieceName(p) + ' : rien d\'intéressant ici.', 1500); return; }
+  busy = true; SFX.door();
+  const first = p.list.findIndex(i => !(S.read && S.read[FICHES[i].id]));
+  FR = { p, k: first < 0 ? 0 : first, rank0: rankIdx(), pres0: prestige(), gained: 0 };
+  show('fiche'); renderFiche();
+}
+function renderFiche() {
+  const { p, k } = FR, f = FICHES[p.list[k]], room = ROOMS[p.room];
+  S.read = S.read || {};
+  let isNew = false;
+  if (!S.read[f.id]) { S.read[f.id] = 1; S.xp += 5; FR.gained += 5; isNew = true; save(); updHud(); }
+  document.getElementById('fWhere').textContent = `📚 ${pieceName(p)} · ${room.name}`;
+  document.getElementById('fPos').textContent = `FICHE ${k + 1}/${p.list.length}`;
+  document.getElementById('fNew').textContent = isNew ? '+5 XP' : '';
+  document.getElementById('fSec').textContent = f.sec;
+  document.getElementById('fTitle').innerHTML = `<span class="tb">${f.t}</span>` + escapeHtml(f.title);
+  document.getElementById('fContent').innerHTML = f.html;
+  document.getElementById('fSrc').innerHTML = f.src;
+  document.getElementById('fSrc').style.display = f.src ? 'block' : 'none';
+  document.getElementById('fBody').scrollTop = 0;
+  document.getElementById('fPrev').disabled = k === 0; document.getElementById('fPrev').style.opacity = k === 0 ? .4 : 1;
+  document.getElementById('fNext').disabled = k === p.list.length - 1; document.getElementById('fNext').style.opacity = k === p.list.length - 1 ? .4 : 1;
+  const q = document.getElementById('fQuiz');
+  q.style.display = room.boss && !examOpen() ? 'none' : '';
+  if (isNew) SFX.talk();
+}
+function closeFiche(then) {
+  show('fiche', false);
+  const r0 = FR.rank0, p0 = FR.pres0, got = FR.gained, readAll = !unread(FR.p); FR = null;
+  if (got) toast(`📖 Lecture : +${got} XP` + (readAll ? '<br>Toutes les fiches de ce meuble sont lues ✔' : ''), 2000);
+  if (rankIdx() > r0 || prestige() > p0) { evolve(r0, p0); return; }
+  busy = false; then && then();
+}
+document.getElementById('fPrev').onclick = () => { if (FR.k > 0) { FR.k--; renderFiche(); } };
+document.getElementById('fNext').onclick = () => { if (FR.k < FR.p.list.length - 1) { FR.k++; renderFiche(); } };
+document.getElementById('fClose').onclick = () => closeFiche();
+document.getElementById('fQuiz').onclick = () => { const id = FR.p.room; closeFiche(() => startBattle(id)); };
+// balayage gauche/droite pour changer de fiche
+(() => {
+  let x0 = null, y0 = null;
+  const body = document.getElementById('fBody');
+  body.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  body.addEventListener('touchend', e => {
+    if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) document.getElementById(dx < 0 ? 'fNext' : 'fPrev').click();
+  }, { passive: true });
+})();
+function drawSparkles(cx, cy, t) {
+  if (!FICHES) return;
+  const blink = Math.floor(t / 350) % 3;
+  PIECES.forEach((p, i) => {
+    if (!p.list.length || !unread(p)) return;
+    if ((i + blink) % 3 === 0) return;
+    const x = p.x * 16 - cx + 12, y = p.y * 16 - cy + 1;
+    R(lg, '#f4c430', x, y - 2, 1, 5); R(lg, '#f4c430', x - 2, y, 5, 1); R(lg, '#fff6b0', x, y - 1, 1, 3); R(lg, '#fff6b0', x - 1, y, 3, 1); R(lg, '#fff', x, y, 1, 1);
+  });
+}
+function pieceAt(x, y) { return PIECES.find(p => p.x === x && p.y === y); }
+
+/* =========================================================
    COMMANDES
    ========================================================= */
 const padBtns = [...document.querySelectorAll('#dpad button')];
@@ -804,7 +964,9 @@ document.getElementById('dpad').addEventListener('touchmove', e => {
   if (el && el.dataset && el.dataset.d && held !== el.dataset.d) { held = el.dataset.d; releaseAll(); el.classList.add('on'); }
   e.preventDefault();
 }, { passive: false });
-document.getElementById('btnA').addEventListener('click', () => { unlockAudio(); if (busy) return; const n = facing(); if (n) interact(n); else toast('Approche-toi de quelqu\'un et appuie sur A', 1500); });
+document.getElementById('btnA').addEventListener('click', () => { unlockAudio(); if (busy) return; const n = facing(); if (n) { interact(n); return; }
+  const [dx, dy] = DIRS[P.dir], pc = pieceAt(P.x + dx, P.y + dy); if (pc) { openPiece(pc); return; }
+  toast('Approche-toi de quelqu\'un ou d\'un meuble et appuie sur A', 1500); });
 document.getElementById('btnB').addEventListener('click', () => { if (!busy) openMenu(); });
 document.getElementById('btnMenu').addEventListener('click', () => { if (!busy) openMenu(); });
 function updMusicBtn() { const b = document.getElementById('btnMusic'); b.textContent = S.musicOn && S.musicVol > 0 ? '🎵' : '🔇'; b.style.opacity = S.musicOn && S.musicVol > 0 ? 1 : .6; }
@@ -815,7 +977,7 @@ document.getElementById('btnMusic').addEventListener('click', () => {
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', z: 'up', w: 'up', s: 'down', q: 'left', a: 'left', d: 'right' };
 window.addEventListener('keydown', e => {
   if (KEYS[e.key] && !busy) { held = KEYS[e.key]; e.preventDefault(); }
-  if ((e.key === 'Enter' || e.key === ' ') && !busy) { const n = facing(); if (n) { e.preventDefault(); interact(n); } }
+  if ((e.key === 'Enter' || e.key === ' ') && !busy) { const n = facing(); if (n) { e.preventDefault(); interact(n); } else { const [dx, dy] = DIRS[P.dir], pc = pieceAt(P.x + dx, P.y + dy); if (pc) { e.preventDefault(); openPiece(pc); } } }
 });
 window.addEventListener('keyup', e => { if (KEYS[e.key] === held) held = null; });
 let audioOk = false;
@@ -848,7 +1010,8 @@ const TIPS = [
   'La salle d\'examen (en haut à droite) s\'ouvre au grade de Gardien de la paix. Le Jury mélange tous les thèmes.',
   'Les questions que tu rates reviennent plus souvent. C\'est voulu !',
   'Plus tu montes en grade, plus tu as de cœurs en combat.',
-  'Une étoile dorée au-dessus d\'une personne = salle maîtrisée à 100 %.'
+  'Une étoile dorée au-dessus d\'une personne = salle maîtrisée à 100 %.',
+  'Les meubles qui scintillent cachent des fiches de révision non lues. Fonce dedans pour les lire : +5 XP par fiche !'
 ];
 function interact(n) {
   const room = ROOMS[n.id];
@@ -1113,7 +1276,7 @@ function renderMenu() {
       const pct = Math.round(mastery(x.themes) * 100), mc = masteredCount(x.themes), n = pool(x.themes).length;
       return `<div class="th"><div class="n"><span>${x.name}</span><span>${pct} %</span></div><div class="bar"><i style="width:${pct}%"></i></div>
         <div class="s">${x.themes.map(t => t + ' – ' + THEME_LABEL[t]).join(' · ')} · ${mc}/${n} maîtrisées</div></div>`;
-    }).join('') + `<p class="muted">Une question est maîtrisée après 3 bonnes réponses d'affilée. Bonus d'XP quand une salle atteint 50 % puis 100 %.</p>`;
+    }).join('') + (FICHES ? `<div class="th"><div class="n"><span>📚 Fiches lues</span><span>${FICHES.filter(f => S.read && S.read[f.id]).length}/${FICHES.length}</span></div><div class="bar"><i style="width:${Math.round(100 * FICHES.filter(f => S.read && S.read[f.id]).length / FICHES.length)}%"></i></div></div>` : '') + `<p class="muted">Une question est maîtrisée après 3 bonnes réponses d'affilée. Bonus d'XP quand une salle atteint 50 % puis 100 %.</p>`;
   } else if (tab === 'bad') {
     m.innerHTML = `<div class="bd">` + BADGES.map(b => `<div class="${S.badges[b.id] ? 'got' : ''}"><span class="e">${b.e}</span><b>${b.n}</b>${b.d}</div>`).join('') + `</div>`;
   } else {
@@ -1172,13 +1335,13 @@ function confetti() {
 /* =========================================================
    DÉMARRAGE
    ========================================================= */
-window.__G = { get S() { return S; }, get B() { return B; }, get audio() { return { AC, musBus, sfxBus }; }, P, QS, ROOMS }; // utile pour le débogage
+window.__G = { get S() { return S; }, get B() { return B; }, get FICHES() { return FICHES; }, PIECES, get audio() { return { AC, musBus, sfxBus }; }, P, QS, ROOMS }; // utile pour le débogage
 resize(); updHud(); updMusicBtn(); requestAnimationFrame(frameLoop);
 window.__MUS = MUS;
 if (!QS.length) toast('Impossible de charger les questions (data.js).', 6000);
 else if (!S.intro) {
   setTimeout(() => dialog('Agent Sophie, accueil',
-    `Bienvenue au commissariat, recrue ! 👋<br><br>Chaque salle cache un thème de l'examen. Va parler à la personne au fond de chaque salle pour traiter son dossier : chaque bonne réponse te rapporte de l'XP.<br><br>Monte en grade jusqu'à devenir <b>Brigadier-Chef</b> ! 🎖️<br><small>Déplace-toi avec la croix, parle avec A.</small>`,
+    `Bienvenue au commissariat, recrue ! 👋<br><br>Chaque salle cache un thème de l'examen. Va parler à la personne au fond de chaque salle pour traiter son dossier : chaque bonne réponse te rapporte de l'XP.<br><br>Monte en grade jusqu'à devenir <b>Brigadier-Chef</b> ! 🎖️<br>📚 Les meubles qui scintillent cachent les fiches de révision.<br><small>Déplace-toi avec la croix, parle avec A.</small>`,
     [['C\'EST PARTI !', () => { S.intro = true; save(); }]]), 400);
 }
 })();
