@@ -273,7 +273,7 @@
     <div id="qExp"></div>
     <button class="btn blue" id="qNext">SUIVANT ▶</button>
   </div>
-  <div style="text-align:center;padding:0 0 18px"><button class="btn alt" id="bFlee">S'ENFUIR</button></div>
+  <div style="display:flex;justify-content:center;gap:10px;padding:0 0 18px"><button class="btn alt" id="bMusic" aria-label="Musique">🎵</button><button class="btn alt" id="bFlee">S'ENFUIR</button></div>
 </div>
 
 <!-- Résultat -->
@@ -969,10 +969,19 @@ document.getElementById('btnA').addEventListener('click', () => { unlockAudio();
   toast('Approche-toi de quelqu\'un ou d\'un meuble et appuie sur A', 1500); });
 document.getElementById('btnB').addEventListener('click', () => { if (!busy) openMenu(); });
 document.getElementById('btnMenu').addEventListener('click', () => { if (!busy) openMenu(); });
-function updMusicBtn() { const b = document.getElementById('btnMusic'); b.textContent = S.musicOn && S.musicVol > 0 ? '🎵' : '🔇'; b.style.opacity = S.musicOn && S.musicVol > 0 ? 1 : .6; }
-document.getElementById('btnMusic').addEventListener('click', () => {
+function updMusicBtn() {
+  const on = S.musicOn && S.musicVol > 0;
+  ['btnMusic', 'bMusic'].forEach(id => { const b = document.getElementById(id); b.textContent = on ? '🎵' : '🔇'; b.style.opacity = on ? 1 : .6; });
+}
+function toggleMusic() {
   S.musicOn = !(S.musicOn && S.musicVol > 0); if (S.musicOn && !S.musicVol) S.musicVol = 0.6;
   applyVolumes(); updMusicBtn(); save(); toast(S.musicOn ? '🎵 Musique activée' : '🔇 Musique coupée', 1200);
+}
+document.getElementById('btnMusic').addEventListener('click', toggleMusic);
+document.getElementById('bMusic').addEventListener('click', () => {
+  toggleMusic();
+  const b = document.getElementById('bMusic'); b.textContent = (S.musicOn ? '🎵 MUSIQUE ON' : '🔇 MUSIQUE OFF');
+  setTimeout(updMusicBtn, 1200);
 });
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', z: 'up', w: 'up', s: 'down', q: 'left', a: 'left', d: 'right' };
 window.addEventListener('keydown', e => {
