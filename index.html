@@ -250,6 +250,20 @@
       }
     }
   </style>
+  <!-- Web app (PWA) : installation sur l'écran d'accueil + mode hors ligne -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#002395">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Objectif BC">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js'); });
+    }
+  </script>
 </head>
 
 <body>
@@ -268,6 +282,7 @@
   <a href="qcm.html" class="nav-btn" title="QCM">⚡</a>
   <a href="quiz.html" class="nav-btn" title="Quiz">🏆</a>  
   <a href="glossaire.html" class="nav-btn" title="Glossaire">📖</a>
+  <a href="jeu.html" class="nav-btn" title="Le jeu">🎮</a>
 </div>
 
 <!-- Conteneur principal -->
@@ -386,6 +401,13 @@
           <div style="background: white; padding: 20px; border-radius: 8px; border-top: 4px solid #9C27B0; cursor: pointer; transition: all 0.3s; height: 100%;">
             <h4 style="color: #9C27B0; margin-bottom: 10px;">📖 Glossaire</h4>
             <p>Définitions et acronymes de tous les termes utilisés en gestion du temps de travail PN.</p>
+          </div>
+        </a>
+		
+		<a href="jeu.html" style="text-decoration: none; color: inherit;">
+          <div style="background: white; padding: 20px; border-radius: 8px; border-top: 4px solid #1d2c5e; cursor: pointer; transition: all 0.3s; height: 100%;">
+            <h4 style="color: #1d2c5e; margin-bottom: 10px;">🎮 Objectif BC — Le jeu</h4>
+            <p>Explore le commissariat, traite les dossiers de chaque salle et gagne de l'XP : ton gardien de la paix monte en grade jusqu'à Brigadier-Chef !</p>
           </div>
         </a>
 		
