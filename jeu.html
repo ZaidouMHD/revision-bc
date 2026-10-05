@@ -417,6 +417,13 @@ function mastery(themes) {
   return p.reduce((s, x) => s + lvl(x.id), 0) / (3 * p.length);
 }
 function masteredCount(themes) { return pool(themes).filter(x => lvl(x.id) >= 3).length; }
+function counts(themes) {
+  const p = pool(themes); let m = 0, c = 0, n = 0;
+  p.forEach(x => { const l = lvl(x.id); if (l >= 3) m++; else if (l > 0) c++; else n++; });
+  return { m, c, n, total: p.length };
+}
+function stars(l) { return '★'.repeat(l) + '☆'.repeat(3 - l); }
+function countsLine(k) { return `⭐ ${k.m} maîtrisée${k.m > 1 ? 's' : ''} · 🔄 ${k.c} en cours · ⚪ ${k.n} à travailler`; }
 
 /* =========================================================
    SON & VIBRATIONS
@@ -1054,7 +1061,8 @@ function interact(n) {
   if (room.boss && !examOpen()) { dialog(room.npc, `Revenez quand vous serez ${RANKS[EXAM_RANK].name}.`, [['OK', null]]); return; }
   const m = Math.round(mastery(room.themes) * 100);
   const nQ = pool(room.themes).length, mc = masteredCount(room.themes);
-  dialog(room.npc, `${room.intro}<br><br><small>📊 Maîtrise ${m} % · ${mc}/${nQ} questions maîtrisées</small>`,
+  const k = counts(room.themes);
+  dialog(room.npc, `${room.intro}<br><br><small>📊 <b>${nQ} questions</b> dans cette salle :<br>${countsLine(k)}<br>Une question est maîtrisée après <b>3 bonnes réponses d'affilée</b> (★★★).</small>`,
     [['⚔️ COMBATTRE', () => startBattle(n.id)], ['PLUS TARD', null, 'alt']]);
 }
 
@@ -1074,7 +1082,7 @@ function pickQuestions(themes, n) {
 function startBattle(id) {
   const room = ROOMS[id], hearts = maxHearts() + (room.boss ? 2 : 0);
   const hp = room.boss ? 15 : 6;
-  B = { id, room, hp, hpMax: hp, hearts, heartsMax: hearts, combo: 0, xp: 0, ok: 0, ko: 0, newMastered: 0,
+  B = { id, room, hp, hpMax: hp, hearts, heartsMax: hearts, combo: 0, xp: 0, ok: 0, ko: 0, newMastered: 0, progressed: 0, justMastered: false,
     qs: pickQuestions(room.themes, hp + hearts), i: -1, rank0: rankIdx(), pres0: prestige(), answered: false };
   busy = true; S.stats.battles++;
   document.getElementById('eName').textContent = room.foe;
@@ -1116,7 +1124,7 @@ function nextQ() {
   const q = B.qs[B.i];
   const order = q.o.map((_, i) => i); for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
   const st = S.q[q.id], l = st ? st.l : 0;
-  document.getElementById('qMeta').textContent = `${q.t} – ${THEME_LABEL[q.t]}  ·  ${'★'.repeat(l)}${'☆'.repeat(3 - l)}`;
+  document.getElementById('qMeta').innerHTML = `${q.t} – ${THEME_LABEL[q.t]}<br>${l === 0 ? (st ? 'À retravailler' : 'Nouvelle question') : l >= 3 ? 'Maîtrisée' : 'En cours'} : <span style="color:#c99a00;font-size:11px">${stars(l)}</span> ${l}/3`;
   document.getElementById('qTxt').textContent = q.q;
   const box = document.getElementById('qOpts'); box.innerHTML = '';
   order.forEach(oi => {
@@ -1144,7 +1152,9 @@ function answer(oi, btn) {
     st.c++; const before = st.l; st.l = Math.min(3, st.l + 1);
     B.combo++; B.ok++; B.hp--; S.stats.correct++; S.stats.best = Math.max(S.stats.best, B.combo);
     let gain = 10 + Math.min(B.combo - 1, 5) * 2;
-    if (before < 3 && st.l === 3) { gain += 15; B.newMastered++; }
+    B.justMastered = before < 3 && st.l === 3;
+    if (B.justMastered) { gain += 15; B.newMastered++; }
+    if (st.l > before && st.l < 3) B.progressed++;
     award(gain); floatXP('+' + gain + ' XP', btn);
     SFX.ok(); buzz(20);
     document.getElementById('eSprite').classList.remove('hit'); void document.getElementById('eSprite').offsetWidth; document.getElementById('eSprite').classList.add('hit');
@@ -1156,7 +1166,11 @@ function answer(oi, btn) {
     document.getElementById('qbox').classList.remove('shake'); void document.getElementById('qbox').offsetWidth; document.getElementById('qbox').classList.add('shake');
   }
   const exp = document.getElementById('qExp');
-  exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b> ' : '❌ <b>Raté.</b> ') + (st.l === 3 && ok ? '⭐ Question maîtrisée ! ' : '') + '<br>' + escapeHtml(q.e);
+  const prog = ok
+    ? (st.l === 3 ? (B.justMastered ? '⭐ <b>Question maîtrisée !</b>' : '⭐ Toujours maîtrisée')
+                  : `<span style="color:#c99a00">${stars(st.l)}</span> ${st.l}/3 — encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
+    : '<span style="color:#c99a00">☆☆☆</span> 0/3 — progression de cette question remise à zéro';
+  exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b>' : '❌ <b>Raté.</b>') + '<br><small>' + prog + '</small><br><br>' + escapeHtml(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   exp.style.display = 'block';
   const nx = document.getElementById('qNext'); nx.style.display = 'block';
   nx.textContent = (B.hp <= 0 || B.hearts <= 0) ? 'TERMINER ▶' : 'SUIVANT ▶';
@@ -1199,7 +1213,9 @@ function endBattle(fled) {
   document.getElementById('resTitle').textContent = title;
   document.getElementById('resBody').innerHTML =
     `<span class="big">+${B.xp} XP</span>${B.ok} bonne${B.ok > 1 ? 's' : ''} réponse${B.ok > 1 ? 's' : ''} · ${B.ko} erreur${B.ko > 1 ? 's' : ''}` +
-    (B.newMastered ? `<br>⭐ ${B.newMastered} question${B.newMastered > 1 ? 's' : ''} maîtrisée${B.newMastered > 1 ? 's' : ''}` : '') +
+    (B.newMastered ? `<br>⭐ ${B.newMastered} nouvelle${B.newMastered > 1 ? 's' : ''} question${B.newMastered > 1 ? 's' : ''} maîtrisée${B.newMastered > 1 ? 's' : ''}` : '') +
+    (B.progressed ? `<br>🔄 ${B.progressed} question${B.progressed > 1 ? 's' : ''} en progression` : '') +
+    (room.themes !== 'ALL' ? `<br><br><small>${room.name} : ${countsLine(counts(room.themes))}</small>` : '') +
     (lines.length ? '<br><br>' + lines.join('<br>') : '') +
     (!won && !fled ? '<br><br><small>Les questions ratées reviendront plus souvent. Relis bien les explications !</small>' : '');
   show('res'); save(); updHud(); stopSong();
@@ -1299,11 +1315,13 @@ function renderMenu() {
         <div><div class="n">${k.name}</div><div class="s">${i <= r ? (i === r ? 'Grade actuel' : 'Obtenu') : k.xp + ' XP'}${i === EXAM_RANK ? ' · ouvre la salle d\'examen' : ''} · ${maxHearts(i)} ❤️</div></div></div>`).join('');
     m.querySelectorAll('canvas[data-r]').forEach(c => { const i = +c.dataset.r; const L = heroLook(i, 0); if (i > r) Object.assign(L, { aura: 0 }); drawPortrait(c, L, 'down'); });
   } else if (tab === 'mai') {
-    m.innerHTML = Object.entries(ROOMS).filter(([, x]) => x.themes && !x.boss).map(([id, x]) => {
-      const pct = Math.round(mastery(x.themes) * 100), mc = masteredCount(x.themes), n = pool(x.themes).length;
-      return `<div class="th"><div class="n"><span>${x.name}</span><span>${pct} %</span></div><div class="bar"><i style="width:${pct}%"></i></div>
-        <div class="s">${x.themes.map(t => t + ' – ' + THEME_LABEL[t]).join(' · ')} · ${mc}/${n} maîtrisées</div></div>`;
-    }).join('') + (FICHES ? `<div class="th"><div class="n"><span>📚 Fiches lues</span><span>${FICHES.filter(f => S.read && S.read[f.id]).length}/${FICHES.length}</span></div><div class="bar"><i style="width:${Math.round(100 * FICHES.filter(f => S.read && S.read[f.id]).length / FICHES.length)}%"></i></div></div>` : '') + `<p class="muted">Une question est maîtrisée après 3 bonnes réponses d'affilée. Bonus d'XP quand une salle atteint 50 % puis 100 %.</p>`;
+    m.innerHTML = `<p class="muted" style="margin-bottom:12px">Barre <span style="color:#f4c430">jaune</span> = maîtrisées · <span style="color:#3a9fe0">bleue</span> = en cours</p>` + Object.entries(ROOMS).filter(([, x]) => x.themes && !x.boss).map(([id, x]) => {
+      const pct = Math.round(mastery(x.themes) * 100), k = counts(x.themes), w = v => (100 * v / k.total).toFixed(1) + '%';
+      return `<div class="th"><div class="n"><span>${x.name}</span><span>${pct} %</span></div>
+        <div class="bar" style="display:flex"><i style="width:${w(k.m)};background:#f4c430"></i><i style="width:${w(k.c)};background:#3a9fe0"></i></div>
+        <div class="s">${x.themes.map(t => t + ' – ' + THEME_LABEL[t]).join(' · ')} · ${k.total} questions</div>
+        <div class="s" style="color:#dfe6ff">${countsLine(k)}</div></div>`;
+    }).join('') + (FICHES ? `<div class="th"><div class="n"><span>📚 Fiches lues</span><span>${FICHES.filter(f => S.read && S.read[f.id]).length}/${FICHES.length}</span></div><div class="bar"><i style="width:${Math.round(100 * FICHES.filter(f => S.read && S.read[f.id]).length / FICHES.length)}%"></i></div></div>` : '') + `<p class="muted">⭐ <b>Maîtrisée</b> : 3 bonnes réponses d'affilée (★★★).<br>🔄 <b>En cours</b> : 1 ou 2 bonnes réponses d'affilée (★☆☆ ou ★★☆).<br>⚪ <b>À travailler</b> : jamais vue, ou ratée la dernière fois (une erreur remet la question à ☆☆☆).<br><br>Le pourcentage tient compte des questions en cours. Bonus d'XP quand une salle atteint 50 % puis 100 %.</p>`;
   } else if (tab === 'bad') {
     m.innerHTML = `<div class="bd">` + BADGES.map(b => `<div class="${S.badges[b.id] ? 'got' : ''}"><span class="e">${b.e}</span><b>${b.n}</b>${b.d}</div>`).join('') + `</div>`;
   } else {
