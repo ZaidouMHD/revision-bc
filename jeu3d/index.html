@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#002395">
+<title>Objectif BC 3D — Patrouille à Saint-Zaïdou</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1530; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; }
+  canvas { display: block; }
+  .hidden { display: none !important; }
+  #hud { position: fixed; top: 0; left: 0; right: 0; padding: calc(env(safe-area-inset-top) + 8px) 10px 0; display: flex; gap: 8px; align-items: flex-start; pointer-events: none; }
+  .card { background: rgba(0, 20, 70, .82); border: 2px solid rgba(255,255,255,.15); border-radius: 12px; padding: 6px 10px; }
+  #rank { flex: 1; min-width: 0; }
+  #rankName { font-weight: 800; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #xpBar { height: 7px; background: rgba(255,255,255,.18); border-radius: 4px; margin-top: 4px; overflow: hidden; }
+  #xpFill { height: 100%; width: 0; background: linear-gradient(90deg, #f4c430, #ffdf6e); transition: width .4s; }
+  #xpTxt { font-size: 10px; opacity: .8; margin-top: 2px; }
+  #missions { font-weight: 800; font-size: 13px; text-align: center; }
+  #missions small { display: block; font-weight: 500; font-size: 10px; opacity: .75; }
+  #menuBtn { pointer-events: auto; width: 42px; height: 42px; border-radius: 12px; border: 2px solid rgba(255,255,255,.2); background: rgba(0,20,70,.82); color: #fff; font-size: 20px; }
+  #obj { position: fixed; top: calc(env(safe-area-inset-top) + 66px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; pointer-events: none; max-width: 92vw; }
+  #objArrow { width: 30px; height: 30px; flex: none; transition: transform .1s linear; }
+  #objTxt { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #toast { position: fixed; top: calc(env(safe-area-inset-top) + 112px); left: 50%; transform: translateX(-50%); max-width: 90vw; font-size: 13px; text-align: center; pointer-events: none; transition: opacity .4s; opacity: 0; }
+  #act { position: fixed; right: calc(env(safe-area-inset-right) + 18px); bottom: calc(env(safe-area-inset-bottom) + 28px); min-width: 96px; height: 96px; padding: 0 16px; border-radius: 48px; border: 3px solid #fff; background: #f4c430; color: #001a5c; font-weight: 900; font-size: 15px; box-shadow: 0 4px 0 #b38b12; }
+  #act:active { transform: translateY(3px); box-shadow: 0 1px 0 #b38b12; }
+  #siren { position: fixed; right: calc(env(safe-area-inset-right) + 24px); bottom: calc(env(safe-area-inset-bottom) + 140px); width: 64px; height: 64px; border-radius: 32px; border: 3px solid #fff; background: #1e3a8a; color: #fff; font-size: 26px; }
+  #siren.on { background: #dc2626; animation: blink .5s infinite alternate; }
+  @keyframes blink { to { background: #2563eb; } }
+  #joy { position: fixed; width: 130px; height: 130px; border-radius: 50%; background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.35); pointer-events: none; transform: translate(-50%, -50%); }
+  #knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px; border-radius: 50%; background: rgba(255,255,255,.75); }
+  #joyHint { position: fixed; left: 24px; bottom: calc(env(safe-area-inset-bottom) + 40px); font-size: 12px; opacity: .8; pointer-events: none; text-shadow: 0 1px 3px #000; }
+  .overlay { position: fixed; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding: 12px 12px calc(env(safe-area-inset-bottom) + 12px); background: rgba(0,10,40,.35); }
+  .overlay.center { align-items: center; background: rgba(0,10,40,.72); }
+  .panel { width: 100%; max-width: 560px; background: #fff; color: #10204a; border-radius: 16px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.4); max-height: 88vh; overflow-y: auto; }
+  .who { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .who b { font-size: 15px; color: #002395; }
+  .who span { font-size: 12px; color: #5a6687; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: #e8edff; color: #002395; }
+  .say { font-size: 16px; line-height: 1.5; min-height: 48px; }
+  .btn { display: block; width: 100%; margin-top: 12px; padding: 14px; font-size: 16px; font-weight: 800; border: 0; border-radius: 12px; background: #002395; color: #fff; }
+  .btn.alt { background: #e8edff; color: #002395; }
+  .btn.red { background: #c1121f; }
+  .qhead { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5a6687; margin-bottom: 6px; }
+  .qq { font-size: 16px; font-weight: 700; line-height: 1.45; margin: 6px 0 10px; }
+  .opt { display: block; width: 100%; text-align: left; margin-top: 8px; padding: 12px 14px; font-size: 15px; line-height: 1.35; border: 2px solid #d5dcf0; border-radius: 12px; background: #f6f8ff; color: #10204a; }
+  .opt.ok { border-color: #16a34a; background: #dcfce7; }
+  .opt.ko { border-color: #dc2626; background: #fee2e2; }
+  .exp { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: #f1f4fb; font-size: 14px; line-height: 1.5; }
+  .pips { display: flex; gap: 4px; }
+  .pip { width: 14px; height: 14px; border-radius: 50%; background: #d5dcf0; }
+  .pip.ok { background: #16a34a; } .pip.ko { background: #dc2626; } .pip.cur { outline: 2px solid #002395; }
+  #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #002395; gap: 18px; text-align: center; padding: 20px; }
+  #loading h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
+  #loading p { margin: 0; opacity: .85; }
+  #loadBar { width: 240px; height: 10px; border-radius: 5px; background: rgba(255,255,255,.2); overflow: hidden; }
+  #loadFill { height: 100%; width: 0; background: #f4c430; }
+  .tricolor { display: flex; width: 90px; height: 8px; border-radius: 4px; overflow: hidden; }
+  .tricolor i { flex: 1; } .tricolor i:nth-child(1) { background: #002395; border: 1px solid #fff; } .tricolor i:nth-child(2) { background: #fff; } .tricolor i:nth-child(3) { background: #ed2939; }
+  .floatxp { position: fixed; font-weight: 900; color: #16a34a; font-size: 18px; pointer-events: none; animation: up 1.1s forwards; }
+  @keyframes up { to { transform: translateY(-50px); opacity: 0; } }
+  .confetti { position: fixed; top: -12px; width: 10px; height: 14px; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  .list { margin: 8px 0 0; padding: 0; list-style: none; }
+  .list li { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid #e5e9f5; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="tricolor"><i></i><i></i><i></i></div>
+  <h1>OBJECTIF BC 3D</h1>
+  <p>Patrouille à Saint-Zaïdou</p>
+  <div id="loadBar"><div id="loadFill"></div></div>
+  <p id="loadTxt" style="font-size:13px">Chargement du quartier…</p>
+</div>
+
+<div id="hud" class="hidden">
+  <div id="rank" class="card"><div id="rankName">—</div><div id="xpBar"><div id="xpFill"></div></div><div id="xpTxt"></div></div>
+  <div id="missions" class="card">0/8<small>dossiers</small></div>
+  <button id="menuBtn" aria-label="Menu">☰</button>
+</div>
+<div id="obj" class="card hidden">
+  <svg id="objArrow" viewBox="0 0 24 24"><path d="M12 2 L20 20 L12 15 L4 20 Z" fill="#f4c430" stroke="#fff" stroke-width="1.2"/></svg>
+  <div id="objTxt"></div>
+</div>
+<div id="toast" class="card"></div>
+<div id="joy" class="hidden"><div id="knob"></div></div>
+<div id="joyHint" class="hidden">Glisse le doigt pour te déplacer</div>
+<button id="siren" class="hidden" aria-label="Gyrophare">🚨</button>
+<button id="act" class="hidden"></button>
+
+<div id="dlg" class="overlay hidden"><div class="panel">
+  <div class="who"><b id="dlgName"></b><span id="dlgRole"></span></div>
+  <div class="say" id="dlgTxt"></div>
+  <div id="dlgBtns"></div>
+</div></div>
+
+<div id="quiz" class="overlay center hidden"><div class="panel">
+  <div class="qhead"><span class="tag" id="qTheme"></span><div class="pips" id="qPips"></div></div>
+  <div class="qq" id="qQ"></div>
+  <div id="qOpts"></div>
+  <div class="exp hidden" id="qExp"></div>
+  <button class="btn hidden" id="qNext">Suivant ▶</button>
+</div></div>
+
+<div id="menu" class="overlay center hidden"><div class="panel">
+  <div class="who"><b>Carnet de patrouille</b></div>
+  <ul class="list" id="menuList"></ul>
+  <button class="btn alt" id="mSound"></button>
+  <button class="btn alt" id="mCredits">Crédits</button>
+  <button class="btn red" id="mReset">Recommencer l'histoire</button>
+  <button class="btn" id="mClose">Reprendre</button>
+</div></div>
+
+<script src="../data.js"></script>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './lib/jsm/loaders/GLTFLoader.js';
+import * as SkeletonUtils from './lib/jsm/utils/SkeletonUtils.js';
+
+const $ = id => document.getElementById(id);
+
+/* =========================================================
+   PROGRESSION — même sauvegarde que le jeu 2D
+   ========================================================= */
+const RANKS = [
+  { xp: 0, name: 'Recrue civile' }, { xp: 200, name: 'Cadet de la République' },
+  { xp: 600, name: 'Élève gardien de la paix' }, { xp: 1300, name: 'Gardien de la paix stagiaire' },
+  { xp: 2300, name: 'Gardien de la paix' }, { xp: 3700, name: 'GPX — Chef de bord' },
+  { xp: 5500, name: 'GPX — Chef de patrouille' }, { xp: 7500, name: 'Candidat Brigadier-Chef' },
+  { xp: 9000, name: 'Brigadier-Chef' }
+];
+const THEME_LABEL = { A: 'Régimes', B: 'Services supp.', C: 'Congés', D: 'Astreinte', E: 'RPS',
+  F: 'TSI', G: 'Déontologie', H: 'Management', I: 'Pratiques pro. intervention' };
+
+function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+const QS = (typeof Q !== 'undefined' ? Q : []).map(x => ({ id: hash(x.t + '|' + x.q), t: x.t, q: x.q, o: x.o.slice(), a: x.a, e: x.e }));
+
+const KEY = 'objectif-bc-v1';
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { S = {}; }
+S.xp = S.xp || 0; S.q = S.q || {}; S.stats = S.stats || { answered: 0, correct: 0, best: 0, wins: 0, battles: 0 };
+if (S.sound === undefined) S.sound = true;
+S.d3 = Object.assign({ intro: false, done: {}, ended: false }, S.d3 || {});
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function rankIdx() { let r = 0; RANKS.forEach((k, i) => { if (S.xp >= k.xp) r = i; }); return r; }
+function lvl(id) { return (S.q[id] && S.q[id].l) || 0; }
+
+/* =========================================================
+   SONS (WebAudio, pas de fichiers)
+   ========================================================= */
+let AC = null;
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(f, d, type = 'square', v = .08, when = 0) {
+  if (!S.sound) return; const a = ac(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + when;
+  o.type = type; o.frequency.value = f; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d);
+}
+const SFX = {
+  ok() { tone(660, .1); tone(880, .15, 'square', .08, .09); },
+  ko() { tone(200, .25, 'sawtooth', .07); },
+  talk() { tone(520, .05, 'triangle', .05); },
+  win() { [523, 659, 784, 1046].forEach((f, i) => tone(f, .18, 'square', .07, i * .12)); },
+  door() { tone(300, .08, 'triangle', .08); tone(450, .08, 'triangle', .08, .08); }
+};
+let sirenNode = null;
+function sirenSet(on) {
+  if (sirenNode) { try { sirenNode.o.stop(); } catch (e) {} sirenNode = null; }
+  if (!on || !S.sound) return; const a = ac(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), lfo = a.createOscillator(), lg = a.createGain();
+  o.type = 'square'; o.frequency.value = 520; lfo.type = 'square'; lfo.frequency.value = 1.6; lg.gain.value = 95;
+  lfo.connect(lg); lg.connect(o.frequency); g.gain.value = .035; o.connect(g); g.connect(a.destination);
+  o.start(); lfo.start(); sirenNode = { o, lfo }; o.onended = () => { try { lfo.stop(); } catch (e) {} };
+}
+
+/* =========================================================
+   RENDU
+   ========================================================= */
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fd3f0);
+scene.fog = new THREE.Fog(0x9fd3f0, 60, 130);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.5, 300);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7a9a6a, 1.3));
+const sun = new THREE.DirectionalLight(0xfff1d6, 2.2);
+sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -28, right: 28, top: 28, bottom: -28, near: 1, far: 120 });
+sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+
+/* =========================================================
+   MODÈLES (Kenney, CC0)
+   ========================================================= */
+const MODELS = {
+  persos: ['character-male-a', 'character-male-b', 'character-male-c', 'character-male-d', 'character-male-e', 'character-male-f',
+           'character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f', 'aid-defibrillator-red'],
+  vehicules: ['police', 'ambulance', 'sedan', 'taxi', 'suv', 'van', 'hatchback-sports', 'cone', 'box', 'debris-tire', 'debris-door'],
+  routes: ['road-straight', 'road-crossroad', 'road-intersection', 'road-bend', 'light-square', 'construction-cone', 'construction-barrier', 'dumpster'],
+  ville: ['building-a', 'building-b', 'building-c', 'building-d', 'building-e', 'building-f', 'building-g', 'building-h', 'building-i', 'building-j',
+          'building-k', 'building-l', 'building-m', 'building-n', 'building-skyscraper-a', 'building-skyscraper-b', 'building-skyscraper-c',
+          'building-skyscraper-d', 'building-skyscraper-e', 'detail-parasol-a'],
+  quartier: ['building-type-a', 'building-type-b', 'building-type-c', 'building-type-d', 'building-type-e', 'building-type-f', 'building-type-g',
+             'building-type-h', 'building-type-i', 'building-type-j', 'building-type-k', 'building-type-l', 'tree-large', 'tree-small', 'planter']
+};
+const G = {};
+async function loadAll() {
+  const loader = new GLTFLoader();
+  const jobs = []; let n = 0;
+  for (const [dir, list] of Object.entries(MODELS)) for (const name of list) jobs.push([dir, name]);
+  await Promise.all(jobs.map(async ([dir, name]) => {
+    const g = await loader.loadAsync(`models/${dir}/${name}.glb`);
+    g.scene.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    G[name] = g; n++;
+    $('loadFill').style.width = (100 * n / jobs.length) + '%';
+  }));
+}
+function clone(name) { return G[name].scene.clone(true); }
+
+/* =========================================================
+   LA VILLE — tuiles de 8 m, 15 × 15
+   ========================================================= */
+const T = 8;
+const MAP = [
+  '###############',
+  '#RRRRRRRRRRRRR#',
+  '#RP.BSBRBF.SBR#',
+  '#R....BRBT.THR#',
+  '#RH...HRH.G.HR#',
+  '#RBT.TBRBT.TBR#',
+  '#RSB.BSRSB.HBR#',
+  '#RRRRRRRRRRRRR#',
+  '#RMB.BSRBS.BIR#',
+  '#R....BRB....R#',
+  '#RH.V.HRH.T.BR#',
+  '#RBT.TBRS...SR#',
+  '#RHH.HHRBE.BSR#',
+  '#RRRRRRRRRRRRR#',
+  '###############'
+];
+const at = (r, c) => (MAP[r] && MAP[r][c]) || '#';
+const isRoad = (r, c) => at(r, c) === 'R';
+const tc = (r, c) => new THREE.Vector3((c - 7) * T, 0, (r - 7) * T);
+const LIMIT = 6 * T + 3.6;
+
+const boxes = [];      // obstacles AABB en XZ : {x0,x1,z0,z1}
+const bldgs = [];      // bâtiments, pour le fondu quand ils cachent le joueur
+const circles = [];    // obstacles ronds : {x,z,r}
+function addBox(obj, shrink = 0.15) {
+  obj.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(obj);
+  boxes.push({ x0: b.min.x + shrink, x1: b.max.x - shrink, z0: b.min.z + shrink, z1: b.max.z - shrink });
+}
+
+const rnd = (() => { let s = 1234567; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+const pick = a => a[Math.floor(rnd() * a.length)];
+
+// Direction de la façade : vers la route voisine.
+const DIRS = [[-1, 0], [0, 1], [1, 0], [0, -1]];   // nord, est, sud, ouest
+function facing(r, c) {
+  for (const [dr, dc] of DIRS) if (isRoad(r + dr, c + dc)) return [dr, dc];
+  for (const [dr, dc] of DIRS) if (at(r + dr, c + dc) === '.') return [dr, dc];
+  return [1, 0];
+}
+const yawOf = (dr, dc) => Math.atan2(dc, dr);   // modèle Kenney tourné vers +Z
+
+const SPOTS = {};      // emplacements des lieux importants
+const SIGNS = { P: ['POLICE', 'NATIONALE', '#002395'], M: ['MAIRIE', 'Service RH', '#7c3aed'], F: ['CENTRE DES', 'FINANCES', '#0f766e'],
+                I: ['INSPECTION', 'Déontologie', '#334155'], E: ['HÔTEL DE POLICE', 'Salle d\'examen', '#b91c1c'] };
+
+function signMesh(l1, l2, col) {
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 192;
+  const x = cv.getContext('2d');
+  x.fillStyle = col; x.fillRect(0, 0, 512, 192); x.fillStyle = '#fff'; x.fillRect(8, 8, 496, 176); x.fillStyle = col; x.fillRect(16, 16, 480, 160);
+  x.fillStyle = '#fff'; x.textAlign = 'center';
+  x.font = '900 64px system-ui, sans-serif'; x.fillText(l1, 256, 88, 450);
+  x.font = '700 44px system-ui, sans-serif'; x.fillText(l2, 256, 150, 450);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  return new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.6), new THREE.MeshBasicMaterial({ map: tex }));
+}
+
+function buildCity() {
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(15 * T, 15 * T), new THREE.MeshLambertMaterial({ color: 0xc9c5bb }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  const far = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshLambertMaterial({ color: 0x7cb35a }));
+  far.rotation.x = -Math.PI / 2; far.position.y = -0.02; scene.add(far);
+  const grassMat = new THREE.MeshLambertMaterial({ color: 0x86c06a });
+  const grassGeo = new THREE.PlaneGeometry(T, T);
+
+  const commerce = MODELS.ville.filter(n => /building-[a-n]$/.test(n));
+  const tours = MODELS.ville.filter(n => n.includes('skyscraper'));
+  const maisons = MODELS.quartier.filter(n => n.startsWith('building-type'));
+
+  for (let r = 0; r < 15; r++) for (let c = 0; c < 15; c++) {
+    const ch = at(r, c), p = tc(r, c);
+    if (ch === 'R') {
+      const n = isRoad(r - 1, c), e = isRoad(r, c + 1), s = isRoad(r + 1, c), w = isRoad(r, c - 1);
+      const cnt = n + e + s + w;
+      let name = 'road-straight', yaw = 0;
+      if (cnt === 4) name = 'road-crossroad';
+      else if (cnt === 3) { name = 'road-intersection'; yaw = !n ? 0 : !e ? -Math.PI / 2 : !s ? Math.PI : Math.PI / 2; yaw += ROAD_T_OFFSET; }
+      else if (cnt === 2 && !(n && s) && !(e && w)) { name = 'road-bend'; yaw = (s && e) ? 0 : (s && w) ? -Math.PI / 2 : (n && w) ? Math.PI : Math.PI / 2; yaw += ROAD_BEND_OFFSET; }
+      else yaw = (e || w) ? Math.PI / 2 + ROAD_STRAIGHT_OFFSET : ROAD_STRAIGHT_OFFSET;
+      const m = clone(name); m.position.copy(p); m.rotation.y = yaw; m.scale.set(T, T, T); scene.add(m);
+      // lampadaires le long des routes droites
+      if (name === 'road-straight' && (r + c) % 3 === 0) {
+        const l = clone('light-square'); l.scale.setScalar(5);
+        const side = (e || w) ? new THREE.Vector3(0, 0, 3.7) : new THREE.Vector3(3.7, 0, 0);
+        l.position.copy(p).add(side); l.rotation.y = (e || w) ? Math.PI : -Math.PI / 2; scene.add(l);
+        circles.push({ x: l.position.x, z: l.position.z, r: 0.25 });
+      }
+      continue;
+    }
+    if (ch === '#') {
+      if ((r + c) % 2 === 0) { const t = clone(rnd() < .5 ? 'tree-large' : 'tree-small'); t.position.copy(p).add(new THREE.Vector3(rnd() * 3 - 1.5, 0, rnd() * 3 - 1.5)); t.scale.setScalar(7 + rnd() * 3); t.rotation.y = rnd() * 6; scene.add(t); }
+      continue;
+    }
+    if (ch === 'T' || ch === 'G' || ch === 'V') {
+      const g = new THREE.Mesh(grassGeo, grassMat); g.rotation.x = -Math.PI / 2; g.position.copy(p); g.position.y = 0.02; g.receiveShadow = true; scene.add(g);
+      if (ch === 'T') {
+        for (let i = 0; i < 2; i++) { const t = clone(i ? 'tree-small' : 'tree-large'); t.scale.setScalar(6 + rnd() * 2); t.position.copy(p).add(new THREE.Vector3(i ? 2 : -1.5, 0, i ? -1.8 : 1.5)); t.rotation.y = rnd() * 6; scene.add(t); circles.push({ x: t.position.x, z: t.position.z, r: 0.6 }); }
+      }
+      SPOTS[ch + r + '_' + c] = p.clone();
+      if (ch !== 'T') SPOTS[ch] = p.clone();
+      continue;
+    }
+    if (ch === '.') continue;
+    // Bâtiments
+    const [dr, dc] = facing(r, c);
+    let name, sc = 6;
+    if (ch === 'S') { name = pick(tours); sc = 5; }
+    else if (ch === 'H') { name = pick(maisons); sc = 5.5; }
+    else if (ch === 'B') name = pick(commerce);
+    else name = { P: 'building-d', M: 'building-h', F: 'building-skyscraper-a', I: 'building-k', E: 'building-skyscraper-e' }[ch];
+    const m = clone(name); m.scale.setScalar(sc); m.rotation.y = yawOf(dr, dc) + BUILDING_OFFSET;
+    m.position.copy(p).add(new THREE.Vector3(-dc * 0.6, 0, -dr * 0.6));
+    scene.add(m); addBox(m);
+    m.traverse(o => { if (o.isMesh) o.material = o.material.clone(); });
+    bldgs.push({ m, box: new THREE.Box3().setFromObject(m), faded: false });
+    if (SIGNS[ch]) {
+      const [a, b, col] = SIGNS[ch];
+      const sg = signMesh(a, b, col);
+      const bb = new THREE.Box3().setFromObject(m);
+      const half = Math.abs(dr) ? (bb.max.z - bb.min.z) / 2 : (bb.max.x - bb.min.x) / 2;
+      const ctr = bb.getCenter(new THREE.Vector3());
+      sg.position.set(ctr.x + dc * (half + 0.08), 4.2, ctr.z + dr * (half + 0.08));
+      sg.rotation.y = yawOf(dr, dc);
+      scene.add(sg);
+      SPOTS[ch] = p.clone().add(new THREE.Vector3(dc * 3.1, 0, dr * 3.1));
+      SPOTS[ch + 'dir'] = [dr, dc];
+    }
+  }
+  // bordure : barrières invisibles via LIMIT
+}
+// Corrections d'orientation des tuiles Kenney (vérifiées à l'écran)
+const ROAD_STRAIGHT_OFFSET = Math.PI / 2, ROAD_T_OFFSET = 0, ROAD_BEND_OFFSET = 0, BUILDING_OFFSET = 0;
+
+/* =========================================================
+   PERSONNAGES
+   ========================================================= */
+class Char {
+  constructor(model, scale = 2.2) {
+    this.root = SkeletonUtils.clone(G[model].scene);
+    this.root.scale.setScalar(scale);
+    this.mixer = new THREE.AnimationMixer(this.root);
+    this.clips = {}; G[model].animations.forEach(c => this.clips[c.name] = c);
+    this.cur = null; scene.add(this.root);
+  }
+  play(name, fade = .2, once = false) {
+    if (this.curName === name) return; const clip = this.clips[name]; if (!clip) return;
+    const a = this.mixer.clipAction(clip);
+    if (once) { a.setLoop(THREE.LoopOnce); a.clampWhenFinished = true; }
+    a.reset().fadeIn(fade).play(); if (this.cur) this.cur.fadeOut(fade);
+    this.cur = a; this.curName = name;
+  }
+  face(x, z) { this.root.rotation.y = Math.atan2(x - this.root.position.x, z - this.root.position.z); }
+}
+
+/* =========================================================
+   HISTOIRE & MISSIONS
+   ========================================================= */
+const MISSIONS = [
+  { id: 'planning', who: 'Brigadière Martin', role: 'Cheffe de planning', model: 'character-female-d', spot: 'P', off: [-2.2, 0], themes: ['A', 'D'], n: 5, need: 3,
+    place: 'Commissariat',
+    intro: ['Ah, te voilà ! La brigade de nuit a mélangé tous les plannings.', 'Repos légal, grande semaine, astreintes… Si tu veux devenir brigadier-chef, tu dois savoir faire un planning les yeux fermés.', 'Aide-moi à remettre de l\'ordre !'],
+    win: 'Planning bouclé ! La brigade te remercie. Le Capitaine verra ça d\'un bon œil.', lose: 'Hmm, il reste des trous dans le planning. Reviens me voir quand tu veux réessayer.' },
+  { id: 'accident', who: 'BC Diallo', role: 'Chef de bord — Accident', model: 'character-male-c', spot: 'A', themes: ['I'], n: 5, need: 3,
+    place: 'Boulevard Sud',
+    intro: ['📻 Accident matériel sur le boulevard Sud, deux véhicules !', 'Bien arrivé. Le SAMU est sur place. Balisage, protection, constatations : on applique les bonnes pratiques.', 'Montre-moi que tu connais la procédure d\'intervention.'],
+    win: 'Zone sécurisée, constatations faites. Du travail de pro !', lose: 'On a été un peu brouillons. Reprends la procédure et on recommence.' },
+  { id: 'rh', who: 'Mme Durand', role: 'Service RH — Mairie', model: 'character-female-b', spot: 'M', themes: ['C'], n: 5, need: 3,
+    place: 'Mairie',
+    intro: ['Bonjour ! Trois agents de ta future brigade ont posé des demandes de congés en même temps.', 'Congés annuels, bonifiés, autorisations d\'absence… Un chef doit savoir répondre à ses agents.', 'Voyons si tu connais les règles !'],
+    win: 'Parfait, toutes les demandes sont traitées dans les règles.', lose: 'Il y a des erreurs dans les dossiers. Révise un peu et reviens !' },
+  { id: 'tsi', who: 'Moniteur Kader', role: 'Moniteur TSI — Parc', model: 'character-male-f', spot: 'G', off: [0, -1.5], themes: ['F'], n: 5, need: 3,
+    place: 'Parc du Centre',
+    intro: ['Entraînement en plein air aujourd\'hui ! Techniques et sécurité en intervention.', 'Distances de sécurité, gestes, protocole : en garde !'],
+    win: 'Excellent ! Tes techniques sont solides.', lose: 'Pas encore au point. On reprend les bases et tu reviens.' },
+  { id: 'compta', who: 'M. Petit', role: 'Gestionnaire — Finances', model: 'character-male-a', spot: 'F', themes: ['B', 'E'], n: 5, need: 3,
+    place: 'Centre des finances',
+    intro: ['Ah, le futur brigadier-chef ! J\'ai une pile de tableaux de compensation à vérifier.', 'Services supplémentaires, permanences, coefficients RPS… Les calculs, c\'est ici.'],
+    win: 'Comptes justes ! Les agents seront bien payés grâce à toi.', lose: 'Les chiffres ne tombent pas juste… Recompte et reviens.' },
+  { id: 'malaise', who: 'Mme Leroy', role: 'Témoin — Place des Tilleuls', model: 'character-female-e', spot: 'V', off: [1.6, 0], themes: ['I'], n: 5, need: 3,
+    place: 'Place des Tilleuls',
+    intro: ['Monsieur l\'agent ! Une passante a fait un malaise, juste là !', 'Les pompiers arrivent, j\'ai sorti le défibrillateur de la pharmacie.', 'Qu\'est-ce qu\'on doit faire ?'],
+    win: 'Les secours ont pris le relais. Grâce à vous, elle va s\'en sortir !', lose: 'J\'ai eu peur… Révisez les bons réflexes, on ne sait jamais.' },
+  { id: 'deonto', who: 'Commandant Roux', role: 'Inspection — Déontologie', model: 'character-male-d', spot: 'I', themes: ['G'], n: 5, need: 3,
+    place: 'Inspection',
+    intro: ['Entrez. J\'ai reçu une réclamation concernant un contrôle d\'identité.', 'Un brigadier-chef doit être exemplaire. Le code de déontologie n\'est pas une option.', 'Je vous écoute.'],
+    win: 'Irréprochable. Vous ferez un chef exemplaire.', lose: 'Ce n\'est pas suffisant. Relisez le code et revenez me voir.' },
+  { id: 'management', who: 'Capitaine Moreau', role: 'Chef de service', model: 'character-male-b', spot: 'P', off: [2.2, 0], themes: ['H'], n: 5, need: 3, lock: 7,
+    place: 'Commissariat',
+    intro: ['Tout le quartier parle de toi. Beau travail.', 'Dernière étape avant le jury : un brigadier-chef, c\'est d\'abord un manager.', 'Entretiens, conflits, motivation de l\'équipe… Montre-moi.'],
+    win: 'Tu es prêt. Rendez-vous à l\'Hôtel de police : le jury t\'attend.', lose: 'Pas encore tout à fait. Reprends tes fiches management et reviens.' },
+  { id: 'jury', who: 'Le Jury', role: 'Examen de Brigadier-Chef', model: 'character-female-a', spot: 'E', themes: 'ALL', n: 15, need: 11, lock: 8, boss: true,
+    place: 'Hôtel de police',
+    intro: ['Bienvenue devant le jury de l\'examen de brigadier-chef.', 'Quinze questions, tous les thèmes. Il faut onze bonnes réponses pour être reçu.', 'Prenez votre temps. Vous êtes prêt ?'],
+    win: 'Félicitations. Le jury vous déclare reçu au grade de BRIGADIER-CHEF !', lose: 'Le jury ne peut pas vous recevoir cette fois-ci. Continuez à réviser, vous y êtes presque.' }
+];
+const STORY_INTRO = [
+  ['Capitaine Moreau', 'Chef de service', 'Bienvenue au commissariat de Saint-Zaïdou, gardien !'],
+  ['Capitaine Moreau', 'Chef de service', 'L\'examen de brigadier-chef approche. Avant de passer devant le jury, tu vas faire tes preuves sur le terrain.'],
+  ['Capitaine Moreau', 'Chef de service', 'Sept dossiers t\'attendent dans le quartier : planning, intervention, RH, TSI, finances, secours, déontologie.'],
+  ['Capitaine Moreau', 'Chef de service', 'La flèche jaune en haut de l\'écran t\'indique le prochain dossier. Prends la voiture de patrouille, c\'est plus rapide !'],
+  ['Capitaine Moreau', 'Chef de service', 'Commence par la Brigadière Martin, juste ici. Bonne patrouille !']
+];
+const doneCount = () => MISSIONS.filter(m => !m.boss && S.d3.done[m.id]).length;
+const unlocked = m => !m.lock || doneCount() >= m.lock;
+function nextMission() { return MISSIONS.find(m => !S.d3.done[m.id] && unlocked(m)) || null; }
+
+/* =========================================================
+   MONDE : joueur, voiture, PNJ, décors
+   ========================================================= */
+let player, car, npcs = [], traffic = [], walkers = [], beacon, markers = [];
+const P = { pos: new THREE.Vector3(), inCar: false, speed: 0 };
+const CAR = { pos: new THREE.Vector3(), yaw: 0, v: 0, siren: false, wheels: [] };
+
+function markerSprite(color, txt) {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d');
+  x.fillStyle = color; x.beginPath(); x.arc(64, 64, 54, 0, 7); x.fill(); x.lineWidth = 8; x.strokeStyle = '#fff'; x.stroke();
+  x.fillStyle = '#fff'; x.font = '900 76px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(txt, 64, 70);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false })); s.scale.set(1.3, 1.3, 1); s.renderOrder = 10; return s;
+}
+const MK = {};
+
+function placeProp(name, x, z, yaw = 0, sc = 1.5, collide = true) {
+  const m = clone(name); m.position.set(x, 0, z); m.rotation.y = yaw; m.scale.setScalar(sc); scene.add(m); if (collide) addBox(m, .1); return m;
+}
+
+function buildWorld() {
+  buildCity();
+  // Lieu de l'accident : boulevard Sud (ligne 13, colonne 4)
+  const acc = tc(13, 4); SPOTS.A = acc.clone().add(new THREE.Vector3(0, 0, -2.6));
+  placeProp('sedan', acc.x - 1.5, acc.z + 0.6, 0.5, 1.5);
+  placeProp('hatchback-sports', acc.x + 2.6, acc.z + 1.2, -2.3, 1.5);
+  placeProp('ambulance', acc.x + 9, acc.z + 1.2, Math.PI / 2, 1.5);
+  placeProp('debris-tire', acc.x + 0.8, acc.z - 0.8, 0, 2, false);
+  placeProp('debris-door', acc.x - 0.2, acc.z + 2.4, 1, 2, false);
+  [[-6, 1.2], [-5, -1], [5.5, -1.4], [-4, 2.6]].forEach(([dx, dz]) => placeProp('construction-cone', acc.x + dx, acc.z + dz, 0, 5, false));
+  // Place des Tilleuls : malaise
+  const v = SPOTS.V; const victim = new Char('character-female-c'); victim.root.position.set(v.x - 0.6, 0, v.z); victim.root.rotation.y = 1.2; victim.play('die', 0, true);
+  const defib = clone('aid-defibrillator-red'); defib.scale.setScalar(2.2); defib.position.set(v.x + 0.5, 0, v.z + 0.9); scene.add(defib);
+  // Parc : plots d'entraînement TSI
+  const g = SPOTS.G; [[-2, 2], [2, 2], [0, 2.8]].forEach(([dx, dz]) => placeProp('cone', g.x + dx, g.z + dz, 0, 1.1, false));
+  // Jury : deux assesseurs
+  const e = SPOTS.E, [edr, edc] = SPOTS.Edir;
+  ['character-male-e', 'character-female-f'].forEach((mdl, i) => { const a = new Char(mdl); const s = i ? 1 : -1; a.root.position.set(e.x + (edr ? s * 1.6 : 0), 0, e.z + (edc ? s * 1.6 : 0)); a.root.rotation.y = yawOf(edr, edc); a.play('idle'); npcs.push({ ch: a, deco: true }); });
+  // Commissariat : voiture de patrouille garée devant
+  const pd = SPOTS.P, [pdr, pdc] = SPOTS.Pdir;
+  car = clone('police'); car.scale.setScalar(1.5); scene.add(car);
+  CAR.pos.set(pd.x + pdc * 2.6 + (pdr ? 5 : 0), 0, pd.z + pdr * 2.6 + (pdc ? 5 : 0)); CAR.yaw = pdr ? Math.PI / 2 : 0;
+  car.traverse(o => { if (/wheel-front/.test(o.name)) CAR.wheels.push({ o, front: true }); else if (/wheel-back/.test(o.name)) CAR.wheels.push({ o, front: false }); });
+  const lights = [0xff2a2a, 0x2a5bff].map((col, i) => { const s = markerSprite(i ? '#2a5bff' : '#ff2a2a', ''); s.scale.set(.8, .8, 1); s.material.depthTest = true; s.position.set(i ? .35 : -.35, 1.2, -.1); s.visible = false; car.add(s); s.scale.set(.5, .5, 1); return s; });
+  CAR.lights = lights;
+  // Mission PNJ
+  for (const m of MISSIONS) {
+    const base = SPOTS[m.spot]; if (!base) continue;
+    const ch = new Char(m.model);
+    const off = m.off || [0, 0];
+    ch.root.position.set(base.x + off[0], 0, base.z + off[1]);
+    const d = SPOTS[m.spot + 'dir']; ch.root.rotation.y = d ? yawOf(d[0], d[1]) : 0;
+    if (m.spot === 'A') ch.root.rotation.y = Math.PI;
+    ch.play('idle');
+    const mk = markerSprite('#f4c430', '!'); mk.position.set(0, 1.25, 0); mk.scale.set(.6, .6, 1); ch.root.add(mk);
+    npcs.push({ ch, m, mk });
+    circles.push({ x: ch.root.position.x, z: ch.root.position.z, r: .35 });
+  }
+  // Joueur
+  player = new Char('character-male-c');
+  P.pos.set(pd.x + pdc * 4.5, 0, pd.z + pdr * 4.5 + 1);
+  player.root.position.copy(P.pos); player.play('idle');
+  // Balise d'objectif
+  beacon = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 40, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xf4c430, transparent: true, opacity: .28, depthWrite: false, side: THREE.DoubleSide }));
+  beacon.position.y = 20; scene.add(beacon);
+  // Circulation sur l'anneau nord-est (lignes 1 et 7, colonnes 7 et 13)
+  const ring = { x0: 0, x1: 6 * T, z0: -6 * T, z1: 0 };
+  ['sedan', 'taxi', 'suv', 'van'].forEach((n, i) => { const m = clone(n); m.scale.setScalar(1.5); scene.add(m); traffic.push({ m, s: i * 0.25, ring, v: 9 }); });
+  // Passants
+  [['character-male-e', 3, 2, 3, 6], ['character-female-a', 9, 4, 12, 4], ['character-female-f', 9, 9, 9, 12], ['character-male-a', 12, 3, 12, 6]].forEach(([mdl, r1, c1, r2, c2]) => {
+    const ch = new Char(mdl); const a = tc(r1, c1), b = tc(r2, c2);
+    walkers.push({ ch, a, b, t: rnd(), dir: 1 }); ch.play('walk');
+  });
+}
+
+/* =========================================================
+   CONTRÔLES : joystick tactile + clavier
+   ========================================================= */
+const input = { x: 0, z: 0 };
+const keys = {};
+addEventListener('keydown', e => { keys[e.code] = true; if ((e.code === 'Space' || e.code === 'KeyE' || e.code === 'Enter') && !$('act').classList.contains('hidden') && !uiOpen()) { e.preventDefault(); $('act').click(); } });
+addEventListener('keyup', e => { keys[e.code] = false; });
+let joyId = null, joyO = { x: 0, y: 0 }; const JR = 55;
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', e => {
+  if (joyId !== null || uiOpen()) return; joyId = e.pointerId; joyO = { x: e.clientX, y: e.clientY };
+  const j = $('joy'); j.style.left = e.clientX + 'px'; j.style.top = e.clientY + 'px'; j.classList.remove('hidden'); $('knob').style.transform = '';
+  $('joyHint').classList.add('hidden'); ac();
+});
+addEventListener('pointermove', e => {
+  if (e.pointerId !== joyId) return;
+  let dx = e.clientX - joyO.x, dy = e.clientY - joyO.y; const d = Math.hypot(dx, dy);
+  if (d > JR) { dx *= JR / d; dy *= JR / d; }
+  $('knob').style.transform = `translate(${dx}px, ${dy}px)`;
+  input.x = dx / JR; input.z = dy / JR;
+});
+const joyEnd = e => { if (e.pointerId !== joyId) return; joyId = null; input.x = input.z = 0; $('joy').classList.add('hidden'); };
+addEventListener('pointerup', joyEnd); addEventListener('pointercancel', joyEnd);
+function readInput() {
+  let x = input.x, z = input.z;
+  const kx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.KeyQ || keys.ArrowLeft ? 1 : 0);
+  const kz = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.KeyZ || keys.ArrowUp ? 1 : 0);
+  if (kx || kz) { const l = Math.hypot(kx, kz); x = kx / l; z = kz / l; }
+  return { x, z, m: Math.min(1, Math.hypot(x, z)) };
+}
+const uiOpen = () => !$('dlg').classList.contains('hidden') || !$('quiz').classList.contains('hidden') || !$('menu').classList.contains('hidden');
+
+/* =========================================================
+   COLLISIONS
+   ========================================================= */
+function collide(pos, rad) {
+  let hit = false;
+  for (const b of boxes) {
+    const cx = Math.max(b.x0, Math.min(pos.x, b.x1)), cz = Math.max(b.z0, Math.min(pos.z, b.z1));
+    const dx = pos.x - cx, dz = pos.z - cz, d2 = dx * dx + dz * dz;
+    if (d2 < rad * rad) {
+      hit = true;
+      if (d2 > 1e-6) { const d = Math.sqrt(d2); pos.x = cx + dx / d * rad; pos.z = cz + dz / d * rad; }
+      else { // centre dans la boîte : sortir par le côté le plus proche
+        const l = pos.x - b.x0, r = b.x1 - pos.x, t = pos.z - b.z0, bo = b.z1 - pos.z, mn = Math.min(l, r, t, bo);
+        if (mn === l) pos.x = b.x0 - rad; else if (mn === r) pos.x = b.x1 + rad; else if (mn === t) pos.z = b.z0 - rad; else pos.z = b.z1 + rad;
+      }
+    }
+  }
+  for (const c of circles) {
+    const dx = pos.x - c.x, dz = pos.z - c.z, d = Math.hypot(dx, dz), R = rad + c.r;
+    if (d < R && d > 1e-6) { pos.x = c.x + dx / d * R; pos.z = c.z + dz / d * R; hit = true; }
+  }
+  if (Math.abs(pos.x) > LIMIT) { pos.x = Math.sign(pos.x) * LIMIT; hit = true; }
+  if (Math.abs(pos.z) > LIMIT) { pos.z = Math.sign(pos.z) * LIMIT; hit = true; }
+  return hit;
+}
+
+/* =========================================================
+   BOUCLE
+   ========================================================= */
+const clock = new THREE.Clock();
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+let near = null, t0 = 0;
+
+function angDiff(a, b) { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; }
+
+function update(dt) {
+  t0 += dt;
+  const inp = uiOpen() ? { x: 0, z: 0, m: 0 } : readInput();
+  if (!P.inCar) {
+    if (inp.m > 0.12) {
+      const sp = inp.m > 0.8 ? 6.5 : 3.6 * inp.m + 1;
+      P.pos.x += inp.x / inp.m * sp * inp.m * dt; P.pos.z += inp.z / inp.m * sp * inp.m * dt;
+      player.root.rotation.y += angDiff(player.root.rotation.y, Math.atan2(inp.x, inp.z)) * Math.min(1, dt * 12);
+      player.play(inp.m > 0.8 ? 'sprint' : 'walk');
+    } else player.play('idle');
+    collide(P.pos, .4);
+    // ne pas traverser la voiture garée
+    const dx = P.pos.x - CAR.pos.x, dz = P.pos.z - CAR.pos.z, d = Math.hypot(dx, dz);
+    if (d < 1.9 && d > 1e-4) { P.pos.x = CAR.pos.x + dx / d * 1.9; P.pos.z = CAR.pos.z + dz / d * 1.9; }
+    player.root.position.copy(P.pos);
+  } else {
+    // Conduite : la voiture s'oriente vers la direction du joystick
+    if (inp.m > 0.15) {
+      const target = Math.atan2(inp.x, inp.z), diff = angDiff(CAR.yaw, target);
+      const rev = Math.abs(diff) > 2.4 && CAR.v < 2;
+      if (rev) CAR.v = Math.max(-5, CAR.v - 10 * dt);
+      else { CAR.v = Math.min(17 * inp.m, CAR.v + 12 * dt); CAR.yaw += diff * Math.min(1, dt * 2.6 * Math.min(1, Math.abs(CAR.v) / 4)); }
+    } else CAR.v *= Math.pow(0.25, dt);
+    if (Math.abs(CAR.v) < 0.05) CAR.v = 0;
+    CAR.pos.x += Math.sin(CAR.yaw) * CAR.v * dt; CAR.pos.z += Math.cos(CAR.yaw) * CAR.v * dt;
+    if (collide(CAR.pos, 1.5)) { if (Math.abs(CAR.v) > 6) { SFX.ko(); buzz(40); } CAR.v *= 0.4; }
+    P.pos.copy(CAR.pos);
+  }
+  car.position.copy(CAR.pos); car.rotation.y = CAR.yaw;
+  CAR.wheels.forEach(w => { w.o.rotation.x += CAR.v * dt * 2.2; });
+  const flash = CAR.siren && Math.floor(t0 * 6) % 2; CAR.lights[0].visible = CAR.siren && flash; CAR.lights[1].visible = CAR.siren && !flash;
+
+  // PNJ : se tourner vers le joueur quand il est proche
+  near = null; let best = 3.2;
+  for (const n of npcs) {
+    n.ch.mixer.update(dt); if (n.deco) continue;
+    const d = n.ch.root.position.distanceTo(P.pos);
+    const on = unlocked(n.m);
+    n.mk.visible = on; n.mk.position.y = 1.25 + Math.sin(t0 * 3) * .06;
+    const st = !!S.d3.done[n.m.id];
+    if (n.st !== st) { n.st = st; n.mk.material.map = st ? MK.done : MK.todo; n.mk.material.needsUpdate = true; }
+    if (d < 6 && !P.inCar) n.ch.root.rotation.y += angDiff(n.ch.root.rotation.y, Math.atan2(P.pos.x - n.ch.root.position.x, P.pos.z - n.ch.root.position.z)) * Math.min(1, dt * 4);
+    if (on && d < best) { best = d; near = n; }
+  }
+  // Circulation
+  for (const c of traffic) {
+    const r = c.ring, w = r.x1 - r.x0, h = r.z1 - r.z0, per = 2 * (w + h), lane = 2;
+    const pos = s => { let u = ((s % 1) + 1) % 1 * per; if (u < w) return [r.x0 + u, r.z0 + lane, Math.PI / 2]; u -= w; if (u < h) return [r.x1 - lane, r.z0 + u, 0]; u -= h; if (u < w) return [r.x1 - u, r.z1 - lane, -Math.PI / 2]; u -= w; return [r.x0 + lane, r.z1 - u, Math.PI]; };
+    const ahead = pos(c.s + 6 / per);
+    const blocked = Math.hypot(ahead[0] - P.pos.x, ahead[1] - P.pos.z) < 4.5 || traffic.some(o => o !== c && ((o.s - c.s) % 1 + 1) % 1 < 9 / per);
+    c.v += ((blocked ? 0 : 9) - c.v) * Math.min(1, dt * 3);
+    c.s += c.v * dt / per;
+    const [x, z, yaw] = pos(c.s); c.m.position.set(x, 0, z);
+    c.m.rotation.y += angDiff(c.m.rotation.y, yaw) * Math.min(1, dt * 6);
+  }
+  // Passants
+  for (const w of walkers) {
+    const len = w.a.distanceTo(w.b); w.t += w.dir * 1.3 * dt / len;
+    if (w.t > 1 || w.t < 0) { w.dir *= -1; w.t = Math.max(0, Math.min(1, w.t)); }
+    w.ch.root.position.lerpVectors(w.a, w.b, w.t);
+    const to = w.dir > 0 ? w.b : w.a; w.ch.face(to.x, to.z); w.ch.mixer.update(dt);
+  }
+  player.mixer.update(dt);
+  victimUpdate(dt);
+
+  // Action contextuelle
+  const act = $('act');
+  let label = null;
+  if (P.inCar) label = Math.abs(CAR.v) < 4 ? 'Descendre' : null;
+  else if (near) label = 'Parler';
+  else if (P.pos.distanceTo(CAR.pos) < 3.4) label = 'Monter 🚓';
+  act.classList.toggle('hidden', !label || uiOpen()); if (label) act.textContent = label;
+  $('siren').classList.toggle('hidden', !P.inCar || uiOpen());
+
+  // Objectif
+  const nm = nextMission();
+  if (nm) {
+    const tgt = SPOTS[nm.spot]; beacon.visible = true; beacon.position.x = tgt.x; beacon.position.z = tgt.z;
+    const dx = tgt.x - P.pos.x, dz = tgt.z - P.pos.z, dist = Math.hypot(dx, dz);
+    $('objArrow').style.transform = `rotate(${Math.atan2(dx, -dz)}rad)`;
+    $('objTxt').textContent = `${nm.place} — ${nm.who} · ${Math.round(dist)} m`;
+    beacon.material.opacity = dist < 8 ? .1 : .28;
+  } else { beacon.visible = false; $('objArrow').style.transform = ''; $('objTxt').textContent = 'Brigadier-Chef ! Patrouille libre — révise avec tout le monde'; }
+
+  // Caméra
+  const portrait = innerHeight > innerWidth;
+  const back = P.inCar ? (portrait ? 30 : 19) : (portrait ? 21 : 12), up = P.inCar ? (portrait ? 31 : 19) : (portrait ? 22 : 11);
+  const look = P.inCar ? CAR.pos.clone().add(new THREE.Vector3(Math.sin(CAR.yaw) * CAR.v * .35, 0, Math.cos(CAR.yaw) * CAR.v * .35)) : P.pos.clone();
+  camLook.lerp(look, Math.min(1, dt * 5)); camPos.lerp(new THREE.Vector3(camLook.x, up, camLook.z + back), Math.min(1, dt * 4));
+  camera.position.copy(camPos); camera.lookAt(camLook.x, 1, camLook.z);
+  sun.position.set(camLook.x + 18, 32, camLook.z + 10); sun.target.position.copy(camLook);
+
+  // Les bâtiments entre la caméra et le joueur deviennent transparents
+  const head = P.pos.clone(); head.y = 1;
+  const dir = head.clone().sub(camera.position), dist = dir.length(); dir.normalize();
+  const ray = new THREE.Ray(camera.position, dir), hitP = new THREE.Vector3();
+  for (const b of bldgs) {
+    const f = !!ray.intersectBox(b.box, hitP) && camera.position.distanceTo(hitP) < dist - 0.5;
+    if (f !== b.faded) {
+      b.faded = f;
+      b.m.traverse(o => { if (o.isMesh) { o.material.transparent = f; o.material.opacity = f ? 0.22 : 1; o.material.depthWrite = !f; o.castShadow = !f; } });
+    }
+  }
+}
+let victimT = 0; function victimUpdate(dt) { victimT += dt; }
+
+function loop() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  update(dt);
+  if (window.__cam) { camera.position.set(...window.__cam[0]); camera.lookAt(...window.__cam[1]); }
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+$('act').addEventListener('click', () => {
+  ac();
+  if (P.inCar) {
+    P.inCar = false; CAR.v = 0; setSiren(false);
+    const side = new THREE.Vector3(Math.cos(CAR.yaw), 0, -Math.sin(CAR.yaw)).multiplyScalar(-2.2);
+    P.pos.copy(CAR.pos).add(side); collide(P.pos, .4); player.root.visible = true; player.root.position.copy(P.pos); SFX.door();
+  } else if (near) talk(near.m);
+  else if (P.pos.distanceTo(CAR.pos) < 3.4) { P.inCar = true; player.root.visible = false; SFX.door(); toast('🚓 Le joystick indique où aller. Le bouton 🚨 allume le gyrophare.'); }
+});
+function setSiren(on) { CAR.siren = on; $('siren').classList.toggle('on', on); sirenSet(on); }
+$('siren').addEventListener('click', () => setSiren(!CAR.siren));
+
+let toastT = null;
+function toast(t, ms = 3800) { const e = $('toast'); e.textContent = t; e.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => e.style.opacity = 0, ms); }
+
+/* Dialogue */
+function dialog(lines, done) {
+  let i = 0; $('dlg').classList.remove('hidden');
+  const show = () => {
+    const [name, role, txt, btns] = lines[i];
+    $('dlgName').textContent = name; $('dlgRole').textContent = role; $('dlgTxt').textContent = txt; SFX.talk();
+    const b = $('dlgBtns'); b.innerHTML = '';
+    if (btns) btns.forEach(([lab, fn, cls]) => { const x = document.createElement('button'); x.className = 'btn ' + (cls || ''); x.textContent = lab; x.onclick = () => { $('dlg').classList.add('hidden'); fn && fn(); }; b.appendChild(x); });
+    else { const x = document.createElement('button'); x.className = 'btn'; x.textContent = i < lines.length - 1 ? 'Suivant ▶' : 'OK'; x.onclick = () => { i++; if (i < lines.length) show(); else { $('dlg').classList.add('hidden'); done && done(); } }; b.appendChild(x); }
+  };
+  show();
+}
+
+function talk(m) {
+  const done = S.d3.done[m.id];
+  const L = done
+    ? [[m.who, m.role, m.boss ? 'Vous êtes déjà brigadier-chef ! Envie de repasser une épreuve blanche pour garder la main ?' : 'Merci encore pour le dossier ! Tu veux réviser à nouveau ce thème avec moi ?']]
+    : m.intro.map(t => [m.who, m.role, t]);
+  const last = L[L.length - 1];
+  L[L.length - 1] = [last[0], last[1], last[2], [[done ? 'Réviser (' + m.n + ' questions)' : 'C\'est parti !', () => startQuiz(m)], ['Plus tard', null, 'alt']]];
+  dialog(L);
+}
+
+/* Quiz */
+let QZ = null;
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function startQuiz(m) {
+  const pool = m.themes === 'ALL' ? QS : QS.filter(q => m.themes.includes(q.t));
+  if (!pool.length) { toast('Aucune question trouvée pour ce thème.'); return; }
+  const qs = pool.map(q => ({ q, k: lvl(q.id) + Math.random() * 1.6 })).sort((a, b) => a.k - b.k).slice(0, m.n).map(x => x.q);
+  shuffle(qs);
+  QZ = { m, qs: qs.map(q => { const idx = shuffle(q.o.map((_, i) => i)); return { ...q, o: idx.map(i => q.o[i]), a: idx.indexOf(q.a) }; }), i: 0, ok: 0, res: [], combo: 0 };
+  $('quiz').classList.remove('hidden'); showQ();
+}
+function showQ() {
+  const q = QZ.qs[QZ.i];
+  $('qTheme').textContent = THEME_LABEL[q.t] || q.t;
+  $('qPips').innerHTML = QZ.qs.map((_, i) => `<i class="pip ${QZ.res[i] === true ? 'ok' : QZ.res[i] === false ? 'ko' : ''} ${i === QZ.i ? 'cur' : ''}"></i>`).join('');
+  $('qQ').textContent = q.q;
+  const box = $('qOpts'); box.innerHTML = '';
+  q.o.forEach((o, i) => { const b = document.createElement('button'); b.className = 'opt'; b.textContent = o; b.onclick = () => answer(i, b); box.appendChild(b); });
+  $('qExp').classList.add('hidden'); $('qNext').classList.add('hidden');
+}
+function answer(i, btn) {
+  if (QZ.answered) return; QZ.answered = true;
+  const q = QZ.qs[QZ.i], ok = i === q.a;
+  const st = S.q[q.id] || (S.q[q.id] = { l: 0, c: 0, w: 0 }); st.ts = Date.now(); st.lastOk = ok;
+  S.stats.answered++;
+  [...document.querySelectorAll('.opt')].forEach((b, j) => { b.disabled = true; if (j === q.a) b.classList.add('ok'); });
+  let msg;
+  if (ok) {
+    const before = st.l; st.c++; st.l = Math.min(3, st.l + 1); QZ.ok++; QZ.combo++; S.stats.correct++; S.stats.best = Math.max(S.stats.best || 0, QZ.combo);
+    let gain = 10 + Math.min(QZ.combo - 1, 5) * 2; if (before < 3 && st.l === 3) gain += 15;
+    S.xp += gain; floatXP('+' + gain + ' XP', btn); SFX.ok(); buzz(20);
+    msg = '✅ <b>Bonne réponse !</b> ' + '★'.repeat(st.l) + '☆'.repeat(3 - st.l);
+  } else {
+    st.w++; st.l = 0; QZ.combo = 0; btn.classList.add('ko'); SFX.ko(); buzz([60, 40, 60]);
+    msg = '❌ <b>Raté.</b>';
+  }
+  QZ.res[QZ.i] = ok;
+  $('qPips').children[QZ.i].className = 'pip cur ' + (ok ? 'ok' : 'ko');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  $('qExp').innerHTML = msg + '<br>' + esc(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); $('qExp').classList.remove('hidden');
+  $('qNext').textContent = QZ.i < QZ.qs.length - 1 ? 'Suivant ▶' : 'Terminer ▶'; $('qNext').classList.remove('hidden');
+  save(); hud();
+  $('qExp').scrollIntoView({ block: 'nearest' });
+}
+$('qNext').addEventListener('click', () => {
+  QZ.answered = false; QZ.i++;
+  if (QZ.i < QZ.qs.length) return showQ();
+  $('quiz').classList.add('hidden');
+  const m = QZ.m, win = QZ.ok >= m.need, first = win && !S.d3.done[m.id];
+  const score = `${QZ.ok}/${QZ.qs.length} bonnes réponses`;
+  if (win) {
+    const bonus = first ? (m.boss ? 300 : 50) : 10; S.xp += bonus; S.d3.done[m.id] = true; S.stats.wins = (S.stats.wins || 0) + 1;
+    SFX.win(); confetti(m.boss ? 160 : 60); save(); hud();
+    const lines = [[m.who, m.role, (first ? m.win : 'Toujours au top !') + `  (${score} · +${bonus} XP bonus)`]];
+    if (first && m.boss) { S.d3.ended = true; save(); lines.push(['Capitaine Moreau', 'Chef de service', 'Bravo, Brigadier-Chef ! Saint-Zaïdou est fier de toi. Le quartier reste ouvert : chaque dossier peut être révisé à volonté.']); }
+    dialog(lines, () => { const n = nextMission(); if (first && n) toast('📻 Radio : prochain dossier — ' + n.place + ' (' + n.who + ')', 5000); else if (first && n === null && !m.boss) toast('📻 Tous les dossiers sont bouclés !'); });
+  } else {
+    dialog([[m.who, m.role, m.lose + `  (${score}, il en fallait ${m.need})`]]);
+  }
+});
+function floatXP(t, el) { const r = el.getBoundingClientRect(), f = document.createElement('div'); f.className = 'floatxp'; f.textContent = t; f.style.left = (r.left + r.width / 2 - 30) + 'px'; f.style.top = (r.top - 6) + 'px'; document.body.appendChild(f); setTimeout(() => f.remove(), 1200); }
+function confetti(n) { const cols = ['#002395', '#ffffff', '#ed2939', '#f4c430']; for (let i = 0; i < n; i++) { const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % 4]; c.style.animationDuration = (1.8 + Math.random() * 1.8) + 's'; c.style.animationDelay = Math.random() * .6 + 's'; document.body.appendChild(c); setTimeout(() => c.remove(), 4500); } }
+
+/* HUD & menu */
+function hud() {
+  const r = rankIdx(), cur = RANKS[r], nx = RANKS[r + 1];
+  $('rankName').textContent = '🎖️ ' + cur.name;
+  $('xpFill').style.width = nx ? (100 * (S.xp - cur.xp) / (nx.xp - cur.xp)) + '%' : '100%';
+  $('xpTxt').textContent = nx ? `${S.xp} XP · prochain grade à ${nx.xp}` : `${S.xp} XP · grade maximum`;
+  $('missions').innerHTML = `${doneCount()}/8<small>dossiers${S.d3.done.jury ? ' · BC ✔' : ''}</small>`;
+}
+$('menuBtn').addEventListener('click', () => {
+  $('menuList').innerHTML = MISSIONS.map(m => `<li><span>${S.d3.done[m.id] ? '✅' : unlocked(m) ? '📁' : '🔒'} ${m.place}</span><span style="color:#5a6687">${m.themes === 'ALL' ? 'Tous thèmes' : m.themes.map(t => THEME_LABEL[t]).join(', ')}</span></li>`).join('');
+  $('mSound').textContent = S.sound ? '🔊 Son : activé' : '🔇 Son : coupé';
+  $('menu').classList.remove('hidden');
+});
+$('mClose').addEventListener('click', () => $('menu').classList.add('hidden'));
+$('mSound').addEventListener('click', () => { S.sound = !S.sound; save(); $('mSound').textContent = S.sound ? '🔊 Son : activé' : '🔇 Son : coupé'; if (!S.sound) sirenSet(false); else if (CAR.siren) sirenSet(true); });
+$('mCredits').addEventListener('click', () => { $('menu').classList.add('hidden'); dialog([['Crédits', 'Objectif BC 3D', 'Modèles 3D : Kenney (kenney.nl), licence CC0. Moteur 3D : three.js (licence MIT). Questions : fiches de révision Objectif BC.']]); });
+$('mReset').addEventListener('click', () => { if (confirm('Recommencer l\'histoire ? Ton XP et la maîtrise des questions sont conservés.')) { S.d3 = { intro: false, done: {}, ended: false }; save(); location.reload(); } });
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+(async () => {
+  try { await loadAll(); }
+  catch (e) { $('loadTxt').textContent = 'Erreur de chargement : ' + e.message; return; }
+  MK.todo = markerSprite('#f4c430', '!').material.map; MK.done = markerSprite('#16a34a', '✓').material.map;
+  buildWorld();
+  camLook.copy(P.pos); camPos.set(P.pos.x, 17, P.pos.z + 17);
+  $('loading').classList.add('hidden'); ['hud', 'obj'].forEach(id => $(id).classList.remove('hidden'));
+  hud(); loop();
+  window.__g3 = { THREE, scene, camera, renderer, P, CAR, S, SPOTS, get QZ() { return QZ; }, input, step(n) { for (let i = 0; i < n; i++) update(1 / 30); renderer.render(scene, camera); } };
+  if (!S.d3.intro) { $('joyHint').classList.remove('hidden'); dialog(STORY_INTRO.map(l => l.slice()), () => { S.d3.intro = true; save(); }); }
+  else { const n = nextMission(); toast(n ? '📻 Prochain dossier : ' + n.place : '🎖️ Bon retour, Brigadier-Chef !'); }
+})();
+</script>
+</body>
+</html>
