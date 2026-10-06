@@ -26,7 +26,7 @@
     #app { position: fixed; inset: 0; display: flex; flex-direction: column; max-width: 560px; margin: 0 auto; }
 
     /* ---------- HUD ---------- */
-    #hud { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--navy);
+    #hud { display: flex; align-items: center; gap: 7px; padding: 8px 10px; background: var(--navy);
       border-bottom: 3px solid #000; box-shadow: inset 0 -3px 0 #2a3c78; }
     #hudAvatar { width: 40px; height: 49px; image-rendering: pixelated; background: #2a3c78;
       border: 2px solid #000; border-radius: 6px; flex: none; }
@@ -40,7 +40,7 @@
     .xpbar > span { position: absolute; inset: 0; font-family: var(--px); font-size: 7px; line-height: 8px;
       text-align: center; color: #fff; text-shadow: 1px 1px 0 #000; }
     #hudHearts { font-size: 11px; margin-top: 3px; letter-spacing: 1px; }
-    .hbtn { flex: none; width: 40px; height: 44px; border: 2px solid #000; border-radius: 6px; background: #2a3c78;
+    .hbtn { flex: none; width: 38px; height: 44px; border: 2px solid #000; border-radius: 6px; background: #2a3c78;
       color: #fff; font-size: 20px; box-shadow: inset 0 -3px 0 #16224a; cursor: pointer; }
 
     /* ---------- Monde ---------- */
@@ -227,6 +227,7 @@
       <div class="xpbar"><i id="hudXpFill" style="width:0"></i><span id="hudXpTxt">0 XP</span></div>
       <div id="hudHearts"></div>
     </div>
+    <button class="hbtn" id="btnHome" aria-label="Retour au site">🏠</button>
     <button class="hbtn" id="btnMusic" aria-label="Musique">🎵</button>
     <button class="hbtn" id="btnMenu" aria-label="Menu">☰</button>
   </div>
@@ -1000,6 +1001,12 @@ document.getElementById('btnA').addEventListener('click', () => { unlockAudio();
   toast('Approche-toi de quelqu\'un ou d\'un meuble et appuie sur A', 1500); });
 document.getElementById('btnB').addEventListener('click', () => { if (!busy) openMenu(); });
 document.getElementById('btnMenu').addEventListener('click', () => { if (!busy) openMenu(); });
+function askLeave() {
+  held = null; releaseAll();
+  dialog('Quitter le jeu ?', 'Êtes-vous sûr de vouloir quitter le jeu et revenir au site de révision ?<br><br><small>💾 Ta progression est enregistrée, tu la retrouveras en revenant.</small>',
+    [['🌐 DIRECTION LE SITE WEB', () => { S.pos = { x: P.x, y: P.y }; S.dir = P.dir; save(); location.href = 'index.html'; }], ['🎮 RESTER DANS LE JEU', null, 'alt']]);
+}
+document.getElementById('btnHome').addEventListener('click', () => { if (!busy) askLeave(); });
 function updMusicBtn() {
   const on = S.musicOn && S.musicVol > 0;
   ['btnMusic', 'bMusic'].forEach(id => { const b = document.getElementById(id); b.textContent = on ? '🎵' : '🔇'; b.style.opacity = on ? 1 : .6; });
@@ -1347,10 +1354,11 @@ function renderMenu() {
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
           <button class="btn blue" id="oCopy">COPIER</button><button class="btn alt" id="oImp">IMPORTER</button></div>
       </div>
-      <div style="padding:14px 0"><a class="lnk" href="index.html">← Retour au site de révision</a></div>
+      <div style="padding:14px 0"><a class="lnk" href="index.html" id="oLeave">← Retour au site de révision</a></div>
       <div style="padding:6px 0 14px"><button class="btn alt" id="oReset">RECOMMENCER À ZÉRO</button></div>`;
     const code = btoa(unescape(encodeURIComponent(JSON.stringify(S))));
     document.getElementById('saveCode').value = code;
+    document.getElementById('oLeave').onclick = e => { e.preventDefault(); show('menu', false); busy = false; askLeave(); };
     m.querySelectorAll('.skinb').forEach(b => b.onclick = () => { S.skin = b.dataset.c; save(); updHud(); renderMenu(); });
     document.getElementById('oSnd').onclick = () => { S.sound = !S.sound; applyVolumes(); save(); renderMenu(); };
     document.getElementById('oMus').onclick = () => { S.musicOn = !S.musicOn; if (S.musicOn && !S.musicVol) S.musicVol = 0.6; applyVolumes(); updMusicBtn(); save(); renderMenu(); };
