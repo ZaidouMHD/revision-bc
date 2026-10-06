@@ -16,10 +16,20 @@
   #rankName { font-weight: 800; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #xpBar { height: 7px; background: rgba(255,255,255,.18); border-radius: 4px; margin-top: 4px; overflow: hidden; }
   #xpFill { height: 100%; width: 0; background: linear-gradient(90deg, #f4c430, #ffdf6e); transition: width .4s; }
-  #xpTxt { font-size: 10px; opacity: .8; margin-top: 2px; }
+  #xpTxt { font-size: 10px; opacity: .8; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #missions { font-weight: 800; font-size: 13px; text-align: center; }
   #missions small { display: block; font-weight: 500; font-size: 10px; opacity: .75; }
-  #menuBtn { pointer-events: auto; width: 42px; height: 42px; border-radius: 12px; border: 2px solid rgba(255,255,255,.2); background: rgba(0,20,70,.82); color: #fff; font-size: 20px; }
+  .hbtn { pointer-events: auto; flex: none; width: 42px; height: 42px; padding: 0; border-radius: 12px; border: 2px solid rgba(255,255,255,.2); background: rgba(0,20,70,.82); color: #fff; font-size: 20px; }
+  #ghud { position: fixed; top: calc(env(safe-area-inset-top) + 112px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; white-space: nowrap; }
+  #ghud button { width: 30px; height: 30px; border-radius: 15px; border: 0; background: #c1121f; color: #fff; font-weight: 900; }
+  #gbig { position: fixed; top: 38%; left: 0; right: 0; text-align: center; font-size: 64px; font-weight: 900; color: #f4c430; text-shadow: 0 4px 0 #001a5c, 0 0 20px rgba(0,0,0,.5); pointer-events: none; }
+  .st { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; margin-top: 8px; padding: 8px 10px; border: 2px solid #d5dcf0; border-radius: 12px; background: #f6f8ff; color: #10204a; font-size: 15px; }
+  .st.on { border-color: #002395; background: #e8edff; }
+  .st b { display: block; } .st small { color: #5a6687; font-size: 12px; }
+  .st .ico { font-size: 22px; width: 30px; text-align: center; flex: none; }
+  .st .rt { margin-left: auto; font-size: 12px; font-weight: 800; color: #002395; text-align: right; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+  input[type=range] { width: 100%; accent-color: #002395; }
   #obj { position: fixed; top: calc(env(safe-area-inset-top) + 66px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; pointer-events: none; max-width: 92vw; }
   #objArrow { width: 30px; height: 30px; flex: none; transition: transform .1s linear; }
   #objTxt { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -80,7 +90,9 @@
 <div id="hud" class="hidden">
   <div id="rank" class="card"><div id="rankName">—</div><div id="xpBar"><div id="xpFill"></div></div><div id="xpTxt"></div></div>
   <div id="missions" class="card">0/8<small>dossiers</small></div>
-  <button id="menuBtn" aria-label="Menu">☰</button>
+  <button id="radioBtn" class="hbtn" aria-label="Radio">📻</button>
+  <button id="opsBtn" class="hbtn" aria-label="Interventions">📟</button>
+  <button id="menuBtn" class="hbtn" aria-label="Menu">☰</button>
 </div>
 <div id="obj" class="card hidden">
   <svg id="objArrow" viewBox="0 0 24 24"><path d="M12 2 L20 20 L12 15 L4 20 Z" fill="#f4c430" stroke="#fff" stroke-width="1.2"/></svg>
@@ -104,6 +116,25 @@
   <div id="qOpts"></div>
   <div class="exp hidden" id="qExp"></div>
   <button class="btn hidden" id="qNext">Suivant ▶</button>
+</div></div>
+
+<div id="ghud" class="card hidden"><span id="gtxt"></span><button id="gquit" aria-label="Abandonner">✖</button></div>
+<div id="gbig" class="hidden"></div>
+
+<div id="radio" class="overlay center hidden"><div class="panel">
+  <div class="who"><b>📻 Autoradio</b><span id="radioNow"></span></div>
+  <div style="font-size:13px;color:#5a6687">Les vraies radios ont besoin d'Internet. Sans réseau, les stations BC jouent les musiques du jeu.</div>
+  <div class="grid2" id="radioList"></div>
+  <div style="margin-top:12px;font-size:13px;font-weight:700">Volume</div>
+  <input type="range" id="radioVol" min="0" max="1" step="0.05">
+  <button class="btn alt" id="radioOff"></button>
+  <button class="btn" id="radioClose">Fermer</button>
+</div></div>
+
+<div id="ops" class="overlay center hidden"><div class="panel">
+  <div class="who"><b>📟 Interventions</b><span>Mini-jeux bonus</span></div>
+  <div id="opsList"></div>
+  <button class="btn" id="opsClose">Fermer</button>
 </div></div>
 
 <div id="menu" class="overlay center hidden"><div class="panel">
@@ -153,8 +184,16 @@ function lvl(id) { return (S.q[id] && S.q[id].l) || 0; }
 /* =========================================================
    SONS (WebAudio, pas de fichiers)
    ========================================================= */
-let AC = null;
-function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+let AC = null, musBus = null, radioStarted = false;
+function ac() {
+  if (!AC) {
+    try { AC = new (window.AudioContext || window.webkitAudioContext)(); musBus = AC.createGain(); musBus.connect(AC.destination); } catch (e) {}
+  }
+  if (AC && AC.state === 'suspended' && !document.hidden) AC.resume();
+  // La musique démarre au premier geste du joueur (règle des navigateurs)
+  if (AC && !radioStarted) { radioStarted = true; setTimeout(() => radioPlay(R.st, true), 0); }
+  return AC;
+}
 function tone(f, d, type = 'square', v = .08, when = 0) {
   if (!S.sound) return; const a = ac(); if (!a) return;
   const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + when;
@@ -177,6 +216,166 @@ function sirenSet(on) {
   lfo.connect(lg); lg.connect(o.frequency); g.gain.value = .035; o.connect(g); g.connect(a.destination);
   o.start(); lfo.start(); sirenNode = { o, lfo }; o.onended = () => { try { lfo.stop(); } catch (e) {} };
 }
+
+/* ---------- Musiques du jeu (chiptune, reprises du jeu 2D) ---------- */
+// Une case = une croche. "-" prolonge la note précédente.
+const SONGS = {
+  map: { bpm: 132,
+    lead: ['E5 - G5 - C6 - G5 E5', 'A5 - G5 E5 C5 - E5 -', 'F5 - A5 - C6 - A5 F5', 'G5 - - - D5 - B4 -',
+           'E5 - G5 - C6 - D6 E6', 'D6 - C6 A5 E5 - A5 -', 'F5 G5 A5 - C6 - B5 A5', 'G5 - B5 - D6 - - -'],
+    chords: ['C4', 'A3', 'F3', 'G3', 'C4', 'A3', 'F3', 'G3'], minor: [0, 1, 0, 0, 0, 1, 0, 0],
+    bass: ['C3', 'A2', 'F2', 'G2', 'C3', 'A2', 'F2', 'G2'], drums: 'k h s h k h s h' },
+  battle: { bpm: 168,
+    lead: ['A4 - C5 - E5 - A5 G5', 'F5 - E5 - C5 - A4 -', 'G4 - B4 - D5 - G5 F5', 'E5 - - - G#4 - B4 -',
+           'A5 - G5 - E5 - A5 B5', 'C6 - B5 A5 F5 - A5 -', 'B5 - A5 G5 D5 - G5 -', 'E5 - G#5 - B5 - E6 -'],
+    chords: ['A3', 'F3', 'G3', 'E3', 'A3', 'F3', 'G3', 'E3'], minor: [1, 0, 0, 0, 1, 0, 0, 0],
+    bass: ['A2', 'F2', 'G2', 'E2', 'A2', 'F2', 'G2', 'E2'], drums: 'k h s k k h s h' },
+  arcade: { bpm: 150,
+    lead: ['G5 - E5 G5 C6 - G5 -', 'A5 - F5 A5 D6 - A5 -', 'B5 - G5 B5 D6 - B5 G5', 'C6 - - - E6 - D6 C6',
+           'E6 - C6 E6 G6 - E6 -', 'F6 - D6 F6 A5 - C6 -', 'D6 - B5 D6 G5 - B5 D6', 'C6 - G5 - E5 - C5 -'],
+    chords: ['C4', 'F3', 'G3', 'C4', 'A3', 'D3', 'G3', 'C4'], minor: [0, 0, 0, 0, 1, 1, 0, 0],
+    bass: ['C3', 'F2', 'G2', 'C3', 'A2', 'D3', 'G2', 'C3'], drums: 'k h s h k h s h' },
+  nuit: { bpm: 96,
+    lead: ['A4 - - C5 E5 - D5 C5', 'B4 - - - G4 - - -', 'F4 - A4 - C5 - B4 A4', 'G#4 - - - E4 - - -',
+           'A4 - C5 - E5 - A5 -', 'G5 - F5 E5 D5 - C5 -', 'D5 - C5 B4 A4 - G#4 -', 'A4 - - - - - - -'],
+    chords: ['A3', 'G3', 'F3', 'E3', 'A3', 'C4', 'D3', 'A3'], minor: [1, 0, 0, 0, 1, 0, 1, 1],
+    bass: ['A2', 'G2', 'F2', 'E2', 'A2', 'C3', 'D3', 'A2'], drums: 'k . s . k k s .' }
+};
+const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+function midi(n) { const m = n.match(/^([A-G])(#?)(\d)$/); return 12 * (+m[3] + 1) + NOTE[m[1]] + (m[2] ? 1 : 0); }
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function compile(song) {
+  const lead = []; let last = null;
+  song.lead.join(' ').split(/\s+/).forEach(tk => {
+    if (tk === '-') { if (last) last.len++; lead.push(null); return; }
+    last = tk === '.' ? null : { m: midi(tk), len: 1 }; lead.push(last);
+  });
+  return Object.assign({}, song, { leadC: lead, steps: lead.length, drumC: song.drums.split(' ') });
+}
+const SONGS_C = {}; for (const k in SONGS) SONGS_C[k] = compile(SONGS[k]);
+let noiseBuf = null;
+function noise() {
+  if (!noiseBuf) { noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.3, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  return noiseBuf;
+}
+function voice(type, f, t, dur, vol) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.008);
+  g.gain.setValueAtTime(vol, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(musBus); o.start(t); o.stop(t + dur + 0.02);
+}
+function drum(kind, t) {
+  if (kind === 'k') {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+    o.connect(g); g.connect(musBus); o.start(t); o.stop(t + 0.15); return;
+  }
+  const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = noise(); f.type = 'highpass'; f.frequency.value = kind === 's' ? 1200 : 6000;
+  const v = kind === 's' ? 0.22 : 0.07, d = kind === 's' ? 0.12 : 0.04;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
+  src.connect(f); f.connect(g); g.connect(musBus); src.start(t); src.stop(t + d + 0.01);
+}
+const MUS = { song: null, step: 0, next: 0, timer: null };
+function musicTick() {
+  const sg = SONGS_C[MUS.song]; if (!sg || !AC || AC.state !== 'running') return;
+  const e = 60 / sg.bpm / 2;
+  while (MUS.next < AC.currentTime + 0.15) {
+    if (MUS.next < AC.currentTime - 0.2) MUS.next = AC.currentTime + 0.02;
+    const i = MUS.step, bar = Math.floor(i / 8), pos = i % 8, n = sg.leadC[i];
+    if (n) voice('square', hz(n.m), MUS.next, e * n.len * 0.95, 0.07);
+    voice('triangle', hz(midi(sg.bass[bar]) + (pos % 2 ? 12 : 0)), MUS.next, e * 0.9, 0.22);
+    const root = midi(sg.chords[bar]), arp = [root, root + (sg.minor[bar] ? 3 : 4), root + 7, root + 12];
+    voice('square', hz(arp[(pos * 2) % 4]), MUS.next, e * 0.45, 0.022);
+    voice('square', hz(arp[(pos * 2 + 1) % 4]), MUS.next + e / 2, e * 0.45, 0.022);
+    const d = sg.drumC[pos]; if (d && d !== '.') drum(d, MUS.next);
+    MUS.next += e; MUS.step = (MUS.step + 1) % sg.steps;
+  }
+}
+function playSong(name) {
+  if (!AC) return; if (MUS.song === name) return;
+  MUS.song = name; MUS.step = 0; MUS.next = AC.currentTime + 0.08;
+  if (!MUS.timer) MUS.timer = setInterval(musicTick, 25);
+}
+function stopSong() { MUS.song = null; }
+
+/* ---------- Autoradio : vraies radios en ligne + stations du jeu ---------- */
+const STATIONS = [
+  { id: 'bcfm', name: 'BC FM', sub: 'Hors ligne', song: 'map', ico: '🚓' },
+  { id: 'interv', name: 'Radio Intervention', sub: 'Hors ligne', song: 'battle', ico: '🚨' },
+  { id: 'arcfm', name: 'Arcade FM', sub: 'Hors ligne', song: 'arcade', ico: '🕹️' },
+  { id: 'nuit', name: 'Patrouille de nuit', sub: 'Hors ligne', song: 'nuit', ico: '🌙' },
+  { id: 'skyrock', name: 'Skyrock', sub: 'Rap · R&B', url: 'https://icecast.skyrock.net/s/natio_mp3_128k', ico: '🎤' },
+  { id: 'generations', name: 'Générations', sub: 'Rap français', url: 'https://generationfm.ice.infomaniak.ch/generationfm-high.mp3', ico: '🎧' },
+  { id: 'mouv', name: "Mouv'", sub: 'Rap · urbain', url: 'https://icecast.radiofrance.fr/mouv-midfi.mp3', ico: '🔊' },
+  { id: 'nrj', name: 'NRJ', sub: 'Hits', url: 'https://scdn.nrjaudio.fm/adwz2/fr/30001/mp3_128.mp3', ico: '⚡' },
+  { id: 'fun', name: 'Fun Radio', sub: 'Dance · électro', url: 'https://icecast.funradio.fr/fun-1-44-128', ico: '🪩' },
+  { id: 'europe2', name: 'Europe 2', sub: 'Pop · rock', url: 'https://europe2.lmn.fm/europe2.mp3', ico: '🎸' },
+  { id: 'rfm', name: 'RFM', sub: 'Pop', url: 'https://rfm.lmn.fm/rfm.mp3', ico: '🎶' },
+  { id: 'rtl2', name: 'RTL2', sub: 'Pop · rock', url: 'https://icecast.rtl2.fr/rtl2-1-44-128', ico: '🎵' },
+  { id: 'nostalgie', name: 'Nostalgie', sub: 'Années 70-80', url: 'https://streaming.nrjaudio.fm/ouwgwqsk6j4d', ico: '📀' },
+  { id: 'fip', name: 'FIP', sub: 'Éclectique', url: 'https://icecast.radiofrance.fr/fip-midfi.mp3', ico: '🎷' },
+  { id: 'franceinfo', name: 'franceinfo', sub: 'Info en continu', url: 'https://icecast.radiofrance.fr/franceinfo-midfi.mp3', ico: '📰' }
+];
+const R = { st: 'bcfm', vol: 0.6, on: true, cur: null, el: null, wait: null };
+const radioVol = () => (S.sound && R.on ? R.vol : 0);
+function radioApplyVol() {
+  if (musBus && AC) musBus.gain.setTargetAtTime(radioVol() * radioVol(), AC.currentTime, 0.05);
+  if (R.el) R.el.volume = Math.min(1, radioVol());
+}
+function radioStop() {
+  stopSong(); clearTimeout(R.wait);
+  if (R.el) { R.el.onerror = R.el.onplaying = null; R.el.pause(); R.el.removeAttribute('src'); R.el.load(); }
+}
+function radioFallback(why) {
+  const name = (STATIONS.find(s => s.id === R.cur) || {}).name;
+  radioStop(); R.cur = 'bcfm'; playSong('map'); radioApplyVol(); radioUi();
+  toast(`📻 ${name} ne répond pas${why ? ' (' + why + ')' : ''} — retour sur BC FM`);
+}
+function radioPlay(id, quiet) {
+  const st = STATIONS.find(s => s.id === id) || STATIONS[0];
+  R.st = st.id; S.d3.radio = { st: R.st, vol: R.vol, on: R.on }; save();
+  radioStop(); R.cur = st.id;
+  if (!R.on || !AC) { radioUi(); return; }
+  if (st.song) { playSong(st.song); radioApplyVol(); }
+  else if (navigator.onLine === false) { R.cur = 'bcfm'; playSong('map'); radioApplyVol(); toast('📻 Pas de réseau — BC FM prend le relais'); }
+  else {
+    if (!R.el) { R.el = new Audio(); R.el.preload = 'none'; }
+    R.el.src = st.url; radioApplyVol();
+    R.el.onerror = () => radioFallback('flux indisponible');
+    R.el.onplaying = () => { clearTimeout(R.wait); if (!quiet) toast('📻 ' + st.name + ' — en direct'); };
+    const p = R.el.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') radioFallback(); });
+    R.wait = setTimeout(() => { if (R.el && (R.el.paused || R.el.readyState < 2)) radioFallback('pas de réseau ?'); }, 12000);
+  }
+  radioUi();
+}
+function radioUi() {
+  const cur = STATIONS.find(s => s.id === R.cur) || STATIONS[0];
+  $('radioNow').textContent = R.on ? '· ' + cur.name : '· éteint';
+  $('radioOff').textContent = R.on ? '⏻ Éteindre la radio' : '⏻ Allumer la radio';
+  $('radioVol').value = R.vol;
+  $('radioList').innerHTML = STATIONS.map(s => `<button class="st ${R.on && s.id === R.cur ? 'on' : ''}" data-st="${s.id}"><span class="ico">${s.ico}</span><span><b>${s.name}</b><small>${s.song ? '🎮 ' : '📡 '}${s.sub}</small></span></button>`).join('');
+}
+// En arrière-plan, on coupe tout ; au retour, on relance la station
+let appHidden = false;
+function appPause() {
+  if (appHidden) return; appHidden = true;
+  if (sirenNode) sirenSet(false);
+  if (R.el) R.el.pause();
+  if (AC) try { AC.suspend(); } catch (e) {}
+}
+function appResume() {
+  if (!appHidden) return; appHidden = false;
+  if (!AC) return;
+  try { AC.resume(); } catch (e) {}
+  if (CAR.siren) sirenSet(true);
+  const st = STATIONS.find(s => s.id === R.st); if (R.on && st && st.url) radioPlay(R.st, true);
+}
+document.addEventListener('visibilitychange', () => document.hidden ? appPause() : appResume());
+window.__appPause = appPause; window.__appResume = appResume;   // appelés par l'app Android
+Object.assign(R, S.d3.radio || {});
 
 /* =========================================================
    RENDU
@@ -499,6 +698,7 @@ function buildWorld() {
     npcs.push({ ch, m, mk });
     circles.push({ x: ch.root.position.x, z: ch.root.position.z, r: .35 });
   }
+  buildJail();
   // Joueur
   player = new Char('character-male-c');
   P.pos.set(pd.x + pdc * 4.5, 0, pd.z + pdr * 4.5 + 1);
@@ -546,7 +746,7 @@ function readInput() {
   if (kx || kz) { const l = Math.hypot(kx, kz); x = kx / l; z = kz / l; }
   return { x, z, m: Math.min(1, Math.hypot(x, z)) };
 }
-const uiOpen = () => !$('dlg').classList.contains('hidden') || !$('quiz').classList.contains('hidden') || !$('menu').classList.contains('hidden');
+const uiOpen = () => ['dlg', 'quiz', 'menu', 'radio', 'ops'].some(id => !$(id).classList.contains('hidden'));
 
 /* =========================================================
    COLLISIONS
@@ -585,7 +785,7 @@ function angDiff(a, b) { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; wh
 
 function update(dt) {
   t0 += dt;
-  const inp = uiOpen() ? { x: 0, z: 0, m: 0 } : readInput();
+  const inp = (uiOpen() || FREEZE) ? { x: 0, z: 0, m: 0 } : readInput();
   if (!P.inCar) {
     if (inp.m > 0.12) {
       const sp = inp.m > 0.8 ? 6.5 : 3.6 * inp.m + 1;
@@ -648,24 +848,27 @@ function update(dt) {
   player.mixer.update(dt);
   victimUpdate(dt);
 
+  if (GAME) { near = null; GAME.update(dt); }
   // Action contextuelle
   const act = $('act');
   let label = null;
-  if (P.inCar) label = Math.abs(CAR.v) < 4 ? 'Descendre' : null;
+  if (P.inCar) label = Math.abs(CAR.v) < 4 && (!GAME || GAME.exitOk) ? 'Descendre' : null;
   else if (near) label = 'Parler';
-  else if (P.pos.distanceTo(CAR.pos) < 3.4) label = 'Monter 🚓';
+  else if (P.pos.distanceTo(CAR.pos) < 3.4 && (!GAME || GAME.carOk)) label = 'Monter 🚓';
   act.classList.toggle('hidden', !label || uiOpen()); if (label) act.textContent = label;
   $('siren').classList.toggle('hidden', !P.inCar || uiOpen());
 
   // Objectif
-  const nm = nextMission();
-  if (nm) {
-    const tgt = SPOTS[nm.spot]; beacon.visible = true; beacon.position.x = tgt.x; beacon.position.z = tgt.z;
+  const nm = GAME ? null : nextMission();
+  const gobj = GAME && GAME.objective();
+  if (nm || gobj) {
+    const tgt = gobj || SPOTS[nm.spot]; beacon.visible = true; beacon.position.x = tgt.x; beacon.position.z = tgt.z;
     const dx = tgt.x - P.pos.x, dz = tgt.z - P.pos.z, dist = Math.hypot(dx, dz);
     $('objArrow').style.transform = `rotate(${Math.atan2(dx, -dz)}rad)`;
-    $('objTxt').textContent = `${nm.place} — ${nm.who} · ${Math.round(dist)} m`;
+    $('objTxt').textContent = gobj ? `${gobj.txt} · ${Math.round(dist)} m` : `${nm.place} — ${nm.who} · ${Math.round(dist)} m`;
+    beacon.material.color.setHex(gobj && gobj.col || 0xf4c430);
     beacon.material.opacity = dist < 8 ? .1 : .28;
-  } else { beacon.visible = false; $('objArrow').style.transform = ''; $('objTxt').textContent = 'Brigadier-Chef ! Patrouille libre — révise avec tout le monde'; }
+  } else if (GAME) { beacon.visible = false; $('objTxt').textContent = GAME.name; } else { beacon.visible = false; $('objArrow').style.transform = ''; $('objTxt').textContent = 'Brigadier-Chef ! Patrouille libre — révise avec tout le monde'; }
 
   // Caméra
   const portrait = innerHeight > innerWidth;
@@ -816,9 +1019,297 @@ $('menuBtn').addEventListener('click', () => {
   $('menu').classList.remove('hidden');
 });
 $('mClose').addEventListener('click', () => $('menu').classList.add('hidden'));
-$('mSound').addEventListener('click', () => { S.sound = !S.sound; save(); $('mSound').textContent = S.sound ? '🔊 Son : activé' : '🔇 Son : coupé'; if (!S.sound) sirenSet(false); else if (CAR.siren) sirenSet(true); });
+$('mSound').addEventListener('click', () => { S.sound = !S.sound; save(); $('mSound').textContent = S.sound ? '🔊 Son : activé' : '🔇 Son : coupé'; radioApplyVol(); if (!S.sound) sirenSet(false); else if (CAR.siren) sirenSet(true); });
 $('mCredits').addEventListener('click', () => { $('menu').classList.add('hidden'); dialog([['Crédits', 'Objectif BC 3D', 'Modèles 3D : Kenney (kenney.nl), licence CC0. Moteur 3D : three.js (licence MIT). Questions : fiches de révision Objectif BC.']]); });
-$('mReset').addEventListener('click', () => { if (confirm('Recommencer l\'histoire ? Ton XP et la maîtrise des questions sont conservés.')) { S.d3 = { intro: false, done: {}, ended: false }; save(); location.reload(); } });
+$('mReset').addEventListener('click', () => {
+  $('menu').classList.add('hidden');
+  dialog([['Capitaine Moreau', 'Chef de service', 'Recommencer l\'histoire depuis le début ? Ton XP, la maîtrise des questions, tes records et la garde à vue sont conservés.',
+    [['Recommencer', () => { S.d3 = { intro: false, done: {}, ended: false, radio: S.d3.radio, arc: S.d3.arc, jail: S.d3.jail }; save(); location.reload(); }, 'red'], ['Annuler', null, 'alt']]]]);
+});
+
+// Un tap à côté d'un panneau le ferme
+['radio', 'ops', 'menu'].forEach(id => $(id).addEventListener('click', e => { if (e.target === $(id)) $(id).classList.add('hidden'); }));
+
+/* Autoradio */
+$('radioBtn').addEventListener('click', () => { ac(); radioUi(); $('radio').classList.remove('hidden'); });
+$('radioClose').addEventListener('click', () => $('radio').classList.add('hidden'));
+$('radioList').addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (!b) return; ac(); R.on = true; radioPlay(b.dataset.st); });
+$('radioVol').addEventListener('input', e => { R.vol = +e.target.value; radioApplyVol(); S.d3.radio = { st: R.st, vol: R.vol, on: R.on }; save(); });
+$('radioOff').addEventListener('click', () => { ac(); R.on = !R.on; if (R.on) radioPlay(R.st); else { radioStop(); S.d3.radio = { st: R.st, vol: R.vol, on: false }; save(); radioUi(); } });
+
+/* =========================================================
+   CELLULE DE GARDE À VUE — les voleurs attrapés y restent
+   ========================================================= */
+const JAIL = { c: null, inmates: [] };
+const THIEF_MODELS = ['character-male-a', 'character-male-e', 'character-female-a', 'character-male-f', 'character-female-c', 'character-male-b'];
+function tint(ch, hex) {
+  ch.root.traverse(o => { if (o.isMesh) { if (!o.userData.own) { o.material = o.material.clone(); o.userData.own = true; } o.material.color.setHex(hex); } });
+}
+function buildJail() {
+  const c = tc(4, 4); JAIL.c = c;
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(6, 0.1, 6), new THREE.MeshLambertMaterial({ color: 0x8a8f99 }));
+  floor.position.set(c.x, 0.05, c.z); floor.receiveShadow = true; scene.add(floor);
+  const barMat = new THREE.MeshLambertMaterial({ color: 0x2b2f36 }), barGeo = new THREE.BoxGeometry(0.1, 2.6, 0.1);
+  for (let i = 0; i <= 12; i++) {
+    const k = -3 + i * 0.5;
+    [[k, -3], [k, 3], [-3, k], [3, k]].forEach(([x, z]) => { const b = new THREE.Mesh(barGeo, barMat); b.position.set(c.x + x, 1.35, c.z + z); b.castShadow = true; scene.add(b); });
+  }
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(6.3, 0.15, 6.3), barMat); roof.position.set(c.x, 2.7, c.z); scene.add(roof);
+  const sg = signMesh('GARDE À VUE', 'Cellule', '#b91c1c'); sg.scale.setScalar(0.8); sg.position.set(c.x, 3.4, c.z + 3.05); scene.add(sg);
+  boxes.push({ x0: c.x - 3.1, x1: c.x + 3.1, z0: c.z - 3.1, z1: c.z + 3.1 });
+  for (let i = 0; i < Math.min(S.d3.jail || 0, 8); i++) jailShow();
+}
+function jailShow() {
+  if (JAIL.inmates.length >= 8) return;
+  const ch = new Char(THIEF_MODELS[JAIL.inmates.length % THIEF_MODELS.length]); tint(ch, 0x4a4a55);
+  const k = JAIL.inmates.length; ch.root.position.set(JAIL.c.x - 1.8 + (k % 4) * 1.2, 0.1, JAIL.c.z - 1.2 + Math.floor(k / 4) * 2);
+  ch.root.rotation.y = rnd() * 2 - 1; ch.play(k % 3 ? 'idle' : 'sit'); JAIL.inmates.push(ch);
+}
+function jailAdd(n = 1) { S.d3.jail = (S.d3.jail || 0) + n; for (let i = 0; i < n; i++) jailShow(); save(); hud(); }
+
+/* =========================================================
+   INTERVENTIONS — mini-jeux 3D
+   ========================================================= */
+let GAME = null, FREEZE = false;
+const CAP = 40;   // XP max par mini-jeu et par jour
+const today = () => new Date().toLocaleDateString('fr-CA');
+function arc3() { const a = S.d3.arc || (S.d3.arc = { best: {}, xp: {}, day: '' }); if (a.day !== today()) { a.day = today(); a.xp = {}; } return a; }
+const RC = [1, 7, 13];    // lignes / colonnes des grandes avenues
+const nodePos = (i, j) => tc(RC[i], RC[j]);
+const fmt = s => s.toFixed(1).replace('.', ',') + ' s';
+
+const OPS = [
+  { id: 'course', name: 'Course urgente', ico: '🏁', unlock: 0, sub: 'Un collègue appelle des renforts !',
+    how: 'En voiture, passe les 9 points de contrôle le plus vite possible. Le gyrophare est allumé d\'office.' },
+  { id: 'poursuite', name: 'Course-poursuite', ico: '🚗', unlock: 100, sub: 'Une voiture volée fonce dans le quartier',
+    how: 'Reste collé à la voiture volée pour remplir la jauge d\'interpellation avant la fin du temps. Le voleur part en garde à vue !' },
+  { id: 'chefs', name: 'Les faux chefs', ico: '🕵️', unlock: 300, sub: 'La hiérarchie… ou des voleurs déguisés ?',
+    how: 'À pied, ramasse tous les dossiers 📁 sur les avenues sans te faire attraper par les « chefs ». Prends un mandat ★ : ils se révèlent voleurs pendant 8 s — attrape-les pour les mettre en garde à vue !' }
+];
+function recTxt(o) { const b = arc3().best[o.id]; return b === undefined ? '—' : o.id === 'chefs' ? b + ' pts' : fmt(b); }
+$('opsBtn').addEventListener('click', () => {
+  const a = arc3();
+  $('opsList').innerHTML = OPS.map(o => {
+    const lock = S.xp < o.unlock;
+    return `<button class="st" data-op="${o.id}" ${lock ? 'style="opacity:.6"' : ''}><span class="ico">${lock ? '🔒' : o.ico}</span><span><b>${o.name}</b><small>${lock ? 'Débloqué à ' + o.unlock + ' XP (encore ' + (o.unlock - S.xp) + ')' : o.sub}</small></span><span class="rt">🏆 ${recTxt(o)}<br><small>${a.xp[o.id] || 0}/${CAP} XP</small></span></button>`;
+  }).join('') + `<div style="margin-top:10px;font-size:13px;color:#5a6687">🔒 En garde à vue : <b>${S.d3.jail || 0}</b> voleur${(S.d3.jail || 0) > 1 ? 's' : ''} — la cellule est derrière le commissariat.</div>`;
+  $('ops').classList.remove('hidden');
+});
+$('opsClose').addEventListener('click', () => $('ops').classList.add('hidden'));
+$('opsList').addEventListener('click', e => {
+  const b = e.target.closest('[data-op]'); if (!b) return; const o = OPS.find(x => x.id === b.dataset.op);
+  $('ops').classList.add('hidden'); ac();
+  if (S.xp < o.unlock) { dialog([['📟 Central', o.name, `Cette intervention se débloque à ${o.unlock} XP. Il te manque ${o.unlock - S.xp} XP : boucle des dossiers et révise pour en gagner !`]]); return; }
+  if (GAME) { toast('Termine d\'abord l\'intervention en cours.'); return; }
+  dialog([['📟 Central', o.name, o.how, [['🚨 Go !', () => startOp(o)], ['Plus tard', null, 'alt']]]]);
+});
+$('gquit').addEventListener('click', () => {
+  if (!GAME) return;
+  dialog([['📟 Central', GAME.name, 'Abandonner l\'intervention en cours ?',
+    [['Abandonner', () => GAME && endOp(false, 0, 'Intervention abandonnée.'), 'red'], ['Continuer', null, 'alt']]]]);
+});
+
+function startOp(o) {
+  GAME = { course: Course, poursuite: Poursuite, chefs: Chefs }[o.id](o);
+  GAME.op = o; GAME.name = o.name;
+  $('ghud').classList.remove('hidden');
+  countdown(() => {});
+}
+function countdown(done) {
+  FREEZE = true; let n = 3; const big = $('gbig'); big.classList.remove('hidden');
+  const tick = () => {
+    if (n > 0) { big.textContent = n; tone(440, .12, 'square', .07); n--; setTimeout(tick, 800); }
+    else { big.textContent = 'GO !'; tone(880, .3, 'square', .08); FREEZE = false; done(); setTimeout(() => big.classList.add('hidden'), 700); }
+  };
+  tick();
+}
+function endOp(win, xpRaw, text) {
+  const g = GAME; if (!g) return; GAME = null; FREEZE = false;
+  try { g.cleanup && g.cleanup(); } catch (e) {}
+  $('ghud').classList.add('hidden'); $('gbig').classList.add('hidden');
+  const a = arc3(), room = Math.max(0, CAP - (a.xp[g.op.id] || 0)), xp = Math.max(0, Math.min(room, Math.round(xpRaw)));
+  a.xp[g.op.id] = (a.xp[g.op.id] || 0) + xp; S.xp += xp; save(); hud();
+  if (win) { SFX.win(); confetti(60); } else SFX.ko();
+  dialog([['📟 Central', g.op.name, text + (xp ? `  +${xp} XP` : room === 0 && xpRaw > 0 ? '  (plafond d\'XP du jour atteint pour ce jeu)' : '')]]);
+}
+function putInCar(x, z, yaw) {
+  P.inCar = true; player.root.visible = false; CAR.pos.set(x, 0, z); CAR.yaw = yaw; CAR.v = 0; P.pos.copy(CAR.pos);
+  camLook.copy(CAR.pos);
+}
+function putOnFoot(x, z) {
+  if (P.inCar) { P.inCar = false; CAR.v = 0; setSiren(false); }
+  player.root.visible = true; P.pos.set(x, 0, z); player.root.position.copy(P.pos); camLook.copy(P.pos);
+}
+function ringMesh(col) {
+  const m = new THREE.Mesh(new THREE.RingGeometry(2.6, 3.4, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .85, side: THREE.DoubleSide, depthWrite: false }));
+  m.rotation.x = -Math.PI / 2; m.position.y = 0.08; scene.add(m); return m;
+}
+
+/* ---------- 🏁 Course urgente : 9 points de contrôle ---------- */
+function Course() {
+  const route = [[1, 7], [1, 13], [7, 13], [13, 13], [13, 7], [7, 7], [7, 1], [1, 1], [1, 4]].map(([r, c]) => tc(r, c));
+  putInCar(tc(1, 3).x, tc(1, 3).z + 2, Math.PI / 2); setSiren(true);
+  const ring = ringMesh(0xf4c430), next = ringMesh(0xffffff); next.scale.setScalar(.6); next.material.opacity = .5;
+  const g = { k: 0, t: 0, exitOk: false, carOk: false };
+  const place = () => { ring.position.x = route[g.k].x; ring.position.z = route[g.k].z; const n = route[g.k + 1]; next.visible = !!n; if (n) { next.position.x = n.x; next.position.z = n.z; } };
+  place();
+  g.update = dt => {
+    if (FREEZE) return; g.t += dt; ring.rotation.z += dt;
+    if (CAR.pos.distanceTo(route[g.k]) < 6) {
+      g.k++; tone(988, .08); tone(1319, .12, 'square', .08, .07); buzz(25);
+      if (g.k >= route.length) {
+        const a = arc3(), rec = a.best.course === undefined || g.t < a.best.course; if (rec) a.best.course = g.t;
+        return endOp(true, 10 + Math.max(0, (100 - g.t) / 2.5), `Renforts arrivés en ${fmt(g.t)} !${rec ? ' 🏆 Nouveau record !' : ''}`);
+      }
+      place();
+    }
+    if (g.t > 180) return endOp(false, 3, 'Trop tard, les collègues ont dû se débrouiller sans toi…');
+    $('gtxt').textContent = `🏁 ${g.k}/${route.length} · ⏱ ${fmt(g.t)}`;
+  };
+  g.objective = () => ({ x: route[g.k].x, z: route[g.k].z, txt: `Point de contrôle ${g.k + 1}/${route.length}` });
+  g.cleanup = () => { scene.remove(ring, next); setSiren(false); };
+  return g;
+}
+
+/* ---------- 🚗 Course-poursuite : la voiture volée ---------- */
+function Poursuite() {
+  putInCar(tc(1, 2).x, tc(1, 2).z + 2, Math.PI / 2);
+  const m = clone('hatchback-sports'); m.scale.setScalar(1.5); scene.add(m);
+  const mk = markerSprite('#dc2626', '!'); mk.position.set(0, 1.6, 0); mk.scale.set(.7, .7, 1); m.add(mk);
+  const banned = (a, b) => (a[0] === 2 && b[0] === 2 && (a[1] + b[1]) === 1);   // l'accident du boulevard Sud
+  const th = { a: [0, 1], b: [0, 2], t: 0, yaw: Math.PI / 2, pos: new THREE.Vector3() };
+  const g = { t: 0, bar: 0, LIM: 90, exitOk: false, carOk: false, done: false };
+  const pickNext = () => {
+    const [i, j] = th.b, opts = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]]
+      .filter(([x, y]) => x >= 0 && x < 3 && y >= 0 && y < 3 && !(x === th.a[0] && y === th.a[1]) && !banned(th.b, [x, y]));
+    let nx = opts[Math.floor(Math.random() * opts.length)] || th.a;
+    if (Math.random() < .65) nx = opts.slice().sort((p, q) => nodePos(...q).distanceTo(P.pos) - nodePos(...p).distanceTo(P.pos))[0] || nx;
+    th.a = th.b; th.b = nx; th.t = 0;
+  };
+  g.update = dt => {
+    if (g.done) return;
+    if (!FREEZE) g.t += dt;
+    const A = nodePos(...th.a), B = nodePos(...th.b), L = A.distanceTo(B);
+    const d0 = th.pos.distanceTo(CAR.pos), sp = FREEZE ? 0 : (d0 < 10 ? 13.5 : 11.5);
+    th.t += sp * dt / L; if (th.t >= 1) { pickNext(); }
+    const A2 = nodePos(...th.a), B2 = nodePos(...th.b), dir = B2.clone().sub(A2).normalize();
+    th.pos.lerpVectors(A2, B2, Math.min(1, th.t)).add(new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(2));
+    const yaw = Math.atan2(dir.x, dir.z); th.yaw += angDiff(th.yaw, yaw) * Math.min(1, dt * 7);
+    m.position.copy(th.pos); m.rotation.y = th.yaw; mk.position.y = 1.6 + Math.sin(t0 * 6) * .1;
+    // la voiture volée ne se laisse pas traverser
+    const dx = CAR.pos.x - th.pos.x, dz = CAR.pos.z - th.pos.z, d = Math.hypot(dx, dz);
+    if (d < 3 && d > 1e-3) { CAR.pos.x = th.pos.x + dx / d * 3; CAR.pos.z = th.pos.z + dz / d * 3; CAR.v *= .5; g.bar += .04; buzz(30); }
+    if (FREEZE) return;
+    g.bar = Math.max(0, Math.min(1, g.bar + (d < 10 ? dt * (CAR.siren ? .2 : .13) : -dt * .07)));
+    if (g.bar >= 1) {
+      g.done = true; FREEZE = true; CAR.v = 0;
+      const thief = new Char(THIEF_MODELS[(S.d3.jail || 0) % THIEF_MODELS.length]); tint(thief, 0x4a4a55);
+      thief.root.position.set(th.pos.x + Math.cos(th.yaw) * 1.8, 0, th.pos.z - Math.sin(th.yaw) * 1.8); thief.play('emote-no');
+      g.thief = thief; toast('🚔 Interpellation ! Direction la garde à vue.');
+      setTimeout(() => {
+        const left = g.LIM - g.t, a = arc3(), rec = a.best.poursuite === undefined || g.t < a.best.poursuite; if (rec) a.best.poursuite = g.t;
+        jailAdd(); endOp(true, 15 + left / 3, `Voleur interpellé en ${fmt(g.t)} et placé en garde à vue !${rec ? ' 🏆 Nouveau record !' : ''}`);
+      }, 1800);
+      return;
+    }
+    if (g.t > g.LIM) return endOp(false, 4, 'Le voleur a réussi à semer la patrouille… La prochaine fois, colle-le de plus près !');
+    $('gtxt').textContent = `🚔 ${'▮'.repeat(Math.round(g.bar * 10))}${'▯'.repeat(10 - Math.round(g.bar * 10))} · ⏱ ${Math.ceil(g.LIM - g.t)} s`;
+  };
+  g.objective = () => ({ x: th.pos.x, z: th.pos.z, txt: g.bar > 0 && th.pos.distanceTo(CAR.pos) < 10 ? 'Reste collé ! 🔥' : 'Voiture volée', col: 0xdc2626 });
+  g.cleanup = () => { scene.remove(m); if (g.thief) scene.remove(g.thief.root); setSiren(false); };
+  th.pos.copy(nodePos(0, 1)); m.position.copy(th.pos);
+  setTimeout(() => toast('🚨 Allume le gyrophare : la jauge monte plus vite !'), 2600);
+  return g;
+}
+
+/* ---------- 🕵️ Les faux chefs : Pac-BC en 3D ---------- */
+const walkable = (r, c) => 'R.TGV'.includes(at(r, c)) && !(r === 13 && c === 4);
+const tileOf = p => [Math.round(p.z / T) + 7, Math.round(p.x / T) + 7];
+function Chefs() {
+  putOnFoot(tc(7, 7).x + 2, tc(7, 7).z + 2);
+  const g = { score: 0, hearts: 3, inv: 0, rev: 0, items: [], stars: [], chefs: [], dist: null, bfsT: 0, exitOk: true, carOk: false, t: 0 };
+  const fGeo = new THREE.BoxGeometry(.7, .1, .5), fMat = new THREE.MeshLambertMaterial({ color: 0xf4c430, emissive: 0x6b4f00 });
+  for (let r = 0; r < 15; r++) for (let c = 0; c < 15; c++) {
+    if (!isRoad(r, c) || !walkable(r, c) || (r === 7 && c === 7)) continue;
+    const corner = RC.includes(r) && RC.includes(c) && r !== 7 && c !== 7;
+    const p = tc(r, c);
+    if (corner) { const s = markerSprite('#d4af37', '★'); s.position.set(p.x, 1.2, p.z); s.material.depthTest = true; scene.add(s); g.stars.push(s); }
+    else { const f = new THREE.Mesh(fGeo, fMat); f.position.set(p.x, .6, p.z); f.rotation.y = rnd() * 6; f.castShadow = true; scene.add(f); g.items.push(f); }
+  }
+  g.total = g.items.length;
+  const SP = [[1, 7], [7, 13], [13, 7], [7, 1]];
+  ['character-male-d', 'character-female-d', 'character-male-b', 'character-female-b'].forEach((mdl, i) => {
+    const ch = new Char(mdl); tint(ch, 0xffffff);
+    const mk = markerSprite('#002395', 'C'); mk.position.set(0, 1.25, 0); mk.scale.set(.5, .5, 1); ch.root.add(mk);
+    const home = tc(...SP[i]); ch.root.position.copy(home); ch.play('walk');
+    g.chefs.push({ ch, mk, home, pos: home.clone(), wait: 2 + i * 3, caught: false });
+  });
+  const bfs = () => {
+    const [pr, pc] = tileOf(P.pos), D = Array.from({ length: 15 }, () => Array(15).fill(1e9)), q = [[pr, pc]];
+    if (!walkable(pr, pc)) { /* joueur sur un trottoir : on part quand même de sa case */ }
+    D[pr][pc] = 0;
+    while (q.length) { const [r, c] = q.shift(); for (const [dr, dc] of DIRS) { const a = r + dr, b = c + dc; if (a >= 0 && a < 15 && b >= 0 && b < 15 && walkable(a, b) && D[a][b] > D[r][c] + 1) { D[a][b] = D[r][c] + 1; q.push([a, b]); } } }
+    g.dist = D;
+  };
+  const reveal = on => {
+    g.chefs.forEach(c => { tint(c.ch, on ? 0x4a4a55 : 0xffffff); c.mk.material.map = on ? MK.thief : MK.chef; c.mk.material.needsUpdate = true; });
+  };
+  MK.chef = MK.chef || markerSprite('#002395', 'C').material.map; MK.thief = MK.thief || markerSprite('#dc2626', '$').material.map;
+  g.update = dt => {
+    g.items.forEach(f => { f.rotation.y += dt * 2; f.position.y = .6 + Math.sin(t0 * 3 + f.position.x) * .1; });
+    if (FREEZE) return; g.t += dt;
+    if (g.inv > 0) { g.inv -= dt; player.root.visible = Math.floor(g.inv * 10) % 2 === 0; } else player.root.visible = true;
+    if (g.rev > 0) { g.rev -= dt; if (g.rev <= 0) { reveal(false); toast('Les « chefs » remettent leur déguisement !'); } }
+    // ramassage
+    for (let i = g.items.length - 1; i >= 0; i--) if (Math.hypot(g.items[i].position.x - P.pos.x, g.items[i].position.z - P.pos.z) < 1.6) { scene.remove(g.items[i]); g.items.splice(i, 1); g.score += 10; tone(1100, .05, 'square', .05); }
+    for (let i = g.stars.length - 1; i >= 0; i--) if (Math.hypot(g.stars[i].position.x - P.pos.x, g.stars[i].position.z - P.pos.z) < 1.8) {
+      scene.remove(g.stars[i]); g.stars.splice(i, 1); g.score += 50; g.rev = 8; reveal(true); SFX.win(); buzz(50);
+      toast('★ MANDAT ! Ce ne sont pas des chefs… ce sont des voleurs ! Attrape-les !');
+    }
+    if (!g.items.length) {
+      const a = arc3(), rec = a.best.chefs === undefined || g.score > a.best.chefs; if (rec) a.best.chefs = g.score;
+      return endOp(true, 12 + g.score / 40, `Tous les dossiers sont récupérés ! Score : ${g.score} pts.${rec ? ' 🏆 Nouveau record !' : ''}`);
+    }
+    // les « chefs »
+    g.bfsT -= dt; if (g.bfsT <= 0) { bfs(); g.bfsT = .25; }
+    const speed = 4.3 + Math.min(1.4, g.t / 60);
+    for (const c of g.chefs) {
+      c.ch.mixer.update(dt);
+      if (c.wait > 0) { c.wait -= dt; c.ch.play('idle'); continue; }
+      const [r, cc] = tileOf(c.pos), [pr, pc] = tileOf(P.pos);
+      let tgt;
+      if (g.rev > 0) {   // fuite : vers la case voisine la plus loin du joueur
+        let bestD = -1; for (const [dr, dc] of DIRS) { const a = r + dr, b = cc + dc; if (walkable(a, b) && g.dist[a][b] > bestD && g.dist[a][b] < 1e9) { bestD = g.dist[a][b]; tgt = tc(a, b); } }
+      } else if (r === pr && cc === pc) tgt = P.pos;
+      else { let bestD = 1e9; for (const [dr, dc] of DIRS) { const a = r + dr, b = cc + dc; if (walkable(a, b) && g.dist[a][b] < bestD) { bestD = g.dist[a][b]; tgt = tc(a, b); } } }
+      if (!tgt) tgt = P.pos;
+      // centrer dans le couloir avant de tourner
+      const here = tc(r, cc), toT = tgt.clone().sub(c.pos);
+      if (tgt !== P.pos) { if (Math.abs(tgt.x - here.x) > 1) toT.z = (here.z - c.pos.z) * 4; else toT.x = (here.x - c.pos.x) * 4; }
+      toT.y = 0; const l = toT.length();
+      if (l > .01) { const v = (g.rev > 0 ? speed * .8 : speed) * dt; c.pos.addScaledVector(toT, Math.min(v, l) / l); c.ch.root.rotation.y = Math.atan2(toT.x, toT.z); }
+      collide(c.pos, .35); c.ch.root.position.copy(c.pos); c.ch.play('sprint');
+      if (c.pos.distanceTo(P.pos) < 1.1) {
+        if (g.rev > 0) {
+          g.score += 100; jailAdd(); c.pos.copy(c.home); c.wait = 5; SFX.win(); toast('🔒 Un faux chef en garde à vue ! +100');
+        } else if (g.inv <= 0) {
+          g.hearts--; g.inv = 2.2; SFX.ko(); buzz([80, 40, 80]);
+          g.chefs.forEach((o, i) => { o.pos.copy(o.home); o.wait = 1.5 + i; });
+          if (g.hearts <= 0) return endOp(false, g.score / 60, `Attrapé par la « hiérarchie »… Score : ${g.score} pts (${g.total - g.items.length}/${g.total} dossiers).`);
+          toast(`Aïe ! Un chef t'a coincé — encore ${g.hearts} ❤️`);
+        }
+      }
+    }
+    $('gtxt').textContent = `📁 ${g.total - g.items.length}/${g.total} · ${'❤️'.repeat(g.hearts)} · ${g.score} pts${g.rev > 0 ? ' · ★ ' + Math.ceil(g.rev) : ''}`;
+  };
+  g.objective = () => {
+    let best = null, bd = 1e9; for (const f of g.items) { const d = Math.hypot(f.position.x - P.pos.x, f.position.z - P.pos.z); if (d < bd) { bd = d; best = f; } }
+    return best && bd > 10 ? { x: best.position.x, z: best.position.z, txt: 'Dossier le plus proche' } : null;
+  };
+  g.cleanup = () => { g.items.forEach(f => scene.remove(f)); g.stars.forEach(s => scene.remove(s)); g.chefs.forEach(c => scene.remove(c.ch.root)); player.root.visible = !P.inCar; };
+  bfs();
+  return g;
+}
 
 /* =========================================================
    DÉMARRAGE
@@ -831,7 +1322,7 @@ $('mReset').addEventListener('click', () => { if (confirm('Recommencer l\'histoi
   camLook.copy(P.pos); camPos.set(P.pos.x, 17, P.pos.z + 17);
   $('loading').classList.add('hidden'); ['hud', 'obj'].forEach(id => $(id).classList.remove('hidden'));
   hud(); loop();
-  window.__g3 = { THREE, scene, camera, renderer, P, CAR, S, SPOTS, get QZ() { return QZ; }, input, step(n) { for (let i = 0; i < n; i++) update(1 / 30); renderer.render(scene, camera); } };
+  window.__g3 = { THREE, scene, camera, renderer, P, CAR, S, SPOTS, get QZ() { return QZ; }, get GAME() { return GAME; }, OPS, startOp, R, input, step(n) { for (let i = 0; i < n; i++) update(1 / 30); renderer.render(scene, camera); } };
   if (!S.d3.intro) { $('joyHint').classList.remove('hidden'); dialog(STORY_INTRO.map(l => l.slice()), () => { S.d3.intro = true; save(); }); }
   else { const n = nextMission(); toast(n ? '📻 Prochain dossier : ' + n.place : '🎖️ Bon retour, Brigadier-Chef !'); }
 })();
