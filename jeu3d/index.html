@@ -141,6 +141,7 @@
   <div class="who"><b>Carnet de patrouille</b></div>
   <ul class="list" id="menuList"></ul>
   <button class="btn alt" id="mSound"></button>
+  <button class="btn alt" id="mCalls"></button>
   <button class="btn alt" id="mCredits">Crédits</button>
   <button class="btn red" id="mReset">Recommencer l'histoire</button>
   <button class="btn" id="mClose">Reprendre</button>
@@ -574,7 +575,7 @@ function buildCity() {
   // bordure : barrières invisibles via LIMIT
 }
 // Corrections d'orientation des tuiles Kenney (vérifiées à l'écran)
-const ROAD_STRAIGHT_OFFSET = Math.PI / 2, ROAD_T_OFFSET = 0, ROAD_BEND_OFFSET = 0, BUILDING_OFFSET = 0;
+const ROAD_STRAIGHT_OFFSET = Math.PI / 2, ROAD_T_OFFSET = 0, ROAD_BEND_OFFSET = Math.PI / 2, BUILDING_OFFSET = 0;
 
 /* =========================================================
    PERSONNAGES
@@ -858,10 +859,12 @@ function update(dt) {
   victimUpdate(dt);
 
   if (GAME) { near = null; GAME.update(dt); }
+  callTick(dt);
   // Action contextuelle
   const act = $('act');
   let label = null;
   if (P.inCar) label = Math.abs(CAR.v) < 4 && (!GAME || GAME.exitOk) ? 'Descendre' : null;
+  else if (GAME && GAME.actLabel && GAME.actLabel()) label = GAME.actLabel();
   else if (near) label = 'Parler';
   else if (P.pos.distanceTo(CAR.pos) < 3.4 && (!GAME || GAME.carOk)) label = 'Monter 🚓';
   act.classList.toggle('hidden', !label || uiOpen()); if (label) act.textContent = label;
@@ -919,7 +922,8 @@ $('act').addEventListener('click', () => {
     P.inCar = false; CAR.v = 0; setSiren(false);
     const side = new THREE.Vector3(Math.cos(CAR.yaw), 0, -Math.sin(CAR.yaw)).multiplyScalar(-2.2);
     P.pos.copy(CAR.pos).add(side); collide(P.pos, .4); player.root.visible = true; player.root.position.copy(P.pos); SFX.door();
-  } else if (near) talk(near.m);
+  } else if (GAME && GAME.actLabel && GAME.actLabel()) GAME.onAct();
+  else if (near) talk(near.m);
   else if (P.pos.distanceTo(CAR.pos) < 3.4) { P.inCar = true; player.root.visible = false; SFX.door(); toast('🚓 Le joystick indique où aller. Le bouton 🚨 allume le gyrophare.'); }
 });
 function setSiren(on) { CAR.siren = on; $('siren').classList.toggle('on', on); sirenSet(on); }
@@ -999,6 +1003,7 @@ $('qNext').addEventListener('click', () => {
   QZ.answered = false; QZ.i++;
   if (QZ.i < QZ.qs.length) return showQ();
   $('quiz').classList.add('hidden');
+  if (QZ.m.onEnd) return QZ.m.onEnd(QZ.ok >= QZ.m.need, QZ.ok);
   const m = QZ.m, win = QZ.ok >= m.need, first = win && !S.d3.done[m.id];
   const score = `${QZ.ok}/${QZ.qs.length} bonnes réponses`;
   if (win) {
@@ -1025,6 +1030,7 @@ function hud() {
 $('menuBtn').addEventListener('click', () => {
   $('menuList').innerHTML = MISSIONS.map(m => `<li><span>${S.d3.done[m.id] ? '✅' : unlocked(m) ? '📁' : '🔒'} ${m.place}</span><span style="color:#5a6687">${m.themes === 'ALL' ? 'Tous thèmes' : m.themes.map(t => THEME_LABEL[t]).join(', ')}</span></li>`).join('');
   $('mSound').textContent = S.sound ? '🔊 Son : activé' : '🔇 Son : coupé';
+  callsBtn();
   $('menu').classList.remove('hidden');
 });
 $('mClose').addEventListener('click', () => $('menu').classList.add('hidden'));
@@ -1103,7 +1109,8 @@ $('opsBtn').addEventListener('click', () => {
   $('opsList').innerHTML = OPS.map(o => {
     const lock = S.xp < o.unlock;
     return `<button class="st" data-op="${o.id}" ${lock ? 'style="opacity:.6"' : ''}><span class="ico">${lock ? '🔒' : o.ico}</span><span><b>${o.name}</b><small>${lock ? 'Débloqué à ' + o.unlock + ' XP (encore ' + (o.unlock - S.xp) + ')' : o.sub}</small></span><span class="rt">🏆 ${recTxt(o)}<br><small>${a.xp[o.id] || 0}/${CAP} XP</small></span></button>`;
-  }).join('') + `<div style="margin-top:10px;font-size:13px;color:#5a6687">🔒 En garde à vue : <b>${S.d3.jail || 0}</b> voleur${(S.d3.jail || 0) > 1 ? 's' : ''} — la cellule est derrière le commissariat.</div>`;
+  }).join('') + `<div style="margin-top:10px;font-size:13px;color:#5a6687">🔒 En garde à vue : <b>${S.d3.jail || 0}</b> voleur${(S.d3.jail || 0) > 1 ? 's' : ''} — la cellule est derrière le commissariat.</div>`
+    + `<div style="margin-top:6px;font-size:13px;color:#5a6687">📻 ${S.d3.calls ? `Prochain appel radio dans ~${Math.max(1, Math.ceil(S.d3.callT / 60))} min de patrouille` : 'Appels radio aléatoires coupés (menu ☰)'}</div>`;
   $('ops').classList.remove('hidden');
 });
 $('opsClose').addEventListener('click', () => $('ops').classList.add('hidden'));
@@ -1138,10 +1145,11 @@ function endOp(win, xpRaw, text) {
   const g = GAME; if (!g) return; GAME = null; FREEZE = false;
   try { g.cleanup && g.cleanup(); } catch (e) {}
   $('ghud').classList.add('hidden'); $('gbig').classList.add('hidden');
-  const a = arc3(), room = Math.max(0, CAP - (a.xp[g.op.id] || 0)), xp = Math.max(0, Math.min(room, Math.round(xpRaw)));
-  a.xp[g.op.id] = (a.xp[g.op.id] || 0) + xp; S.xp += xp; save(); hud();
+  const a = arc3(), room = g.nocap ? Infinity : Math.max(0, CAP - (a.xp[g.op.id] || 0)), xp = Math.max(0, Math.min(room, Math.round(xpRaw)));
+  if (!g.nocap) a.xp[g.op.id] = (a.xp[g.op.id] || 0) + xp;
+  S.xp += xp; save(); hud();
   if (win) { SFX.win(); confetti(60); } else SFX.ko();
-  dialog([['📟 Central', g.op.name, text + (xp ? `  +${xp} XP` : room === 0 && xpRaw > 0 ? '  (plafond d\'XP du jour atteint pour ce jeu)' : '')]]);
+  dialog([[g.hdr || '📟 Central', g.op.name, text + (xp ? `  +${xp} XP` : room === 0 && xpRaw > 0 ? '  (plafond d\'XP du jour atteint pour ce jeu)' : '')]]);
 }
 function putInCar(x, z, yaw) {
   P.inCar = true; player.root.visible = false; CAR.pos.set(x, 0, z); CAR.yaw = yaw; CAR.v = 0; P.pos.copy(CAR.pos);
@@ -1183,13 +1191,13 @@ function Course() {
 }
 
 /* ---------- 🚗 Course-poursuite : la voiture volée ---------- */
-function Poursuite() {
-  putInCar(tc(1, 2).x, tc(1, 2).z + 2, Math.PI / 2);
+function Poursuite(o, ev) {
+  if (!ev) putInCar(tc(1, 2).x, tc(1, 2).z + 2, Math.PI / 2);
   const m = clone('hatchback-sports'); m.scale.setScalar(1.5); scene.add(m);
   const mk = markerSprite('#dc2626', '!'); mk.position.set(0, 1.6, 0); mk.scale.set(.7, .7, 1); m.add(mk);
   const banned = (a, b) => (a[0] === 2 && b[0] === 2 && (a[1] + b[1]) === 1);   // l'accident du boulevard Sud
-  const th = { a: [0, 1], b: [0, 2], t: 0, yaw: Math.PI / 2, pos: new THREE.Vector3() };
-  const g = { t: 0, bar: 0, LIM: 90, exitOk: false, carOk: false, done: false };
+  const th = { a: ev ? ev.a : [0, 1], b: ev ? ev.b : [0, 2], t: 0, yaw: Math.PI / 2, pos: new THREE.Vector3() };
+  const g = { t: 0, bar: 0, LIM: 90, exitOk: !!ev, carOk: !!ev, done: false, phase: ev ? 'aller' : 'fuite', wait: 0 };
   const pickNext = () => {
     const [i, j] = th.b, opts = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]]
       .filter(([x, y]) => x >= 0 && x < 3 && y >= 0 && y < 3 && !(x === th.a[0] && y === th.a[1]) && !banned(th.b, [x, y]));
@@ -1199,6 +1207,14 @@ function Poursuite() {
   };
   g.update = dt => {
     if (g.done) return;
+    if (g.phase === 'aller') {   // appel radio : garée, conducteur à bord, elle démarre quand la patrouille approche
+      const d = th.pos.distanceTo(P.pos); g.wait += dt; mk.position.y = 1.6 + Math.sin(t0 * 3) * .1;
+      $('gtxt').textContent = `📻 ${ev.title} · ${Math.round(d)} m`;
+      if (g.wait > 300) return endOp(false, 0, 'Trop tard : le véhicule a quitté le secteur. Une autre patrouille prend le relais.');
+      if (!P.inCar && d < 30 && !g.warned) { g.warned = true; toast('🚓 Prends la voiture de patrouille pour le prendre en chasse !'); }
+      if ((P.inCar && d < 30) || d < 8) { g.phase = 'fuite'; g.exitOk = false; g.carOk = !P.inCar; toast(ev.flee); buzz(60); tone(880, .1); tone(660, .15, 'square', .08, .1); }
+      return;
+    }
     if (!FREEZE) g.t += dt;
     const A = nodePos(...th.a), B = nodePos(...th.b), L = A.distanceTo(B);
     const d0 = th.pos.distanceTo(CAR.pos), sp = FREEZE ? 0 : (d0 < 10 ? 13.5 : 11.5);
@@ -1218,7 +1234,9 @@ function Poursuite() {
       thief.root.position.set(th.pos.x + Math.cos(th.yaw) * 1.8, 0, th.pos.z - Math.sin(th.yaw) * 1.8); thief.play('emote-no');
       g.thief = thief; toast('🚔 Interpellation ! Direction la garde à vue.');
       setTimeout(() => {
-        const left = g.LIM - g.t, a = arc3(), rec = a.best.poursuite === undefined || g.t < a.best.poursuite; if (rec) a.best.poursuite = g.t;
+        const left = g.LIM - g.t;
+        if (ev) { jailAdd(); return endOp(true, 30 + left / 3, `Interpellé en ${fmt(g.t)} ! ${ev.win}`); }
+        const a = arc3(), rec = a.best.poursuite === undefined || g.t < a.best.poursuite; if (rec) a.best.poursuite = g.t;
         jailAdd(); endOp(true, 15 + left / 3, `Voleur interpellé en ${fmt(g.t)} et placé en garde à vue !${rec ? ' 🏆 Nouveau record !' : ''}`);
       }, 1800);
       return;
@@ -1226,10 +1244,11 @@ function Poursuite() {
     if (g.t > g.LIM) return endOp(false, 4, 'Le voleur a réussi à semer la patrouille… La prochaine fois, colle-le de plus près !');
     $('gtxt').textContent = `🚔 ${'▮'.repeat(Math.round(g.bar * 10))}${'▯'.repeat(10 - Math.round(g.bar * 10))} · ⏱ ${Math.ceil(g.LIM - g.t)} s`;
   };
-  g.objective = () => ({ x: th.pos.x, z: th.pos.z, txt: g.bar > 0 && th.pos.distanceTo(CAR.pos) < 10 ? 'Reste collé ! 🔥' : 'Voiture volée', col: 0xdc2626 });
+  g.objective = () => ({ x: th.pos.x, z: th.pos.z, txt: g.phase === 'aller' ? ev.title : g.bar > 0 && th.pos.distanceTo(CAR.pos) < 10 ? 'Reste collé ! 🔥' : 'Voiture volée', col: 0xdc2626 });
   g.cleanup = () => { scene.remove(m); if (g.thief) scene.remove(g.thief.root); setSiren(false); };
-  th.pos.copy(nodePos(0, 1)); m.position.copy(th.pos);
-  setTimeout(() => toast('🚨 Allume le gyrophare : la jauge monte plus vite !'), 2600);
+  th.pos.copy(nodePos(...th.a)); m.position.copy(th.pos);
+  { const d = nodePos(...th.b).sub(th.pos); th.yaw = Math.atan2(d.x, d.z); m.rotation.y = th.yaw; }
+  if (!ev) setTimeout(() => toast('🚨 Allume le gyrophare : la jauge monte plus vite !'), 2600);
   return g;
 }
 
@@ -1246,18 +1265,29 @@ function bfsFrom(p) {
 }
 
 /* ---------- 🏃 Poursuite à pied : le voleur à l'arraché ---------- */
-function APied() {
-  putOnFoot(tc(7, 3).x, tc(7, 3).z + 2);
-  const thief = new Char('character-male-e'); tint(thief, 0x4a4a55);
+function APied(o, ev) {
+  if (!ev) putOnFoot(tc(7, 3).x, tc(7, 3).z + 2);
+  const thief = new Char(ev ? ev.model : 'character-male-e'); tint(thief, 0x4a4a55);
   MK.thief = MK.thief || markerSprite('#dc2626', '$').material.map;
   MK.tired = MK.tired || markerSprite('#f59e0b', '…').material.map;
   const mk = markerSprite('#dc2626', '$'); mk.position.set(0, 1.25, 0); mk.scale.set(.5, .5, 1); thief.root.add(mk);
-  const pos = tc(7, 5).add(new THREE.Vector3(0, 0, 1)); thief.root.position.copy(pos); thief.face(P.pos.x, P.pos.z);
-  const g = { t: 0, LIM: 60, exitOk: false, carOk: false, cyc: 2.5, tired: false, dist: null, bfsT: 0, done: false, last: null };
+  const pos = ev ? ev.pos.clone() : tc(7, 5).add(new THREE.Vector3(0, 0, 1)); thief.root.position.copy(pos); thief.face(P.pos.x, P.pos.z);
+  const g = { t: 0, LIM: 60, exitOk: !!ev, carOk: !!ev, cyc: 2.5, tired: false, dist: null, bfsT: 0, done: false, last: null, phase: ev ? 'aller' : 'fuite', wait: 0 };
   g.update = dt => {
     thief.mixer.update(dt);
     if (g.done) return;
     if (FREEZE) { thief.play('idle'); return; }
+    if (g.phase === 'aller') {   // appel radio : il traîne sur place jusqu'à ce qu'on approche
+      const d = pos.distanceTo(P.pos); thief.play('idle'); g.wait += dt;
+      mk.position.y = 1.25 + Math.sin(t0 * 3) * .05;
+      $('gtxt').textContent = `📻 ${ev.title} · ${Math.round(d)} m`;
+      if (g.wait > 300) return endOp(false, 0, 'Trop tard : le suspect a quitté les lieux. Une autre patrouille prend le relais.');
+      if (d < 14) {
+        if (P.inCar) { if (!g.warned) { g.warned = true; toast('🚶 Descends de la voiture : l\'interpellation se fait à pied !'); } return; }
+        g.phase = 'fuite'; g.exitOk = g.carOk = false; toast(ev.flee); buzz(60); tone(880, .1); tone(660, .15, 'square', .08, .1);
+      }
+      return;
+    }
     g.t += dt;
     // le voleur alterne sprints et coups de fatigue : c'est là qu'il faut le rattraper
     g.cyc -= dt;
@@ -1284,18 +1314,20 @@ function APied() {
       g.done = true; FREEZE = true; thief.play('emote-no'); thief.face(P.pos.x, P.pos.z); player.face(pos.x, pos.z); player.play('interact-right');
       SFX.win(); buzz([40, 30, 40]); toast('🚔 Menotté ! Direction la garde à vue.');
       setTimeout(() => {
-        const left = g.LIM - g.t, a = arc3(), rec = a.best.pied === undefined || g.t < a.best.pied; if (rec) a.best.pied = g.t;
+        const left = g.LIM - g.t;
+        if (ev) { jailAdd(); return endOp(true, 25 + left / 3, `Interpellé en ${fmt(g.t)} ! ${ev.win}`); }
+        const a = arc3(), rec = a.best.pied === undefined || g.t < a.best.pied; if (rec) a.best.pied = g.t;
         jailAdd(); endOp(true, 12 + left / 2.5, `Voleur rattrapé et menotté en ${fmt(g.t)} ! Le sac est rendu à sa propriétaire.${rec ? ' 🏆 Nouveau record !' : ''}`);
       }, 1500);
       return;
     }
-    if (near > 45) return endOp(false, 3, 'Le voleur t\'a semé dans les ruelles… Profite de ses moments d\'essoufflement (…) pour le rattraper !');
+    if (near > 55) return endOp(false, 3, 'Le voleur t\'a semé dans les ruelles… Profite de ses moments d\'essoufflement (…) pour le rattraper !');
     if (g.t > g.LIM) return endOp(false, 3, 'Le voleur s\'est volatilisé. Coupe-lui la route par les trottoirs la prochaine fois !');
     $('gtxt').textContent = `🏃 ${Math.round(near)} m · ⏱ ${Math.ceil(g.LIM - g.t)} s${g.tired ? ' · 😮‍💨 essoufflé !' : ''}`;
   };
-  g.objective = () => ({ x: pos.x, z: pos.z, txt: g.tired ? 'Il fatigue, fonce ! 🔥' : 'Voleur à l\'arraché', col: 0xdc2626 });
+  g.objective = () => ({ x: pos.x, z: pos.z, txt: g.phase === 'aller' ? ev.title : g.tired ? 'Il fatigue, fonce ! 🔥' : ev ? 'Suspect en fuite' : 'Voleur à l\'arraché', col: 0xdc2626 });
   g.cleanup = () => { scene.remove(thief.root); };
-  setTimeout(() => toast('👜 « Au voleur ! Il a pris mon sac ! » — Pousse le joystick à fond pour sprinter'), 2700);
+  if (!ev) setTimeout(() => toast('👜 « Au voleur ! Il a pris mon sac ! » — Pousse le joystick à fond pour sprinter'), 2700);
   return g;
 }
 
@@ -1381,6 +1413,145 @@ function Chefs() {
 }
 
 /* =========================================================
+   APPELS RADIO — une mission au hasard toutes les 10 à 20 min de jeu
+   ========================================================= */
+// kind : 'pied' (voleur qui s'enfuit à pied), 'voiture' (véhicule qui démarre en trombe), 'quiz' (requérant à aider)
+const CALLS = [
+  { id: 'arrache', kind: 'pied', w: 3, title: 'Vol à l\'arraché',
+    msg: l => `Vol à l'arraché ${l}. Le suspect, vêtu de sombre, traîne encore dans le secteur.`,
+    flee: '🏃 Il t\'a repéré ! Il s\'enfuit avec le sac !', win: 'Le sac est rendu à sa propriétaire, le voleur part en garde à vue.' },
+  { id: 'cambriolage', kind: 'pied', w: 2, title: 'Cambriolage en cours',
+    msg: l => `Un cambrioleur vient d'être vu ${l}, un sac sur l'épaule.`,
+    flee: '🏃 Le cambrioleur détale !', win: 'Cambrioleur menotté, le butin est récupéré.' },
+  { id: 'etalage', kind: 'pied', w: 2, title: 'Vol à l\'étalage',
+    msg: l => `Le gérant d'une supérette signale un voleur à l'étalage ${l}.`,
+    flee: '🏃 Il lâche un paquet de chips et prend la fuite !', win: 'Voleur interpellé, le gérant te remercie.' },
+  { id: 'pickpocket', kind: 'pied', w: 2, title: 'Pickpocket repéré',
+    msg: l => `Un pickpocket opère ${l} : trois passants se sont fait voler leur téléphone.`,
+    flee: '🏃 Repéré ! Il file entre les passants !', win: 'Les téléphones sont récupérés, le pickpocket est en garde à vue.' },
+  { id: 'volvoiture', kind: 'voiture', w: 2, title: 'Véhicule volé',
+    msg: l => `Un véhicule signalé volé est stationné ${l}, conducteur à bord. Prends la voiture de patrouille !`,
+    flee: '🚗 Il démarre en trombe ! Colle-le !', win: 'Véhicule volé intercepté, le conducteur part en garde à vue.' },
+  { id: 'refus', kind: 'voiture', w: 1.5, title: 'Refus d\'obtempérer',
+    msg: l => `Un véhicule a forcé un contrôle routier et s'est arrêté ${l}.`,
+    flee: '🚗 Il repart à fond ! Gyrophare !', win: 'Conducteur interpellé sans casse. Bien joué !' },
+  { id: 'voisins', kind: 'quiz', w: 1, title: 'Différend entre voisins', who: 'M. Garnier', role: 'Requérant', model: 'character-male-b', with: 'character-female-c', themes: ['G'],
+    msg: l => `Un différend entre voisins dégénère ${l}. Va calmer le jeu.`,
+    intro: ['Ah, enfin la police ! Ma voisine met la musique à fond toutes les nuits !', 'Ce matin, elle m\'a insulté devant tout l\'immeuble.', 'Alors, vous faites quoi, vous ?'],
+    win: 'Merci, vous avez su nous calmer tous les deux. Chapeau !', lose: 'Bof… Je vais écrire au commissariat pour me plaindre.' },
+  { id: 'rixe', kind: 'quiz', w: 1, title: 'Bagarre devant un bar', who: 'M. Lopez', role: 'Gérant du bar', model: 'character-male-a', with: 'character-male-f', themes: ['F', 'I'],
+    msg: l => `Deux individus se battent devant un bar ${l}.`,
+    intro: ['Vite ! Deux clients se sont battus devant mon bar !', 'Ça s\'est calmé pour l\'instant, mais ça peut repartir à tout moment.', 'Comment vous gérez ça, vous ?'],
+    win: 'Tout le monde est reparti au calme. Merci !', lose: 'Ils ont failli remettre ça… Faut revoir les bons réflexes.' },
+  { id: 'stagiaire', kind: 'quiz', w: 1, title: 'Une stagiaire en galère', who: 'GPX Benali', role: 'Gardienne stagiaire', model: 'character-female-a', themes: ['A', 'D'],
+    msg: l => `Une gardienne stagiaire demande un coup de main ${l}.`,
+    intro: ['Ah, chef ! Enfin… futur chef !', 'On m\'a mise d\'astreinte ce week-end et je ne comprends rien à mon planning.', 'Tu peux m\'expliquer ?'],
+    win: 'Merci, tout est clair maintenant ! Tu ferais un super chef.', lose: 'Hmm, je crois que je vais demander à la cheffe de planning…' },
+  { id: 'heures', kind: 'quiz', w: 1, title: 'Litige d\'heures sup', who: 'GPX Morel', role: 'Gardien de la paix', model: 'character-male-c', themes: ['B', 'E'],
+    msg: l => `Un collègue t'attend ${l} pour une question de compensation.`,
+    intro: ['J\'ai fait trois services supplémentaires ce mois-ci…', '… et rien n\'apparaît sur ma fiche. C\'est normal, ça ?', 'Toi qui révises, tu sais comment c\'est compté ?'],
+    win: 'Ah d\'accord, je comprends mieux ! Merci.', lose: 'Bon, je vais aller voir M. Petit aux finances…' },
+  { id: 'conges', kind: 'quiz', w: 1, title: 'Congés en urgence', who: 'GPX Lefèvre', role: 'Gardienne de la paix', model: 'character-female-f', themes: ['C'],
+    msg: l => `Une collègue a une question urgente sur ses congés ${l}.`,
+    intro: ['Ma sœur se marie dans quinze jours et je n\'ai rien posé !', 'J\'ai le droit à quoi, exactement ?'],
+    win: 'Super, je vais faire ma demande tout de suite. Merci !', lose: 'Je vais plutôt demander au service RH…' },
+  { id: 'equipe', kind: 'quiz', w: 1, title: 'Tension dans l\'équipe', who: 'GPX Roche', role: 'Gardien de la paix', model: 'character-male-e', with: 'character-male-d', themes: ['H'],
+    msg: l => `Ça chauffe entre deux collègues ${l}. Un futur chef doit savoir gérer ça.`,
+    intro: ['Franchement, avec Dubois, ça ne passe plus.', 'Il ne fait jamais sa part et c\'est toujours moi qui récupère tout.', 'Si t\'étais notre chef, tu ferais quoi ?'],
+    win: 'OK… on va essayer comme ça. Merci d\'avoir pris le temps.', lose: 'Ça ne règle pas vraiment le problème…' },
+  { id: 'desoriente', kind: 'quiz', w: 1, title: 'Personne âgée désorientée', who: 'Mme Petitjean', role: 'Passante', model: 'character-female-c', themes: ['I', 'G'],
+    msg: l => `Une personne âgée semble perdue ${l}.`,
+    intro: ['Excusez-moi, monsieur l\'agent… je ne retrouve plus ma rue.', 'Je suis sortie acheter du pain et puis… plus rien.'],
+    win: 'Merci, vous êtes bien aimable. Ma fille arrive me chercher.', lose: 'Je… je ne sais toujours pas où je suis…' }
+];
+const placeName = (r, c) => r === 1 ? 'avenue du Nord' : r === 13 ? 'boulevard Sud' : r === 7 ? 'avenue Centrale'
+  : c === 1 ? 'rue de l\'Ouest' : c === 13 ? 'rue de l\'Est' : c === 7 ? 'rue du Marché' : 'dans le quartier';
+const CALL_MIN = 600, CALL_MAX = 1200;   // secondes de jeu entre deux appels
+const callDelay = () => CALL_MIN + Math.random() * (CALL_MAX - CALL_MIN);
+if (typeof S.d3.callT !== 'number') S.d3.callT = callDelay();
+if (S.d3.calls === undefined) S.d3.calls = true;
+
+function callTick(dt) {
+  if (!S.d3.calls || GAME || FREEZE || uiOpen() || !S.d3.intro) return;
+  const before = S.d3.callT; S.d3.callT -= dt;
+  if (Math.floor(before / 15) !== Math.floor(S.d3.callT / 15)) save();   // le compte à rebours survit à une fermeture du jeu
+  if (S.d3.callT <= 0) { S.d3.callT = callDelay(); save(); offerCall(); }
+}
+function pickCall() {
+  const tot = CALLS.reduce((s, c) => s + c.w, 0); let x = Math.random() * tot;
+  for (const c of CALLS) { x -= c.w; if (x <= 0) return c; }
+  return CALLS[0];
+}
+// Une rue loin du joueur (pas sur l'accident)
+function callTile(minD = 35) {
+  const cand = [];
+  for (let r = 0; r < 15; r++) for (let c = 0; c < 15; c++)
+    if (isRoad(r, c) && walkable(r, c) && !(r === 13 && c >= 3 && c <= 5) && tc(r, c).distanceTo(P.pos) > minD) cand.push([r, c]);
+  return cand[Math.floor(Math.random() * cand.length)] || [7, 7];
+}
+function offerCall(c = pickCall()) {
+  let ev, lieu;
+  if (c.kind === 'voiture') {
+    const nodes = []; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (nodePos(i, j).distanceTo(P.pos) > 40) nodes.push([i, j]);
+    const a = nodes[Math.floor(Math.random() * nodes.length)] || [0, 0];
+    const nb = [[a[0] - 1, a[1]], [a[0] + 1, a[1]], [a[0], a[1] - 1], [a[0], a[1] + 1]].filter(([x, y]) => x >= 0 && x < 3 && y >= 0 && y < 3 && !(a[0] === 2 && x === 2 && a[1] + y === 1));
+    ev = { a, b: nb[Math.floor(Math.random() * nb.length)] }; lieu = placeName(RC[a[0]], RC[a[1]]);
+  } else {
+    const [r, c2] = callTile(), p = tc(r, c2);
+    // sur le trottoir, pas au milieu de la chaussée
+    if (RC.includes(r) && !RC.includes(c2)) p.z += 2.8; else if (RC.includes(c2) && !RC.includes(r)) p.x += 2.8;
+    ev = { pos: p, model: THIEF_MODELS[Math.floor(Math.random() * THIEF_MODELS.length)] }; lieu = placeName(r, c2);
+  }
+  Object.assign(ev, { title: c.title, flee: c.flee, win: c.win, c });
+  const where = lieu.startsWith('dans') ? lieu : (/^(avenue|rue)/.test(lieu) ? 'dans l\'' : 'sur le ') + lieu;
+  const txt = c.msg(where.replace('dans l\'avenue', 'avenue').replace('dans l\'rue', 'rue').replace(/^(avenue|rue)/, 'sur l\'$1').replace('sur l\'rue', 'rue'));
+  [0, .18, .36].forEach(t => tone(1200, .08, 'square', .05, t)); buzz([120, 80, 120]);
+  dialog([['📻 Central', 'Appel radio — ' + c.title, txt + ' Tu prends l\'appel ?',
+    [['🚨 J\'y vais', () => startCall(c, ev)], ['Pas maintenant', () => toast('📻 Bien reçu, une autre patrouille s\'en charge.'), 'alt']]]]);
+}
+function startCall(c, ev) {
+  if (GAME) return;
+  const op = { id: 'appel', name: c.title };
+  GAME = ({ pied: APied, voiture: Poursuite, quiz: CallQuiz })[c.kind](op, ev);
+  Object.assign(GAME, { op, name: c.title, nocap: true, hdr: '📻 Central' });
+  $('ghud').classList.remove('hidden');
+  toast('📻 La flèche te guide jusqu\'au lieu de l\'appel.');
+}
+// Mission « requérant » : on va à sa rencontre, il explique son problème, et on répond à 3 questions du thème
+function CallQuiz(o, ev) {
+  const c = ev.c, base = ev.pos, extra = [];
+  const ch = new Char(c.model); ch.root.position.copy(base); ch.play('idle');
+  const mk = markerSprite('#f59e0b', '!'); mk.position.set(0, 1.25, 0); mk.scale.set(.6, .6, 1); ch.root.add(mk);
+  if (c.with) {
+    const o2 = new Char(c.with); o2.root.position.copy(base).add(new THREE.Vector3(1.5, 0, .6)); o2.face(base.x, base.z); o2.play('idle'); extra.push(o2);
+    ch.face(o2.root.position.x, o2.root.position.z);
+  }
+  const g = { wait: 0, talked: false, exitOk: true, carOk: true };
+  g.update = dt => {
+    ch.mixer.update(dt); extra.forEach(e => e.mixer.update(dt)); mk.position.y = 1.25 + Math.sin(t0 * 3) * .06;
+    const d = ch.root.position.distanceTo(P.pos);
+    if (d < 6 && !P.inCar) ch.root.rotation.y += angDiff(ch.root.rotation.y, Math.atan2(P.pos.x - base.x, P.pos.z - base.z)) * Math.min(1, dt * 4);
+    if (!g.talked) { g.wait += dt; if (g.wait > 300) return endOp(false, 0, 'L\'appel a été transféré à une autre patrouille.'); }
+    $('gtxt').textContent = `📻 ${c.title} · ${Math.round(d)} m`;
+  };
+  g.actLabel = () => !g.talked && !P.inCar && ch.root.position.distanceTo(P.pos) < 3.2 ? 'Parler' : null;
+  g.onAct = () => {
+    const L = c.intro.map(t => [c.who, c.role, t]), last = L[L.length - 1];
+    L[L.length - 1] = [last[0], last[1], last[2], [['C\'est parti !', () => {
+      g.talked = true; mk.visible = false;
+      startQuiz({ id: 'appel', who: c.who, role: c.role, themes: c.themes, n: 3, need: 2,
+        onEnd: (win, ok) => endOp(win, win ? 25 : 2, `${c.who} : « ${win ? c.win : c.lose} »  (${ok}/3 bonnes réponses)`) });
+    }], ['Plus tard', null, 'alt']]];
+    dialog(L);
+  };
+  g.objective = () => g.talked ? null : { x: base.x, z: base.z, txt: c.title, col: 0xf59e0b };
+  g.cleanup = () => { scene.remove(ch.root); extra.forEach(e => scene.remove(e.root)); };
+  return g;
+}
+function callsBtn() { $('mCalls').textContent = S.d3.calls ? '📻 Appels radio aléatoires : activés' : '📻 Appels radio aléatoires : coupés'; }
+$('mCalls').addEventListener('click', () => { S.d3.calls = !S.d3.calls; save(); callsBtn(); toast(S.d3.calls ? '📻 Appels radio réactivés : le prochain arrive dans un moment.' : '📻 Plus d\'appels radio aléatoires.'); });
+
+/* =========================================================
    DÉMARRAGE
    ========================================================= */
 (async () => {
@@ -1391,7 +1562,7 @@ function Chefs() {
   camLook.copy(P.pos); camPos.set(P.pos.x, 17, P.pos.z + 17);
   $('loading').classList.add('hidden'); ['hud', 'obj'].forEach(id => $(id).classList.remove('hidden'));
   hud(); loop();
-  window.__g3 = { THREE, scene, camera, renderer, P, CAR, S, SPOTS, get QZ() { return QZ; }, get GAME() { return GAME; }, OPS, startOp, R, input, step(n) { for (let i = 0; i < n; i++) update(1 / 30); renderer.render(scene, camera); } };
+  window.__g3 = { THREE, scene, camera, renderer, P, CAR, S, SPOTS, get QZ() { return QZ; }, get GAME() { return GAME; }, OPS, startOp, R, input, CALLS, offerCall, step(n) { for (let i = 0; i < n; i++) update(1 / 30); renderer.render(scene, camera); } };
   if (!S.d3.intro) { $('joyHint').classList.remove('hidden'); dialog(STORY_INTRO.map(l => l.slice()), () => { S.d3.intro = true; save(); }); }
   else { const n = nextMission(); toast(n ? '📻 Prochain dossier : ' + n.place : '🎖️ Bon retour, Brigadier-Chef !'); }
 })();
