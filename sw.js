@@ -1,6 +1,6 @@
 // Service worker — Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = `revision-bc-${VERSION}`;
 
 const PAGES = ['/', '/jeu', '/fiches', '/qcm', '/quiz', '/glossaire'];
@@ -28,6 +28,20 @@ async function clean(res) {
   return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
 }
 
+// Jeu 3D (~11 Mo) : mis en cache à la première visite de /jeu3d/ seulement, pas pour tout le monde.
+// La liste est dans jeu3d/fichiers.json : à régénérer quand on ajoute un modèle ou un script.
+let jeu3dPromise = null;
+function cacheJeu3d() {
+  if (!jeu3dPromise) jeu3dPromise = (async () => {
+    const cache = await caches.open(CACHE);
+    const list = await (await fetch('/jeu3d/fichiers.json', { cache: 'no-cache' })).json();
+    for (const url of list) {
+      if (!(await cache.match(url))) await (url.endsWith('/') ? cachePage(cache, url) : cache.add(url).catch(() => null));
+    }
+  })().catch(() => null).finally(() => { jeu3dPromise = null; });
+  return jeu3dPromise;
+}
+
 async function cachePage(cache, path) {
   try {
     const res = await fetch(path, { cache: 'no-cache' });
@@ -46,6 +60,9 @@ self.addEventListener('install', (event) => {
   })());
 });
 
+// La page du jeu 3D le demande aussi elle-même (utile à la toute première visite)
+self.addEventListener('message', (event) => { if (event.data === 'cache-jeu3d') event.waitUntil(cacheJeu3d()); });
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -59,6 +76,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.hostname.includes('cloudflareinsights')) return; // statistiques : jamais en cache
+  // Radios en direct (flux sans fin) et lectures partielles : jamais en cache, le navigateur s'en charge
+  if (req.destination === 'audio' || req.destination === 'video' || req.headers.has('range')) return;
+  if (req.mode === 'navigate' && url.origin === self.location.origin && url.pathname.startsWith('/jeu3d')) event.waitUntil(cacheJeu3d());
 
   // Pages : réseau d'abord (toujours à jour), cache si pas de réseau
   if (req.mode === 'navigate') {

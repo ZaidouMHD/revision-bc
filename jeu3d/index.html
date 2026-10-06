@@ -146,6 +146,15 @@
   <button class="btn" id="mClose">Reprendre</button>
 </div></div>
 
+<script>
+  // Webapp : même service worker que le site, qui garde le jeu pour jouer hors ligne (pas dans l'APK, déjà hors ligne)
+  if ('serviceWorker' in navigator && location.hostname !== 'appassets.androidplatform.net') {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').then(function () { return navigator.serviceWorker.ready; })
+        .then(function (reg) { reg.active && reg.active.postMessage('cache-jeu3d'); }).catch(function () {});
+    });
+  }
+</script>
 <script src="../data.js"></script>
 <script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
 <script type="module">
@@ -1083,6 +1092,8 @@ const OPS = [
     how: 'En voiture, passe les 9 points de contrôle le plus vite possible. Le gyrophare est allumé d\'office.' },
   { id: 'poursuite', name: 'Course-poursuite', ico: '🚗', unlock: 100, sub: 'Une voiture volée fonce dans le quartier',
     how: 'Reste collé à la voiture volée pour remplir la jauge d\'interpellation avant la fin du temps. Le voleur part en garde à vue !' },
+  { id: 'pied', name: 'Poursuite à pied', ico: '🏃', unlock: 150, sub: 'Vol à l\'arraché : le suspect s\'enfuit !',
+    how: 'Un voleur vient d\'arracher un sac et s\'enfuit à pied. Pousse le joystick à fond pour sprinter et touche-le pour le menotter. Il est plus rapide que toi… mais il s\'essouffle (…) : c\'est le moment de foncer !' },
   { id: 'chefs', name: 'Les faux chefs', ico: '🕵️', unlock: 300, sub: 'La hiérarchie… ou des voleurs déguisés ?',
     how: 'À pied, ramasse tous les dossiers 📁 sur les avenues sans te faire attraper par les « chefs ». Prends un mandat ★ : ils se révèlent voleurs pendant 8 s — attrape-les pour les mettre en garde à vue !' }
 ];
@@ -1110,7 +1121,7 @@ $('gquit').addEventListener('click', () => {
 });
 
 function startOp(o) {
-  GAME = { course: Course, poursuite: Poursuite, chefs: Chefs }[o.id](o);
+  GAME = { course: Course, poursuite: Poursuite, pied: APied, chefs: Chefs }[o.id](o);
   GAME.op = o; GAME.name = o.name;
   $('ghud').classList.remove('hidden');
   countdown(() => {});
@@ -1222,9 +1233,73 @@ function Poursuite() {
   return g;
 }
 
-/* ---------- 🕵️ Les faux chefs : Pac-BC en 3D ---------- */
-const walkable = (r, c) => 'R.TGV'.includes(at(r, c)) && !(r === 13 && c === 4);
+/* ---------- Déplacements sur la grille des rues (PNJ qui chassent ou fuient) ---------- */
+// Cases praticables : rues, trottoirs, parcs. Pas l'accident ni la cellule de garde à vue.
+const walkable = (r, c) => 'R.TGV'.includes(at(r, c)) && !(r === 13 && c === 4) && !(r === 4 && c === 4);
 const tileOf = p => [Math.round(p.z / T) + 7, Math.round(p.x / T) + 7];
+// Distance en cases depuis une position, pour toute la ville
+function bfsFrom(p) {
+  const [pr, pc] = tileOf(p), D = Array.from({ length: 15 }, () => Array(15).fill(1e9)), q = [[pr, pc]];
+  D[pr][pc] = 0;
+  while (q.length) { const [r, c] = q.shift(); for (const [dr, dc] of DIRS) { const a = r + dr, b = c + dc; if (a >= 0 && a < 15 && b >= 0 && b < 15 && walkable(a, b) && D[a][b] > D[r][c] + 1) { D[a][b] = D[r][c] + 1; q.push([a, b]); } } }
+  return D;
+}
+
+/* ---------- 🏃 Poursuite à pied : le voleur à l'arraché ---------- */
+function APied() {
+  putOnFoot(tc(7, 3).x, tc(7, 3).z + 2);
+  const thief = new Char('character-male-e'); tint(thief, 0x4a4a55);
+  MK.thief = MK.thief || markerSprite('#dc2626', '$').material.map;
+  MK.tired = MK.tired || markerSprite('#f59e0b', '…').material.map;
+  const mk = markerSprite('#dc2626', '$'); mk.position.set(0, 1.25, 0); mk.scale.set(.5, .5, 1); thief.root.add(mk);
+  const pos = tc(7, 5).add(new THREE.Vector3(0, 0, 1)); thief.root.position.copy(pos); thief.face(P.pos.x, P.pos.z);
+  const g = { t: 0, LIM: 60, exitOk: false, carOk: false, cyc: 2.5, tired: false, dist: null, bfsT: 0, done: false, last: null };
+  g.update = dt => {
+    thief.mixer.update(dt);
+    if (g.done) return;
+    if (FREEZE) { thief.play('idle'); return; }
+    g.t += dt;
+    // le voleur alterne sprints et coups de fatigue : c'est là qu'il faut le rattraper
+    g.cyc -= dt;
+    if (g.cyc <= 0) { g.tired = !g.tired; g.cyc = g.tired ? 1.5 : 2.6 + Math.random(); mk.material.map = g.tired ? MK.tired : MK.thief; mk.material.needsUpdate = true; }
+    g.bfsT -= dt; if (g.bfsT <= 0) { g.dist = bfsFrom(P.pos); g.bfsT = .25; }
+    const near = pos.distanceTo(P.pos);
+    // fuite vers la case voisine la plus loin du joueur (un peu de hasard pour qu'il ne soit pas prévisible)
+    const [r, c] = tileOf(pos); let tgt = null, bd = -1;
+    for (const [dr, dc] of DIRS) {
+      const a = r + dr, b = c + dc; if (!walkable(a, b) || g.dist[a][b] >= 1e9) continue;
+      const d = g.dist[a][b] + Math.random() * .6 + (isRoad(a, b) ? .8 : 0) + (g.last && g.last[0] === a && g.last[1] === b ? .5 : 0);
+      if (d > bd) { bd = d; tgt = [a, b]; }
+    }
+    if (tgt) g.last = tgt;
+    const goal = tgt ? tc(...tgt) : pos.clone().add(pos.clone().sub(P.pos).setY(0).normalize());
+    const here = tc(r, c), toT = goal.clone().sub(pos);
+    if (tgt) { if (Math.abs(goal.x - here.x) > 1) toT.z = (here.z - pos.z) * 4; else toT.x = (here.x - pos.x) * 4; }
+    toT.y = 0; const l = toT.length();
+    const sp = g.tired ? 4.5 : near > 25 ? 5.5 : 7.3;
+    if (l > .01) { pos.addScaledVector(toT, Math.min(sp * dt, l) / l); thief.root.rotation.y += angDiff(thief.root.rotation.y, Math.atan2(toT.x, toT.z)) * Math.min(1, dt * 12); }
+    collide(pos, .35); thief.root.position.copy(pos); thief.play(g.tired ? 'walk' : 'sprint');
+    mk.position.y = 1.25 + Math.sin(t0 * 8) * .05;
+    if (near < 1.3) {
+      g.done = true; FREEZE = true; thief.play('emote-no'); thief.face(P.pos.x, P.pos.z); player.face(pos.x, pos.z); player.play('interact-right');
+      SFX.win(); buzz([40, 30, 40]); toast('🚔 Menotté ! Direction la garde à vue.');
+      setTimeout(() => {
+        const left = g.LIM - g.t, a = arc3(), rec = a.best.pied === undefined || g.t < a.best.pied; if (rec) a.best.pied = g.t;
+        jailAdd(); endOp(true, 12 + left / 2.5, `Voleur rattrapé et menotté en ${fmt(g.t)} ! Le sac est rendu à sa propriétaire.${rec ? ' 🏆 Nouveau record !' : ''}`);
+      }, 1500);
+      return;
+    }
+    if (near > 45) return endOp(false, 3, 'Le voleur t\'a semé dans les ruelles… Profite de ses moments d\'essoufflement (…) pour le rattraper !');
+    if (g.t > g.LIM) return endOp(false, 3, 'Le voleur s\'est volatilisé. Coupe-lui la route par les trottoirs la prochaine fois !');
+    $('gtxt').textContent = `🏃 ${Math.round(near)} m · ⏱ ${Math.ceil(g.LIM - g.t)} s${g.tired ? ' · 😮‍💨 essoufflé !' : ''}`;
+  };
+  g.objective = () => ({ x: pos.x, z: pos.z, txt: g.tired ? 'Il fatigue, fonce ! 🔥' : 'Voleur à l\'arraché', col: 0xdc2626 });
+  g.cleanup = () => { scene.remove(thief.root); };
+  setTimeout(() => toast('👜 « Au voleur ! Il a pris mon sac ! » — Pousse le joystick à fond pour sprinter'), 2700);
+  return g;
+}
+
+/* ---------- 🕵️ Les faux chefs : Pac-BC en 3D ---------- */
 function Chefs() {
   putOnFoot(tc(7, 7).x + 2, tc(7, 7).z + 2);
   const g = { score: 0, hearts: 3, inv: 0, rev: 0, items: [], stars: [], chefs: [], dist: null, bfsT: 0, exitOk: true, carOk: false, t: 0 };
@@ -1244,13 +1319,7 @@ function Chefs() {
     const home = tc(...SP[i]); ch.root.position.copy(home); ch.play('walk');
     g.chefs.push({ ch, mk, home, pos: home.clone(), wait: 2 + i * 3, caught: false });
   });
-  const bfs = () => {
-    const [pr, pc] = tileOf(P.pos), D = Array.from({ length: 15 }, () => Array(15).fill(1e9)), q = [[pr, pc]];
-    if (!walkable(pr, pc)) { /* joueur sur un trottoir : on part quand même de sa case */ }
-    D[pr][pc] = 0;
-    while (q.length) { const [r, c] = q.shift(); for (const [dr, dc] of DIRS) { const a = r + dr, b = c + dc; if (a >= 0 && a < 15 && b >= 0 && b < 15 && walkable(a, b) && D[a][b] > D[r][c] + 1) { D[a][b] = D[r][c] + 1; q.push([a, b]); } } }
-    g.dist = D;
-  };
+  const bfs = () => { g.dist = bfsFrom(P.pos); };
   const reveal = on => {
     g.chefs.forEach(c => { tint(c.ch, on ? 0x4a4a55 : 0xffffff); c.mk.material.map = on ? MK.thief : MK.chef; c.mk.material.needsUpdate = true; });
   };
