@@ -146,6 +146,15 @@
   <button class="btn" id="mClose">Reprendre</button>
 </div></div>
 
+<script>
+  // Webapp : même service worker que le site, qui garde le jeu pour jouer hors ligne (pas dans l'APK, déjà hors ligne)
+  if ('serviceWorker' in navigator && location.hostname !== 'appassets.androidplatform.net') {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').then(function () { return navigator.serviceWorker.ready; })
+        .then(function (reg) { reg.active && reg.active.postMessage('cache-jeu3d'); }).catch(function () {});
+    });
+  }
+</script>
 <script src="../data.js"></script>
 <script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
 <script type="module">
