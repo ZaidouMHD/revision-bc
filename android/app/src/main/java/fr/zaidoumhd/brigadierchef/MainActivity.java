@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -67,11 +68,27 @@ public class MainActivity extends Activity {
             }
         });
 
+        web.setWebChromeClient(new WebChromeClient());   // boîtes confirm() du jeu
         setContentView(web);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         pleinEcran();
         if (etat != null) web.restoreState(etat);
         else web.loadUrl(ACCUEIL);
+    }
+
+    // Radio et musique se coupent quand on quitte l'app
+    @Override
+    protected void onPause() {
+        web.evaluateJavascript("window.__appPause && window.__appPause()", null);
+        web.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        web.onResume();
+        web.evaluateJavascript("window.__appResume && window.__appResume()", null);
     }
 
     @Override
