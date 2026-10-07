@@ -81,6 +81,57 @@
       background: #4CAF50;
     }
 
+    /* Dropdown pour les jeux */
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .game-dropdown-menu {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 34, 68, 0.98);
+      border: 2px solid #ff6b35;
+      border-radius: 8px;
+      padding: 8px 0;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      min-width: 120px;
+      z-index: 60;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .game-dropdown-menu.show {
+      display: flex;
+    }
+
+    .game-dropdown-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+    }
+
+    .game-dropdown-menu a:hover {
+      background: rgba(255, 107, 53, 0.8);
+    }
+
+    .game-dropdown-menu a:first-child {
+      border-radius: 6px 6px 0 0;
+    }
+
+    .game-dropdown-menu a:last-child {
+      border-radius: 0 0 6px 6px;
+    }
+
     /* Conteneur principal */
     .container {
       max-width: 1200px;
@@ -231,7 +282,7 @@
       .hero-section {
         grid-template-columns: 1fr;
       }
-      
+
       .nav-side {
         left: 50%;
         transform: translateX(-50%);
@@ -239,6 +290,25 @@
         bottom: 20px;
         flex-direction: row;
         border-radius: 15px;
+        gap: 8px;
+      }
+
+      .nav-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+      }
+
+      .nav-dropdown {
+        position: relative;
+      }
+
+      .game-dropdown-menu {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 130px;
       }
 
       .container {
@@ -247,6 +317,29 @@
 
       .hero-text h1 {
         font-size: 28px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-side {
+        gap: 6px;
+        padding: 10px 8px;
+      }
+
+      .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+
+      .game-dropdown-menu {
+        min-width: 120px;
+        padding: 6px 0;
+      }
+
+      .game-dropdown-menu a {
+        padding: 8px 12px;
+        font-size: 13px;
       }
     }
   </style>
@@ -264,6 +357,43 @@
       window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js'); });
     }
   </script>
+
+  <!-- Gestion du dropdown de jeux -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const gameBtn = document.getElementById('gameBtn');
+      const gameMenu = document.getElementById('gameMenu');
+
+      if (!gameBtn || !gameMenu) return;
+
+      // Toggle menu on button click
+      gameBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        gameMenu.classList.toggle('show');
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!gameBtn.contains(e.target) && !gameMenu.contains(e.target)) {
+          gameMenu.classList.remove('show');
+        }
+      });
+
+      // Handle menu links
+      const gameLinks = gameMenu.querySelectorAll('a');
+      gameLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          const gameType = this.dataset.game;
+          // Store game type in sessionStorage for jeu.html to read if needed
+          if (gameType) {
+            sessionStorage.setItem('selectedGameType', gameType);
+          }
+          // Don't prevent default - let the link navigate to jeu.html
+          gameMenu.classList.remove('show');
+        });
+      });
+    });
+  </script>
 </head>
 
 <body>
@@ -280,9 +410,17 @@
   <a href="index.html" class="nav-btn active" title="Accueil">🏠</a>
   <a href="fiches.html" class="nav-btn" title="Fiches">📚</a>
   <a href="qcm.html" class="nav-btn" title="QCM">⚡</a>
-  <a href="quiz.html" class="nav-btn" title="Quiz">🏆</a>  
+  <a href="quiz.html" class="nav-btn" title="Quiz">🏆</a>
   <a href="glossaire.html" class="nav-btn" title="Glossaire">📖</a>
-  <a href="jeu.html" class="nav-btn" title="Le jeu">🎮</a>
+
+  <!-- Dropdown pour les jeux -->
+  <div class="nav-dropdown">
+    <button class="nav-btn" id="gameBtn" title="Les jeux">🎮</button>
+    <div class="game-dropdown-menu" id="gameMenu">
+      <a href="jeu.html" data-game="2d">🎯 Jeu 2D</a>
+      <a href="jeu.html" data-game="3d">🎮 Jeu 3D</a>
+    </div>
+  </div>
 </div>
 
 <!-- Conteneur principal -->
