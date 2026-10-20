@@ -209,17 +209,17 @@
     @media (max-height: 640px) { #dpad { transform: scale(.82); } .rb { width: 54px; height: 54px; } #pad { padding: 4px 16px 8px; } }
   </style>
   <!-- Web app (PWA) : installation sur l'écran d'accueil + mode hors ligne -->
-  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0f1a3a">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Objectif BC">
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js'); });
+      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js'); });
     }
   </script>
 </head>
@@ -919,7 +919,7 @@ MAP.forEach((row, y) => row.forEach((c, x) => {
 function pieceName(p) { return p.c === 'B' ? (floorAt(p.x, p.y) === '~' ? 'Sac de frappe' : 'Canapé') : FURN_NAME[p.c]; }
 async function loadFiches() {
   try {
-    let res = await fetch('/fiches').catch(() => null);
+    let res = await fetch('fiches').catch(() => null);
     if (!res || !res.ok) res = await fetch('fiches.html');
     const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
     doc.querySelectorAll('script, style').forEach(n => n.remove());
