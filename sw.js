@@ -1,17 +1,22 @@
 // Service worker — Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE = `revision-bc-${VERSION}`;
 
-const PAGES = ['/', '/jeu', '/fiches', '/qcm', '/quiz', '/glossaire'];
+// Chemins relatifs au dossier du site : "/" sur Netlify, "/Site/" sur GitHub Pages
+const SCOPE = self.registration.scope;
+const BASE = new URL(SCOPE).pathname;
+const abs = (p) => new URL(p.replace(/^\//, ''), SCOPE).href;
+
+const PAGES = ['./', 'jeu', 'fiches', 'qcm', 'quiz', 'glossaire'].map(abs);
 const ASSETS = [
-  '/style.css',
-  '/data.js',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png'
-];
+  'style.css',
+  'data.js',
+  'manifest.webmanifest',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/apple-touch-icon.png'
+].map(abs);
 
 // /qcm.html, /qcm/ et /qcm -> même entrée de cache "/qcm"
 function pageKey(url) {
@@ -34,8 +39,8 @@ let jeu3dPromise = null;
 function cacheJeu3d() {
   if (!jeu3dPromise) jeu3dPromise = (async () => {
     const cache = await caches.open(CACHE);
-    const list = await (await fetch('/jeu3d/fichiers.json', { cache: 'no-cache' })).json();
-    for (const url of list) {
+    const list = await (await fetch(abs('jeu3d/fichiers.json'), { cache: 'no-cache' })).json();
+    for (const url of list.map(abs)) {
       if (!(await cache.match(url))) await (url.endsWith('/') ? cachePage(cache, url) : cache.add(url).catch(() => null));
     }
   })().catch(() => null).finally(() => { jeu3dPromise = null; });
@@ -78,7 +83,7 @@ self.addEventListener('fetch', (event) => {
   if (url.hostname.includes('cloudflareinsights')) return; // statistiques : jamais en cache
   // Radios en direct (flux sans fin) et lectures partielles : jamais en cache, le navigateur s'en charge
   if (req.destination === 'audio' || req.destination === 'video' || req.headers.has('range')) return;
-  if (req.mode === 'navigate' && url.origin === self.location.origin && url.pathname.startsWith('/jeu3d')) event.waitUntil(cacheJeu3d());
+  if (req.mode === 'navigate' && url.origin === self.location.origin && url.pathname.startsWith(BASE + 'jeu3d')) event.waitUntil(cacheJeu3d());
 
   // Pages : réseau d'abord (toujours à jour), cache si pas de réseau
   if (req.mode === 'navigate') {
@@ -92,7 +97,7 @@ self.addEventListener('fetch', (event) => {
         }
         return res.redirected ? clean(res) : res;
       } catch (e) {
-        return (await caches.match(key)) || (await caches.match('/')) || Response.error();
+        return (await caches.match(key)) || (await caches.match(pageKey(SCOPE))) || Response.error();
       }
     })());
     return;
