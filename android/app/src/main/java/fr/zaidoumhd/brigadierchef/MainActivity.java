@@ -23,7 +23,7 @@ import java.io.InputStream;
 
 /**
  * Le site entier, embarqué dans l'APK et servi hors ligne depuis
- * https://appassets.androidplatform.net/ — ce qui garde les chemins absolus
+ * https://appassets.androidplatform.net/ - ce qui garde les chemins absolus
  * (/icons/…) et le localStorage du jeu. Seul le jeu 3D est embarqué.
  */
 public class MainActivity extends Activity {
