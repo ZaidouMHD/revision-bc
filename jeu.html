@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Objectif BC — Le jeu</title>
+  <title>Objectif BC - Le jeu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -348,8 +348,8 @@ const RANKS = [
   { xp: 600,  name: 'Élève gardien de la paix',    short: 'Élève GPX' },
   { xp: 1300, name: 'Gardien de la paix stagiaire', short: 'GPX stagiaire' },
   { xp: 2300, name: 'Gardien de la paix',          short: 'GPX' },
-  { xp: 3700, name: 'GPX — Chef de bord',          short: 'Chef de bord' },
-  { xp: 5500, name: 'GPX — Chef de patrouille',    short: 'Chef de patrouille' },
+  { xp: 3700, name: 'GPX - Chef de bord',          short: 'Chef de bord' },
+  { xp: 5500, name: 'GPX - Chef de patrouille',    short: 'Chef de patrouille' },
   { xp: 7500, name: 'Candidat Brigadier-Chef',     short: 'Candidat BC' },
   { xp: 9000, name: 'Brigadier-Chef',              short: 'Brigadier-Chef' }
 ];
@@ -373,7 +373,7 @@ const ROOMS = {
        intro: 'Le code de déontologie n\'est pas une option. Voyons voir…', foe: 'Code de déontologie' },
   6: { name: 'Bureau du chef de service', themes: ['H'], npc: 'Capitaine Moreau', look: 'chief',
        intro: 'Un futur BC doit savoir manager. Montre-moi !', foe: 'Dossier management' },
-  7: { name: 'Garage — Salle de briefing', themes: ['I'], npc: 'BC Diallo, chef de bord', look: 'patrol',
+  7: { name: 'Garage - Salle de briefing', themes: ['I'], npc: 'BC Diallo, chef de bord', look: 'patrol',
        intro: 'Avant de monter en voiture, on révise les pratiques d\'intervention.', foe: 'Briefing d\'intervention' },
   8: { name: 'Salle d\'examen', themes: 'ALL', npc: 'Le Jury', look: 'jury', boss: true,
        intro: 'Épreuve blanche : questions de tous les thèmes. Prêt pour le 5 novembre ?', foe: 'LE JURY' }
@@ -871,7 +871,7 @@ function tryMove(d, t) {
   const npc = NPCS.find(n => n.x === nx && n.y === ny);
   if (npc) { held = null; releaseAll(); interact(npc); return; }
   if (MAP[ny] && MAP[ny][nx] === 'L' && !examOpen()) {
-    if (t - lastBump > 900) { lastBump = t; SFX.bump(); toast('🔒 Salle d\'examen — accès à partir du grade<br>' + RANKS[EXAM_RANK].name); }
+    if (t - lastBump > 900) { lastBump = t; SFX.bump(); toast('🔒 Salle d\'examen - accès à partir du grade<br>' + RANKS[EXAM_RANK].name); }
     return;
   }
   const cab = cabGame(nx, ny); if (cab) { held = null; releaseAll(); openCab(cab); return; }
@@ -882,11 +882,11 @@ function tryMove(d, t) {
 }
 function arrive() {
   const key = P.x + ',' + P.y;
-  if (key === '32,8') { SFX.door(); toast('🕹️ Salle d\'arcade<br>Mini-jeux bonus — débloqués selon ton XP'); }
+  if (key === '32,8') { SFX.door(); toast('🕹️ Salle d\'arcade<br>Mini-jeux bonus - débloqués selon ton XP'); }
   if (DOORS[key] !== undefined) {
     const id = DOORS[key], r = ROOMS[id]; SFX.door();
     const m = Math.round(mastery(r.themes) * 100);
-    toast('🚪 ' + r.name + '<br>' + (r.themes === 'ALL' ? 'Tous les thèmes' : r.themes.map(t => THEME_LABEL[t]).join(' · ')) + ' — maîtrise ' + m + ' %');
+    toast('🚪 ' + r.name + '<br>' + (r.themes === 'ALL' ? 'Tous les thèmes' : r.themes.map(t => THEME_LABEL[t]).join(' · ')) + ' - maîtrise ' + m + ' %');
   }
   S.pos = { x: P.x, y: P.y }; S.dir = P.dir;
   if ((P.x + P.y) % 4 === 0) save();
@@ -1236,8 +1236,8 @@ function answer(oi, btn) {
   const exp = document.getElementById('qExp');
   const prog = ok
     ? (st.l === 3 ? (B.justMastered ? `${starsHtml(3, 22)} <b>Question maîtrisée !</b>` : `${starsHtml(3, 22)} Toujours maîtrisée`)
-                  : `${starsHtml(st.l, 22)} ${st.l}/3 — encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
-    : `${starsHtml(0, 22)} 0/3 — progression de cette question remise à zéro`;
+                  : `${starsHtml(st.l, 22)} ${st.l}/3 - encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
+    : `${starsHtml(0, 22)} 0/3 - progression de cette question remise à zéro`;
   exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b>' : '❌ <b>Raté.</b>') + '<br><small>' + prog + '</small><br><br>' + escapeHtml(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   exp.style.display = 'block';
   const nx = document.getElementById('qNext'); nx.style.display = 'block';
@@ -1453,7 +1453,7 @@ function confetti() {
 }
 
 /* =========================================================
-   SALLE D'ARCADE — 4 mini-jeux bonus (débloqués avec l'XP)
+   SALLE D'ARCADE - 4 mini-jeux bonus (débloqués avec l'XP)
    ========================================================= */
 const AW = 160, AH = 240, DAILY_CAP = 40;
 const GAMES = [
@@ -1474,7 +1474,7 @@ function arc() {
 }
 const gameLocked = G => S.xp < G.unlock;
 const fmtT = s => s.toFixed(1).replace('.', ',') + ' s';
-function recTxt(G) { const a = arc(); if (G.id === 'car') return a.best.car ? fmtT(a.best.car) : '—'; return a.best[G.id] ? String(a.best[G.id]) : '—'; }
+function recTxt(G) { const a = arc(); if (G.id === 'car') return a.best.car ? fmtT(a.best.car) : '-'; return a.best[G.id] ? String(a.best[G.id]) : '-'; }
 function cabGame(x, y) { if (!MAP[y] || MAP[y][x] !== 'M') return null; return GAMES[(x - 34) / 2] || null; }
 function openCab(G) {
   held = null; releaseAll();
@@ -1587,7 +1587,7 @@ function endGame(gm, delay = 1100) {
 }
 
 /* =========================================================
-   1) SNAKE — le convoi de dossiers
+   1) SNAKE - le convoi de dossiers
    ========================================================= */
 function mkSnake() {
   const COLS = 12, ROWS = 15, C = 12, OX = 8, OY = 42, opp = { up: 'down', down: 'up', left: 'right', right: 'left' };
@@ -1642,7 +1642,7 @@ function mkSnake() {
 }
 
 /* =========================================================
-   2) PAC-BC — fuis la hiérarchie
+   2) PAC-BC - fuis la hiérarchie
    ========================================================= */
 const PAC_MAP = ['#############', '#o....#....o#', '#.##.###.##.#', '#...........#', '#.##.#.#.##.#', '#....#.#....#', '####.#-#.####', '#....GGG....#', '####.###.####',
   '#....#.#....#', '#.##.#.#.##.#', '#.....P.....#', '#.##.###.##.#', '#...........#', '#.##.#.#.##.#', '#o...#.#...o#', '#############'];
@@ -1777,7 +1777,7 @@ function mkPac() {
 }
 
 /* =========================================================
-   3) COURSE URGENTE — voiture de police vers l'intervention
+   3) COURSE URGENTE - voiture de police vers l'intervention
    ========================================================= */
 function mkCar() {
   const RX = 30, RW = 100, GOAL = 7000, TLIM = 75;
@@ -1887,7 +1887,7 @@ function mkCar() {
 }
 
 /* =========================================================
-   4) SUPER BRIGADIER-CHEF — plateforme
+   4) SUPER BRIGADIER-CHEF - plateforme
    ========================================================= */
 function mkMario() {
   const T = 16, LW = 124, LH = 15, GYT = 13, DOORC = 117;
