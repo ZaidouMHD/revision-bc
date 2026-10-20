@@ -1,4 +1,4 @@
-# Corrections apportées au site — Site V2
+# Corrections apportées au site - Site V2
 
 Ce document liste toutes les modifications faites aux questions QCM/Quiz et au glossaire, à partir de tes fiches (considérées comme la référence) et des PDF du dossier REVISION CHEF. Tes PDF n'ont pas été modifiés.
 
@@ -11,9 +11,9 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 
 ## Bugs structurels corrigés (en plus du contenu)
 
-- Le thème "I – Pratiques Professionnelles en Intervention" (114 questions, le plus gros lot) n'avait AUCUN bouton de filtre dans le QCM — il existait dans les données mais était injoignable sauf via "Tous". Ajouté.
+- Le thème "I – Pratiques Professionnelles en Intervention" (114 questions, le plus gros lot) n'avait AUCUN bouton de filtre dans le QCM - il existait dans les données mais était injoignable sauf via "Tous". Ajouté.
 - Les liens de navigation vers `maintenance.html` (accueil, fiches) ont été remplacés par les vrais liens `qcm.html` / `quiz.html` / `glossaire.html`, maintenant que le contenu est vérifié.
-- Le `<title>` de `glossaire.html` affichait "Fiches — Brigadier-Chef 2026" (copié-collé resté de fiches.html) → corrigé en "Glossaire — Brigadier-Chef 2026".
+- Le `<title>` de `glossaire.html` affichait "Fiches - Brigadier-Chef 2026" (copié-collé resté de fiches.html) → corrigé en "Glossaire - Brigadier-Chef 2026".
 - L'attribut HTML cassé sur le lien "Glossaire" dans la nav de `glossaire.html` a été réparé.
 - Les fiches TSI, Déontologie, Management et PPI ont été refondues visuellement dans le même style "cartes avec sources" que la fiche Temps de travail (tout le contenu factuel d'origine a été conservé, seul le format a changé).
 
@@ -47,7 +47,7 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 - Bonne réponse avant : 2 → après : 0
 - Explication avant : Un agent CC commandement bénéficie de 29 jours d'ARTT dont 8 indemnisés. (Source : Arrêté 5 sept. 2019)
 - Explication après : Un agent du corps de commandement (CC) en fonction de commandement (relevant de l'article 10 du décret du 25 août 2000, comme les CCD) bénéficie de 19 jours d'ARTT dont 3 indemnisés, en régime hebdomadaire à 40h30. (Source : Arrêté du 5 septembre 2019, art. 22)
-- **Raison :** Inversion avec la question sur le CC 'exécution' (idx 76) — voir le même article 22 de l'arrêté du 5 septembre 2019 : les CC relevant de l'article 10 (fonctions de commandement, regroupés avec les CCD) ont 19 jours d'ARTT dont 3 indemnisés, et non 29.
+- **Raison :** Inversion avec la question sur le CC 'exécution' (idx 76) - voir le même article 22 de l'arrêté du 5 septembre 2019 : les CC relevant de l'article 10 (fonctions de commandement, regroupés avec les CCD) ont 19 jours d'ARTT dont 3 indemnisés, et non 29.
 
 ### [TSI] idx 129
 **Avant :** Dans quel cas l'usage des armes est-il autorisé en maintien de l'ordre selon le CSI ?
@@ -308,7 +308,7 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 ### [Temps de travail] idx 121
 **Question (inchangée) :** Les RPS sont destinés à quels agents ?
 
-- **Raison de l'incertitude :** Réponse imprécise mais non remplacée faute de meilleure option : le guide règles TT.pdf et la fiche APORTT 10 indiquent explicitement que les RPS sont exclus pour les CCD, les CC relevant de l'article 10, les PATS et les contractuels article 10 — donc PAS 'tous les corps actifs' au sens strict, puisque le CCD et une partie du CC (2 des 3 corps actifs) en sont exclus. Aucune des 3 options proposées ne reflète exactement la règle réelle (bénéficiaires = essentiellement CEA + CC hors art.10) ; l'option 'Les corps actifs uniquement' reste la moins fausse des trois, donc laissée inchangée, mais signalée comme imprécise.
+- **Raison de l'incertitude :** Réponse imprécise mais non remplacée faute de meilleure option : le guide règles TT.pdf et la fiche APORTT 10 indiquent explicitement que les RPS sont exclus pour les CCD, les CC relevant de l'article 10, les PATS et les contractuels article 10 - donc PAS 'tous les corps actifs' au sens strict, puisque le CCD et une partie du CC (2 des 3 corps actifs) en sont exclus. Aucune des 3 options proposées ne reflète exactement la règle réelle (bénéficiaires = essentiellement CEA + CC hors art.10) ; l'option 'Les corps actifs uniquement' reste la moins fausse des trois, donc laissée inchangée, mais signalée comme imprécise.
 
 ### [TSI] idx 141
 **Question (inchangée) :** Quelle est la portée efficace d'une grenade lacrymogène Condor GL-304 ?
@@ -380,17 +380,17 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 **Briefité**
 - Avant : Principe d'intervention brève et ciblée. L'agent doit intervenir dans un temps optimal tout en maintenant la maîtrise de la situation.
 - Après : Principe imposant que toute compression thoracique ou abdominale exercée sur une personne soit la plus courte possible : il est interdit de maintenir une pression prolongée (risque d'asphyxie positionnelle).
-- Raison : Corrigé (faux sens). fiches.html (section TSI, tableau des principes de la Note DGPN 2015) définit « Briefité » comme : « Compression thoracique/abdominale la plus courte possible » avec application « Interdiction de maintenir une pression prolongée » — rien à voir avec une intervention brève et ciblée en général.
+- Raison : Corrigé (faux sens). fiches.html (section TSI, tableau des principes de la Note DGPN 2015) définit « Briefité » comme : « Compression thoracique/abdominale la plus courte possible » avec application « Interdiction de maintenir une pression prolongée » - rien à voir avec une intervention brève et ciblée en général.
 
 **Devoir de loyauté**
 - Avant : Obligation pour l'agent de soutenir sa hiérarchie, de respecter les instructions et de ne pas entraver le fonctionnement du service.
 - Après : Obligation de fidélité à l'institution rattachée à l'obéissance hiérarchique (Art. R.434-5 CSI) : exécuter les ordres réguliers et ne jamais trahir la confiance de l'institution (interdiction de falsifier un procès-verbal ou une main courante, ou de témoigner faussement).
-- Raison : Corrigé (imprécis). fiches.html rattache la Loyauté à l'article R.434-5 (« Obéissance / Loyauté ») et l'illustre par des manquements de type falsification de PV, main courante, faux documents, trahison — pas par un devoir général de soutien hiérarchique.
+- Raison : Corrigé (imprécis). fiches.html rattache la Loyauté à l'article R.434-5 (« Obéissance / Loyauté ») et l'illustre par des manquements de type falsification de PV, main courante, faux documents, trahison - pas par un devoir général de soutien hiérarchique.
 
 **Attroupement**
 - Avant : Groupe de personnes réunies sur la voie publique susceptible de troubler l'ordre public (art. 431-3 CP).
 - Après : Tout rassemblement de personnes sur la voie publique ou dans un lieu susceptible de troubler l'ordre public (art. 431-3 CP).
-- Raison : Corrigé (définition incomplète). fiches.html cite le texte légal exact de l'art. 431-3 CP : « Tout rassemblement de personnes sur la voie publique OU DANS UN LIEU susceptible de troubler l'ordre public » — la mention « ou dans un lieu » manquait.
+- Raison : Corrigé (définition incomplète). fiches.html cite le texte légal exact de l'art. 431-3 CP : « Tout rassemblement de personnes sur la voie publique OU DANS UN LIEU susceptible de troubler l'ordre public » - la mention « ou dans un lieu » manquait.
 
 **Palpation de sécurité (section TSI)**
 - Avant : Fouille sommaire consistant à détecter des objets dangereux portée sur les vêtements extérieurs, autorisée en cas de risque immédiat.
@@ -420,7 +420,7 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 **Protection fonctionnelle (Art. R. 434-7 CSI)**
 - Avant : Mécanisme juridique permettant à un policier poursuivi pour des faits liés à son service d'être assisté juridiquement et couvert financièrement pour ses frais de justice.
 - Après : Garantie prévue par la loi du 13 juillet 1983 (art. 11) permettant à un agent d'être protégé par l'administration : (1) en cas d'attaques (menaces, violences, injures, diffamations, outrages) subies à l'occasion de ses fonctions, avec réparation du préjudice ; (2) en cas de poursuites pénales pour des faits liés au service, dès lors qu'ils ne constituent pas une faute personnelle détachable du service. Comprend l'assistance juridique et la prise en charge des frais de justice.
-- Raison : Corrigé (définition incomplète). La version initiale ne couvrait que le cas de l'agent poursuivi et omettait le cas — pourtant central — de l'agent victime d'une attaque, ainsi que la condition légale d'absence de faute personnelle détachable. Source : circulaire du 5 mai 2008 sur la protection fonctionnelle (dossier 2 - MANAGEMENT/circulaire protection fonctionnelle.pdf).
+- Raison : Corrigé (définition incomplète). La version initiale ne couvrait que le cas de l'agent poursuivi et omettait le cas - pourtant central - de l'agent victime d'une attaque, ainsi que la condition légale d'absence de faute personnelle détachable. Source : circulaire du 5 mai 2008 sur la protection fonctionnelle (dossier 2 - MANAGEMENT/circulaire protection fonctionnelle.pdf).
 
 **Code de la sécurité intérieure (CSI)**
 - Avant : ... incluant les règles déontologiques applicables aux policiers et gendarmes (Art. R. 434-1 à R. 434-21).
@@ -435,10 +435,10 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 **Révocation**
 - Avant : Sanction disciplinaire maximale, consistant à mettre fin aux fonctions de l'agent. Peut être assortie d'une interdiction de réintégration.
 - Après : Sanction disciplinaire maximale (exclusion définitive), consistant à mettre fin aux fonctions de l'agent. Peut être assortie d'une suspension des droits civiques.
-- Raison : Corrigé. fiches.html précise : « Exclusion définitive (Révocation avec ou sans suspension de droits civiques...) » — la notion d'« interdiction de réintégration » ne figure pas dans la source.
+- Raison : Corrigé. fiches.html précise : « Exclusion définitive (Révocation avec ou sans suspension de droits civiques...) » - la notion d'« interdiction de réintégration » ne figure pas dans la source.
 
 **Zone contrôlée (tampon)**
-- Avant : Périmètre autour zone d'exclusion où [texte tronqué, ligne du tableau non fermée — bug HTML]
+- Avant : Périmètre autour zone d'exclusion où [texte tronqué, ligne du tableau non fermée - bug HTML]
 - Après : Périmètre situé autour de la zone d'exclusion, à accès filtré. Sert au regroupement des impliqués et des victimes en attente d'évacuation, avec des points de palpation de sécurité à l'entrée.
 - Raison : Corrigé (bug + contenu manquant). La dernière ligne du tableau PPI était coupée en plein milieu de phrase et la balise <tr>/<td> n'était jamais refermée (HTML cassé). Complétée avec le texte de fiches.html : « Zone contrôlée (tampon) : Autour zone exclusion, accès filtré. Regroupement impliqués/victimes en attente évacuation. Points palpation sécurité. »
 
@@ -459,7 +459,7 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 
 **ICS**
 - Définition actuelle (inchangée) : Indemnité pour Confort du Service
-- Raison de l'incertitude : Incertain. Sigle introuvable dans fiches.html et dans les PDF Temps de Travail identifiables (aucune occurrence de « indemnité » associée à ICS). À vérifier par Zay — cette définition semble peu plausible.
+- Raison de l'incertitude : Incertain. Sigle introuvable dans fiches.html et dans les PDF Temps de Travail identifiables (aucune occurrence de « indemnité » associée à ICS). À vérifier par Zay - cette définition semble peu plausible.
 
 **IFTS**
 - Définition actuelle (inchangée) : Indemnité Forfaitaire pour Travaux Supérieurs
@@ -467,7 +467,7 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 
 **PDH**
 - Définition actuelle (inchangée) : Prime dedienstheid Herstel (primes du fonctionnaire)
-- Raison de l'incertitude : Incertain — à corriger en priorité. Sigle introuvable dans fiches.html et les PDF identifiables ; la définition mélange des mots qui ne sont pas du français correct (« dedienstheid Herstel » n'a pas de sens identifiable), ce qui suggère une entrée fabriquée/erronée. Laissée inchangée conformément à la consigne (aucune source ne permet de la remplacer par une définition vérifiée), mais fortement recommandé de la faire vérifier ou supprimer.
+- Raison de l'incertitude : Incertain - à corriger en priorité. Sigle introuvable dans fiches.html et les PDF identifiables ; la définition mélange des mots qui ne sont pas du français correct (« dedienstheid Herstel » n'a pas de sens identifiable), ce qui suggère une entrée fabriquée/erronée. Laissée inchangée conformément à la consigne (aucune source ne permet de la remplacer par une définition vérifiée), mais fortement recommandé de la faire vérifier ou supprimer.
 
 **Référent QVT**
 - Définition actuelle (inchangée) : Agent désigné dans une unité pour identifier les leviers d'amélioration de la QVT et proposer des actions concrètes pour favoriser le bien-être des agents.
@@ -499,5 +499,5 @@ Ce document liste toutes les modifications faites aux questions QCM/Quiz et au g
 
 **Fichiers de données personnelles**
 - Définition actuelle (inchangée) : Fichiers policiers (ex : TAJ, FPR, STIC, FNAEG) dont l'utilisation est strictement encadrée par la loi (Art. R. 434-21 CSI). Toute utilisation abusive est un manquement à la probité.
-- Raison de l'incertitude : Incertain. Les sigles TAJ, FPR, STIC, FNAEG ne sont cités nommément dans aucune source fournie ; fiches.html mentionne seulement l'art. R.434-21 de façon générique. Note pour Zay : le STIC a en principe été remplacé par le TAJ en 2014, donc le citer comme fichier actuel pourrait être obsolète — mais ce point n'a pas pu être vérifié via fiches.html ou un PDF du dossier, il est donc seulement signalé et non corrigé.
+- Raison de l'incertitude : Incertain. Les sigles TAJ, FPR, STIC, FNAEG ne sont cités nommément dans aucune source fournie ; fiches.html mentionne seulement l'art. R.434-21 de façon générique. Note pour Zay : le STIC a en principe été remplacé par le TAJ en 2014, donc le citer comme fichier actuel pourrait être obsolète - mais ce point n'a pas pu être vérifié via fiches.html ou un PDF du dossier, il est donc seulement signalé et non corrigé.
 

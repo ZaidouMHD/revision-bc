@@ -1,4 +1,4 @@
-// Service worker — Révision BC SUEP
+// Service worker - Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
 const VERSION = 'v11';
 const CACHE = `revision-bc-${VERSION}`;

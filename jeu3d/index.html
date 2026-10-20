@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#002395">
-<title>Objectif BC 3D — Patrouille à Saint-Zaïdou</title>
+<title>Objectif BC 3D - Patrouille à Saint-Zaïdou</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1530; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; }
@@ -88,7 +88,7 @@
 </div>
 
 <div id="hud" class="hidden">
-  <div id="rank" class="card"><div id="rankName">—</div><div id="xpBar"><div id="xpFill"></div></div><div id="xpTxt"></div></div>
+  <div id="rank" class="card"><div id="rankName">-</div><div id="xpBar"><div id="xpFill"></div></div><div id="xpTxt"></div></div>
   <div id="missions" class="card">0/8<small>dossiers</small></div>
   <button id="radioBtn" class="hbtn" aria-label="Radio">📻</button>
   <button id="opsBtn" class="hbtn" aria-label="Interventions">📟</button>
@@ -166,13 +166,13 @@ import * as SkeletonUtils from './lib/jsm/utils/SkeletonUtils.js';
 const $ = id => document.getElementById(id);
 
 /* =========================================================
-   PROGRESSION — même sauvegarde que le jeu 2D
+   PROGRESSION - même sauvegarde que le jeu 2D
    ========================================================= */
 const RANKS = [
   { xp: 0, name: 'Recrue civile' }, { xp: 200, name: 'Cadet de la République' },
   { xp: 600, name: 'Élève gardien de la paix' }, { xp: 1300, name: 'Gardien de la paix stagiaire' },
-  { xp: 2300, name: 'Gardien de la paix' }, { xp: 3700, name: 'GPX — Chef de bord' },
-  { xp: 5500, name: 'GPX — Chef de patrouille' }, { xp: 7500, name: 'Candidat Brigadier-Chef' },
+  { xp: 2300, name: 'Gardien de la paix' }, { xp: 3700, name: 'GPX - Chef de bord' },
+  { xp: 5500, name: 'GPX - Chef de patrouille' }, { xp: 7500, name: 'Candidat Brigadier-Chef' },
   { xp: 9000, name: 'Brigadier-Chef' }
 ];
 const THEME_LABEL = { A: 'Régimes', B: 'Services supp.', C: 'Congés', D: 'Astreinte', E: 'RPS',
@@ -342,7 +342,7 @@ function radioStop() {
 function radioFallback(why) {
   const name = (STATIONS.find(s => s.id === R.cur) || {}).name;
   radioStop(); R.cur = 'bcfm'; playSong('map'); radioApplyVol(); radioUi();
-  toast(`📻 ${name} ne répond pas${why ? ' (' + why + ')' : ''} — retour sur BC FM`);
+  toast(`📻 ${name} ne répond pas${why ? ' (' + why + ')' : ''} - retour sur BC FM`);
 }
 function radioPlay(id, quiet) {
   const st = STATIONS.find(s => s.id === id) || STATIONS[0];
@@ -350,12 +350,12 @@ function radioPlay(id, quiet) {
   radioStop(); R.cur = st.id;
   if (!R.on || !AC) { radioUi(); return; }
   if (st.song) { playSong(st.song); radioApplyVol(); }
-  else if (navigator.onLine === false) { R.cur = 'bcfm'; playSong('map'); radioApplyVol(); toast('📻 Pas de réseau — BC FM prend le relais'); }
+  else if (navigator.onLine === false) { R.cur = 'bcfm'; playSong('map'); radioApplyVol(); toast('📻 Pas de réseau - BC FM prend le relais'); }
   else {
     if (!R.el) { R.el = new Audio(); R.el.preload = 'none'; }
     R.el.src = st.url; radioApplyVol();
     R.el.onerror = () => radioFallback('flux indisponible');
-    R.el.onplaying = () => { clearTimeout(R.wait); if (!quiet) toast('📻 ' + st.name + ' — en direct'); };
+    R.el.onplaying = () => { clearTimeout(R.wait); if (!quiet) toast('📻 ' + st.name + ' - en direct'); };
     const p = R.el.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError') radioFallback(); });
     R.wait = setTimeout(() => { if (R.el && (R.el.paused || R.el.readyState < 2)) radioFallback('pas de réseau ?'); }, 12000);
   }
@@ -440,7 +440,7 @@ async function loadAll() {
 function clone(name) { return G[name].scene.clone(true); }
 
 /* =========================================================
-   LA VILLE — tuiles de 8 m, 15 × 15
+   LA VILLE - tuiles de 8 m, 15 × 15
    ========================================================= */
 const T = 8;
 const MAP = [
@@ -606,27 +606,27 @@ const MISSIONS = [
     place: 'Commissariat',
     intro: ['Ah, te voilà ! La brigade de nuit a mélangé tous les plannings.', 'Repos légal, grande semaine, astreintes… Si tu veux devenir brigadier-chef, tu dois savoir faire un planning les yeux fermés.', 'Aide-moi à remettre de l\'ordre !'],
     win: 'Planning bouclé ! La brigade te remercie. Le Capitaine verra ça d\'un bon œil.', lose: 'Hmm, il reste des trous dans le planning. Reviens me voir quand tu veux réessayer.' },
-  { id: 'accident', who: 'BC Diallo', role: 'Chef de bord — Accident', model: 'character-male-c', spot: 'A', themes: ['I'], n: 5, need: 3,
+  { id: 'accident', who: 'BC Diallo', role: 'Chef de bord - Accident', model: 'character-male-c', spot: 'A', themes: ['I'], n: 5, need: 3,
     place: 'Boulevard Sud',
     intro: ['📻 Accident matériel sur le boulevard Sud, deux véhicules !', 'Bien arrivé. Le SAMU est sur place. Balisage, protection, constatations : on applique les bonnes pratiques.', 'Montre-moi que tu connais la procédure d\'intervention.'],
     win: 'Zone sécurisée, constatations faites. Du travail de pro !', lose: 'On a été un peu brouillons. Reprends la procédure et on recommence.' },
-  { id: 'rh', who: 'Mme Durand', role: 'Service RH — Mairie', model: 'character-female-b', spot: 'M', themes: ['C'], n: 5, need: 3,
+  { id: 'rh', who: 'Mme Durand', role: 'Service RH - Mairie', model: 'character-female-b', spot: 'M', themes: ['C'], n: 5, need: 3,
     place: 'Mairie',
     intro: ['Bonjour ! Trois agents de ta future brigade ont posé des demandes de congés en même temps.', 'Congés annuels, bonifiés, autorisations d\'absence… Un chef doit savoir répondre à ses agents.', 'Voyons si tu connais les règles !'],
     win: 'Parfait, toutes les demandes sont traitées dans les règles.', lose: 'Il y a des erreurs dans les dossiers. Révise un peu et reviens !' },
-  { id: 'tsi', who: 'Moniteur Kader', role: 'Moniteur TSI — Parc', model: 'character-male-f', spot: 'G', off: [0, -1.5], themes: ['F'], n: 5, need: 3,
+  { id: 'tsi', who: 'Moniteur Kader', role: 'Moniteur TSI - Parc', model: 'character-male-f', spot: 'G', off: [0, -1.5], themes: ['F'], n: 5, need: 3,
     place: 'Parc du Centre',
     intro: ['Entraînement en plein air aujourd\'hui ! Techniques et sécurité en intervention.', 'Distances de sécurité, gestes, protocole : en garde !'],
     win: 'Excellent ! Tes techniques sont solides.', lose: 'Pas encore au point. On reprend les bases et tu reviens.' },
-  { id: 'compta', who: 'M. Petit', role: 'Gestionnaire — Finances', model: 'character-male-a', spot: 'F', themes: ['B', 'E'], n: 5, need: 3,
+  { id: 'compta', who: 'M. Petit', role: 'Gestionnaire - Finances', model: 'character-male-a', spot: 'F', themes: ['B', 'E'], n: 5, need: 3,
     place: 'Centre des finances',
     intro: ['Ah, le futur brigadier-chef ! J\'ai une pile de tableaux de compensation à vérifier.', 'Services supplémentaires, permanences, coefficients RPS… Les calculs, c\'est ici.'],
     win: 'Comptes justes ! Les agents seront bien payés grâce à toi.', lose: 'Les chiffres ne tombent pas juste… Recompte et reviens.' },
-  { id: 'malaise', who: 'Mme Leroy', role: 'Témoin — Place des Tilleuls', model: 'character-female-e', spot: 'V', off: [1.6, 0], themes: ['I'], n: 5, need: 3,
+  { id: 'malaise', who: 'Mme Leroy', role: 'Témoin - Place des Tilleuls', model: 'character-female-e', spot: 'V', off: [1.6, 0], themes: ['I'], n: 5, need: 3,
     place: 'Place des Tilleuls',
     intro: ['Monsieur l\'agent ! Une passante a fait un malaise, juste là !', 'Les pompiers arrivent, j\'ai sorti le défibrillateur de la pharmacie.', 'Qu\'est-ce qu\'on doit faire ?'],
     win: 'Les secours ont pris le relais. Grâce à vous, elle va s\'en sortir !', lose: 'J\'ai eu peur… Révisez les bons réflexes, on ne sait jamais.' },
-  { id: 'deonto', who: 'Commandant Roux', role: 'Inspection — Déontologie', model: 'character-male-d', spot: 'I', themes: ['G'], n: 5, need: 3,
+  { id: 'deonto', who: 'Commandant Roux', role: 'Inspection - Déontologie', model: 'character-male-d', spot: 'I', themes: ['G'], n: 5, need: 3,
     place: 'Inspection',
     intro: ['Entrez. J\'ai reçu une réclamation concernant un contrôle d\'identité.', 'Un brigadier-chef doit être exemplaire. Le code de déontologie n\'est pas une option.', 'Je vous écoute.'],
     win: 'Irréprochable. Vous ferez un chef exemplaire.', lose: 'Ce n\'est pas suffisant. Relisez le code et revenez me voir.' },
@@ -877,10 +877,10 @@ function update(dt) {
     const tgt = gobj || SPOTS[nm.spot]; beacon.visible = true; beacon.position.x = tgt.x; beacon.position.z = tgt.z;
     const dx = tgt.x - P.pos.x, dz = tgt.z - P.pos.z, dist = Math.hypot(dx, dz);
     $('objArrow').style.transform = `rotate(${Math.atan2(dx, -dz)}rad)`;
-    $('objTxt').textContent = gobj ? `${gobj.txt} · ${Math.round(dist)} m` : `${nm.place} — ${nm.who} · ${Math.round(dist)} m`;
+    $('objTxt').textContent = gobj ? `${gobj.txt} · ${Math.round(dist)} m` : `${nm.place} - ${nm.who} · ${Math.round(dist)} m`;
     beacon.material.color.setHex(gobj && gobj.col || 0xf4c430);
     beacon.material.opacity = dist < 8 ? .1 : .28;
-  } else if (GAME) { beacon.visible = false; $('objTxt').textContent = GAME.name; } else { beacon.visible = false; $('objArrow').style.transform = ''; $('objTxt').textContent = 'Brigadier-Chef ! Patrouille libre — révise avec tout le monde'; }
+  } else if (GAME) { beacon.visible = false; $('objTxt').textContent = GAME.name; } else { beacon.visible = false; $('objArrow').style.transform = ''; $('objTxt').textContent = 'Brigadier-Chef ! Patrouille libre - révise avec tout le monde'; }
 
   // Caméra
   const portrait = innerHeight > innerWidth;
@@ -1011,7 +1011,7 @@ $('qNext').addEventListener('click', () => {
     SFX.win(); confetti(m.boss ? 160 : 60); save(); hud();
     const lines = [[m.who, m.role, (first ? m.win : 'Toujours au top !') + `  (${score} · +${bonus} XP bonus)`]];
     if (first && m.boss) { S.d3.ended = true; save(); lines.push(['Capitaine Moreau', 'Chef de service', 'Bravo, Brigadier-Chef ! Saint-Zaïdou est fier de toi. Le quartier reste ouvert : chaque dossier peut être révisé à volonté.']); }
-    dialog(lines, () => { const n = nextMission(); if (first && n) toast('📻 Radio : prochain dossier — ' + n.place + ' (' + n.who + ')', 5000); else if (first && n === null && !m.boss) toast('📻 Tous les dossiers sont bouclés !'); });
+    dialog(lines, () => { const n = nextMission(); if (first && n) toast('📻 Radio : prochain dossier - ' + n.place + ' (' + n.who + ')', 5000); else if (first && n === null && !m.boss) toast('📻 Tous les dossiers sont bouclés !'); });
   } else {
     dialog([[m.who, m.role, m.lose + `  (${score}, il en fallait ${m.need})`]]);
   }
@@ -1053,7 +1053,7 @@ $('radioVol').addEventListener('input', e => { R.vol = +e.target.value; radioApp
 $('radioOff').addEventListener('click', () => { ac(); R.on = !R.on; if (R.on) radioPlay(R.st); else { radioStop(); S.d3.radio = { st: R.st, vol: R.vol, on: false }; save(); radioUi(); } });
 
 /* =========================================================
-   CELLULE DE GARDE À VUE — les voleurs attrapés y restent
+   CELLULE DE GARDE À VUE - les voleurs attrapés y restent
    ========================================================= */
 const JAIL = { c: null, inmates: [] };
 const THIEF_MODELS = ['character-male-a', 'character-male-e', 'character-female-a', 'character-male-f', 'character-female-c', 'character-male-b'];
@@ -1083,7 +1083,7 @@ function jailShow() {
 function jailAdd(n = 1) { S.d3.jail = (S.d3.jail || 0) + n; for (let i = 0; i < n; i++) jailShow(); save(); hud(); }
 
 /* =========================================================
-   INTERVENTIONS — mini-jeux 3D
+   INTERVENTIONS - mini-jeux 3D
    ========================================================= */
 let GAME = null, FREEZE = false;
 const CAP = 40;   // XP max par mini-jeu et par jour
@@ -1101,15 +1101,15 @@ const OPS = [
   { id: 'pied', name: 'Poursuite à pied', ico: '🏃', unlock: 150, sub: 'Vol à l\'arraché : le suspect s\'enfuit !',
     how: 'Un voleur vient d\'arracher un sac et s\'enfuit à pied. Pousse le joystick à fond pour sprinter et touche-le pour le menotter. Il est plus rapide que toi… mais il s\'essouffle (…) : c\'est le moment de foncer !' },
   { id: 'chefs', name: 'Les faux chefs', ico: '🕵️', unlock: 300, sub: 'La hiérarchie… ou des voleurs déguisés ?',
-    how: 'À pied, ramasse tous les dossiers 📁 sur les avenues sans te faire attraper par les « chefs ». Prends un mandat ★ : ils se révèlent voleurs pendant 8 s — attrape-les pour les mettre en garde à vue !' }
+    how: 'À pied, ramasse tous les dossiers 📁 sur les avenues sans te faire attraper par les « chefs ». Prends un mandat ★ : ils se révèlent voleurs pendant 8 s - attrape-les pour les mettre en garde à vue !' }
 ];
-function recTxt(o) { const b = arc3().best[o.id]; return b === undefined ? '—' : o.id === 'chefs' ? b + ' pts' : fmt(b); }
+function recTxt(o) { const b = arc3().best[o.id]; return b === undefined ? '-' : o.id === 'chefs' ? b + ' pts' : fmt(b); }
 $('opsBtn').addEventListener('click', () => {
   const a = arc3();
   $('opsList').innerHTML = OPS.map(o => {
     const lock = S.xp < o.unlock;
     return `<button class="st" data-op="${o.id}" ${lock ? 'style="opacity:.6"' : ''}><span class="ico">${lock ? '🔒' : o.ico}</span><span><b>${o.name}</b><small>${lock ? 'Débloqué à ' + o.unlock + ' XP (encore ' + (o.unlock - S.xp) + ')' : o.sub}</small></span><span class="rt">🏆 ${recTxt(o)}<br><small>${a.xp[o.id] || 0}/${CAP} XP</small></span></button>`;
-  }).join('') + `<div style="margin-top:10px;font-size:13px;color:#5a6687">🔒 En garde à vue : <b>${S.d3.jail || 0}</b> voleur${(S.d3.jail || 0) > 1 ? 's' : ''} — la cellule est derrière le commissariat.</div>`
+  }).join('') + `<div style="margin-top:10px;font-size:13px;color:#5a6687">🔒 En garde à vue : <b>${S.d3.jail || 0}</b> voleur${(S.d3.jail || 0) > 1 ? 's' : ''} - la cellule est derrière le commissariat.</div>`
     + `<div style="margin-top:6px;font-size:13px;color:#5a6687">📻 ${S.d3.calls ? `Prochain appel radio dans ~${Math.max(1, Math.ceil(S.d3.callT / 60))} min de patrouille` : 'Appels radio aléatoires coupés (menu ☰)'}</div>`;
   $('ops').classList.remove('hidden');
 });
@@ -1327,7 +1327,7 @@ function APied(o, ev) {
   };
   g.objective = () => ({ x: pos.x, z: pos.z, txt: g.phase === 'aller' ? ev.title : g.tired ? 'Il fatigue, fonce ! 🔥' : ev ? 'Suspect en fuite' : 'Voleur à l\'arraché', col: 0xdc2626 });
   g.cleanup = () => { scene.remove(thief.root); };
-  if (!ev) setTimeout(() => toast('👜 « Au voleur ! Il a pris mon sac ! » — Pousse le joystick à fond pour sprinter'), 2700);
+  if (!ev) setTimeout(() => toast('👜 « Au voleur ! Il a pris mon sac ! » - Pousse le joystick à fond pour sprinter'), 2700);
   return g;
 }
 
@@ -1397,7 +1397,7 @@ function Chefs() {
           g.hearts--; g.inv = 2.2; SFX.ko(); buzz([80, 40, 80]);
           g.chefs.forEach((o, i) => { o.pos.copy(o.home); o.wait = 1.5 + i; });
           if (g.hearts <= 0) return endOp(false, g.score / 60, `Attrapé par la « hiérarchie »… Score : ${g.score} pts (${g.total - g.items.length}/${g.total} dossiers).`);
-          toast(`Aïe ! Un chef t'a coincé — encore ${g.hearts} ❤️`);
+          toast(`Aïe ! Un chef t'a coincé - encore ${g.hearts} ❤️`);
         }
       }
     }
@@ -1413,7 +1413,7 @@ function Chefs() {
 }
 
 /* =========================================================
-   APPELS RADIO — une mission au hasard toutes les 10 à 20 min de jeu
+   APPELS RADIO - une mission au hasard toutes les 10 à 20 min de jeu
    ========================================================= */
 // kind : 'pied' (voleur qui s'enfuit à pied), 'voiture' (véhicule qui démarre en trombe), 'quiz' (requérant à aider)
 const CALLS = [
@@ -1506,7 +1506,7 @@ function offerCall(c = pickCall()) {
   const where = lieu.startsWith('dans') ? lieu : (/^(avenue|rue)/.test(lieu) ? 'dans l\'' : 'sur le ') + lieu;
   const txt = c.msg(where.replace('dans l\'avenue', 'avenue').replace('dans l\'rue', 'rue').replace(/^(avenue|rue)/, 'sur l\'$1').replace('sur l\'rue', 'rue'));
   [0, .18, .36].forEach(t => tone(1200, .08, 'square', .05, t)); buzz([120, 80, 120]);
-  dialog([['📻 Central', 'Appel radio — ' + c.title, txt + ' Tu prends l\'appel ?',
+  dialog([['📻 Central', 'Appel radio - ' + c.title, txt + ' Tu prends l\'appel ?',
     [['🚨 J\'y vais', () => startCall(c, ev)], ['Pas maintenant', () => toast('📻 Bien reçu, une autre patrouille s\'en charge.'), 'alt']]]]);
 }
 function startCall(c, ev) {
