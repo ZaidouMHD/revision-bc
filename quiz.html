@@ -516,7 +516,7 @@ function showQuizQ(){
     <div style="font-size:13px;color:#666">Question ${quizIdx+1}${isUnlimited ? '' : ' / ' + quizQ.length} - Thème ${q.t}</div>
     <div class="progress-bar"><div class="progress-fill" style="width:${isUnlimited ? '0%' : pct+'%'}"></div></div>
     <div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>
-    <button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>
+    ${enableCountdown || enableTimer ? '<button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>' : ''}
     ${stopBtnHTML}
   </div>
   <div id="pausePanel"></div>
@@ -557,7 +557,8 @@ function replaceCurrentQuestion() {
 }
 
 function pauseQuiz() {
-  if(isPaused) return;
+  // La pause ne sert qu'à arrêter le temps : seulement avec chronomètre ou minuteur
+  if(isPaused || !(enableCountdown || enableTimer)) return;
   isPaused = true;
   pauseCount++;
   if(enableCountdown) pausedLeftMs = Math.max(0, countdownEnd - Date.now());
