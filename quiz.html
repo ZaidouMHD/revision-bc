@@ -132,6 +132,13 @@
       border-color: #ccc;
       color: #999;
     }
+    .checkbox-wrapper.option-off {
+      opacity: 0.45;
+    }
+    .checkbox-wrapper.option-off input,
+    .checkbox-wrapper.option-off label {
+      cursor: not-allowed;
+    }
     .timeout-info {
       background: rgba(255,255,255,0.15);
       border-radius: 6px;
@@ -613,13 +620,13 @@ function showQuizSelector() {
     </div>
     
     <div class="quiz-options">
-      <div class="checkbox-wrapper">
+      <div class="checkbox-wrapper" id="timerOption">
         <input type="checkbox" id="enableTimerCheckbox" onchange="toggleTimer()">
         <label for="enableTimerCheckbox">⏱️ Activer le chronomètre</label>
       </div>
     </div>
     <div class="quiz-options">
-      <div class="checkbox-wrapper">
+      <div class="checkbox-wrapper" id="countdownOption">
         <input type="checkbox" id="enableCountdownCheckbox" ${enableCountdown ? 'checked' : ''} onchange="toggleCountdown()">
         <label for="enableCountdownCheckbox">⏳ Activer le minuteur</label>
         <input type="number" id="countdownMinutes" class="countdown-minutes" min="1" max="300" step="1" value="${countdownMinutes}" ${enableCountdown ? '' : 'disabled'}>
@@ -630,6 +637,7 @@ function showQuizSelector() {
     <button id="startQuizBtn" onclick="handleQuizStart()">▶️ Commencer le Quiz</button>
   </div>`;
   updateThemes();
+  toggleTimer();
 }
 
 function updateThemes() {
@@ -639,18 +647,19 @@ function updateThemes() {
   document.getElementById('themeWarning').style.display = none ? 'block' : 'none';
 }
 
-// Chronomètre et minuteur : un seul à la fois
+// Chronomètre et minuteur : un seul à la fois, l'autre case est grisée
 function toggleTimer() {
-  if(document.getElementById('enableTimerCheckbox').checked) {
-    document.getElementById('enableCountdownCheckbox').checked = false;
-    toggleCountdown();
-  }
+  const timerOn = document.getElementById('enableTimerCheckbox').checked;
+  const countdownOn = document.getElementById('enableCountdownCheckbox').checked;
+  document.getElementById('enableCountdownCheckbox').disabled = timerOn;
+  document.getElementById('enableTimerCheckbox').disabled = countdownOn;
+  document.getElementById('countdownMinutes').disabled = !countdownOn;
+  document.getElementById('timerOption').classList.toggle('option-off', countdownOn);
+  document.getElementById('countdownOption').classList.toggle('option-off', timerOn);
 }
 
 function toggleCountdown() {
-  const on = document.getElementById('enableCountdownCheckbox').checked;
-  document.getElementById('countdownMinutes').disabled = !on;
-  if(on) document.getElementById('enableTimerCheckbox').checked = false;
+  toggleTimer();
 }
 
 function setAllThemes(checked) {
