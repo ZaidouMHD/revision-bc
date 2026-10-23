@@ -139,6 +139,48 @@
     .checkbox-wrapper.option-off label {
       cursor: not-allowed;
     }
+    /* Pause */
+    .pause-btn {
+      background: #f0a500;
+      color: #1d1d1d;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .pause-btn:hover {
+      background: #d99400;
+    }
+    .pause-btn:disabled, .stop-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed !important;
+    }
+    .qcard.paused {
+      filter: grayscale(1) blur(6px);
+      opacity: 0.35;
+      pointer-events: none;
+      user-select: none;
+    }
+    .pause-panel {
+      background: white;
+      border: 2px solid #f0a500;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .pause-panel h3 {
+      color: #003366;
+      margin: 0 0 8px;
+    }
+    .pause-panel p {
+      color: #555;
+      margin: 0 0 15px;
+      font-size: 14px;
+    }
     .timeout-info {
       background: rgba(255,255,255,0.15);
       border-radius: 6px;
@@ -273,6 +315,12 @@ let countdownMinutes = 30;
 let countdownEnd = 0;
 let timeUp = false;
 let unansweredCount = 0;
+// Pause
+let quizPool = [];
+let isPaused = false;
+let pauseCount = 0;
+let pausedLeftMs = 0;
+let pausedAnswered = false;
 let isUnlimited = false; // ===== NOUVELLE VAR =====
 
 // ===== THÈMES =====
@@ -330,8 +378,8 @@ function formatTime(seconds) {
   }
 }
 
-function startTimer() {
-  timerSeconds = 0;
+function startTimer(reset = true) {
+  if(reset) timerSeconds = 0;
   timerInterval = setInterval(() => {
     timerSeconds++;
     updateTimerDisplay();
@@ -348,8 +396,8 @@ function countdownLeft() {
   return Math.max(0, Math.ceil((countdownEnd - Date.now()) / 1000));
 }
 
-function startCountdown() {
-  countdownEnd = Date.now() + countdownMinutes * 60 * 1000;
+function startCountdown(ms = countdownMinutes * 60 * 1000) {
+  countdownEnd = Date.now() + ms;
   timerInterval = setInterval(() => {
     updateCountdownDisplay();
     if(countdownLeft() === 0) onTimeUp();
@@ -406,6 +454,9 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   isUnlimited = unlimited;
   
   const pool = Q.filter(q => selectedThemes.includes(q.t));
+  quizPool = pool;
+  isPaused = false;
+  pauseCount = 0;
   if(unlimited) {
     quizQ = shuffle(pool); // Toutes les questions des thèmes choisis en mode illimité
   } else {
@@ -465,8 +516,10 @@ function showQuizQ(){
     <div style="font-size:13px;color:#666">Question ${quizIdx+1}${isUnlimited ? '' : ' / ' + quizQ.length} - Thème ${q.t}</div>
     <div class="progress-bar"><div class="progress-fill" style="width:${isUnlimited ? '0%' : pct+'%'}"></div></div>
     <div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>
+    <button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>
     ${stopBtnHTML}
   </div>
+  <div id="pausePanel"></div>
   <div class="qcard">
     <h3>${q.q}</h3>`;
   
@@ -481,8 +534,72 @@ function showQuizQ(){
   document.getElementById('quizarea').innerHTML = html;
 }
 
+// ===== PAUSE =====
+// Pour éviter la triche, une question pas encore répondue est remplacée par une
+// nouvelle question, ou reportée à la fin s'il n'en reste pas d'autre.
+function replaceCurrentQuestion() {
+  const used = new Set(quizQ);
+  const fresh = quizPool.filter(q => !used.has(q));
+  if(!isUnlimited && fresh.length > 0) {
+    const pick = fresh[Math.floor(Math.random() * fresh.length)];
+    const shuffled = shuffleAndUpdateAnswer(pick.o, pick.a);
+    pick.o = shuffled.options;
+    pick.a = shuffled.correctIndex;
+    quizQ[quizIdx] = pick;
+    return 'Elle sera remplacée par une nouvelle question.';
+  }
+  const [q] = quizQ.splice(quizIdx, 1);
+  const shuffled = shuffleAndUpdateAnswer(q.o, q.a);
+  q.o = shuffled.options;
+  q.a = shuffled.correctIndex;
+  quizQ.push(q);
+  return 'Elle est reportée à la fin du quiz.';
+}
+
+function pauseQuiz() {
+  if(isPaused) return;
+  isPaused = true;
+  pauseCount++;
+  if(enableCountdown) pausedLeftMs = Math.max(0, countdownEnd - Date.now());
+  stopTimer();
+
+  pausedAnswered = quizAnswered;
+  const info = pausedAnswered
+    ? 'Ta réponse à cette question est gardée.'
+    : 'La question en cours est passée. ' + replaceCurrentQuestion();
+
+  document.querySelector('.qcard').classList.add('paused');
+  document.getElementById('pauseBtn').disabled = true;
+  const stopBtn = document.querySelector('.stop-btn');
+  if(stopBtn) stopBtn.disabled = true;
+  document.getElementById('pausePanel').innerHTML = `
+    <div class="pause-panel">
+      <h3>⏸️ Quiz en pause</h3>
+      <p>${info}${enableCountdown || enableTimer ? '<br>Le temps est arrêté.' : ''}</p>
+      <button class="btn green" onclick="resumeQuiz()">▶️ Reprendre</button>
+    </div>`;
+}
+
+function resumeQuiz() {
+  if(!isPaused) return;
+  isPaused = false;
+  if(enableCountdown) startCountdown(pausedLeftMs);
+  else if(enableTimer) startTimer(false);
+
+  if(pausedAnswered) {
+    // Question déjà répondue : on retrouve l'explication telle quelle
+    document.querySelector('.qcard').classList.remove('paused');
+    document.getElementById('pausePanel').innerHTML = '';
+    document.getElementById('pauseBtn').disabled = false;
+    const stopBtn = document.querySelector('.stop-btn');
+    if(stopBtn) stopBtn.disabled = false;
+  } else {
+    showQuizQ();
+  }
+}
+
 function answerQuiz(btn, chosen){
-  if(quizAnswered) return;
+  if(quizAnswered || isPaused) return;
   quizAnswered = true;
   const q = quizQ[quizIdx];
   const card = btn.closest('.qcard');
@@ -535,6 +652,10 @@ function showScore(){
     }
   } else if(enableTimer) {
     timerInfo = `<p style="margin:10px 0;opacity:0.9">⏱️ Temps utilisé : <strong>${formatTime(timerSeconds)}</strong></p>`;
+  }
+
+  if(pauseCount > 0) {
+    timerInfo += `<p style="margin:5px 0;opacity:0.8">⏸️ ${pauseCount} pause${pauseCount > 1 ? 's' : ''}</p>`;
   }
 
   let modeInfo = '';
