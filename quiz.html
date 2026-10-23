@@ -120,6 +120,24 @@
       margin-top: 8px;
       display: none;
     }
+    .countdown-minutes {
+      width: 70px;
+      padding: 6px 8px;
+      font-size: 16px;
+      border: 2px solid #003366;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .countdown-minutes:disabled {
+      border-color: #ccc;
+      color: #999;
+    }
+    .timeout-info {
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 10px 0;
+    }
     .quiz-selector button:disabled {
       background: #9aa5b1;
       cursor: not-allowed;
@@ -242,6 +260,12 @@ let quizErrors = [];
 let enableTimer = false;
 let timerInterval = null;
 let timerSeconds = 0;
+// Minuteur (compte à rebours)
+let enableCountdown = false;
+let countdownMinutes = 30;
+let countdownEnd = 0;
+let timeUp = false;
+let unansweredCount = 0;
 let isUnlimited = false; // ===== NOUVELLE VAR =====
 
 // ===== THÈMES =====
@@ -309,6 +333,55 @@ function startTimer() {
 
 function stopTimer() {
   if(timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// Basé sur l'heure de fin : reste juste même si l'onglet passe en arrière-plan
+function countdownLeft() {
+  return Math.max(0, Math.ceil((countdownEnd - Date.now()) / 1000));
+}
+
+function startCountdown() {
+  countdownEnd = Date.now() + countdownMinutes * 60 * 1000;
+  timerInterval = setInterval(() => {
+    updateCountdownDisplay();
+    if(countdownLeft() === 0) onTimeUp();
+  }, 250);
+}
+
+function countdownClass(left) {
+  return left <= 60 ? 'danger' : left <= 300 ? 'warning' : '';
+}
+
+function updateCountdownDisplay() {
+  const el = document.getElementById('timerDisplay');
+  if(!el) return;
+  const left = countdownLeft();
+  el.textContent = '⏳ ' + formatTime(left);
+  el.className = 'timer-display ' + countdownClass(left);
+}
+
+// Temps écoulé : toutes les questions non répondues passent en échec
+function onTimeUp() {
+  stopTimer();
+  timeUp = true;
+  const firstUnanswered = quizAnswered ? quizIdx + 1 : quizIdx;
+  if(isUnlimited) {
+    // Mode illimité : pas de liste fixe, on arrête simplement le quiz
+    unansweredCount = 0;
+    quizIdx = firstUnanswered;
+  } else {
+    const rest = quizQ.slice(firstUnanswered);
+    unansweredCount = rest.length;
+    rest.forEach(q => quizErrors.push({
+      question: q.q,
+      userAnswer: '⏰ Pas de réponse (temps écoulé)',
+      correctAnswer: q.o[q.a],
+      explanation: q.e
+    }));
+    quizIdx = quizQ.length;
+  }
+  showScore();
 }
 
 function updateTimerDisplay() {
@@ -318,8 +391,11 @@ function updateTimerDisplay() {
   }
 }
 
-function startQuiz(numQuestions = 20, withTimer = false, unlimited = false) {
+function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, withCountdown = false) {
   enableTimer = withTimer;
+  enableCountdown = withCountdown;
+  timeUp = false;
+  unansweredCount = 0;
   isUnlimited = unlimited;
   
   const pool = Q.filter(q => selectedThemes.includes(q.t));
@@ -342,7 +418,10 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false) {
   quizErrors = [];
   quizAnswered = false;
   
-  if(enableTimer) {
+  stopTimer();
+  if(enableCountdown) {
+    startCountdown();
+  } else if(enableTimer) {
     startTimer();
   }
   
@@ -361,7 +440,10 @@ function showQuizQ(){
   const pct = Math.round((quizIdx/quizQ.length)*100);
   
   let timerHTML = '';
-  if(enableTimer) {
+  if(enableCountdown) {
+    const left = countdownLeft();
+    timerHTML = `<div class="timer-display ${countdownClass(left)}" id="timerDisplay">⏳ ${formatTime(left)}</div>`;
+  } else if(enableTimer) {
     timerHTML = `<div class="timer-display" id="timerDisplay">⏱️ ${formatTime(timerSeconds)}</div>`;
   }
   
@@ -430,11 +512,21 @@ function stopUnlimitedQuiz() {
 }
 
 function showScore(){
-  const pct = Math.round((quizScore/quizIdx)*100);
+  stopTimer();
+  const pct = quizIdx > 0 ? Math.round((quizScore/quizIdx)*100) : 0;
   const mention = pct>=80 ? '🏆 Excellent !' : pct>=60 ? '👍 Bien' : '📚 À revoir';
   
   let timerInfo = '';
-  if(enableTimer) {
+  if(enableCountdown) {
+    if(timeUp) {
+      timerInfo = `<div class="timeout-info">⏰ <strong>Temps écoulé</strong> (minuteur de ${countdownMinutes} min)`
+        + (unansweredCount > 0 ? `<br>${unansweredCount} question${unansweredCount > 1 ? 's' : ''} non traitée${unansweredCount > 1 ? 's' : ''} comptée${unansweredCount > 1 ? 's' : ''} en échec` : '')
+        + `</div>`;
+    } else {
+      const used = countdownMinutes * 60 - countdownLeft();
+      timerInfo = `<p style="margin:10px 0;opacity:0.9">⏳ Terminé en <strong>${formatTime(used)}</strong> sur ${countdownMinutes} min</p>`;
+    }
+  } else if(enableTimer) {
     timerInfo = `<p style="margin:10px 0;opacity:0.9">⏱️ Temps utilisé : <strong>${formatTime(timerSeconds)}</strong></p>`;
   }
 
@@ -522,8 +614,16 @@ function showQuizSelector() {
     
     <div class="quiz-options">
       <div class="checkbox-wrapper">
-        <input type="checkbox" id="enableTimerCheckbox">
+        <input type="checkbox" id="enableTimerCheckbox" onchange="toggleTimer()">
         <label for="enableTimerCheckbox">⏱️ Activer le chronomètre</label>
+      </div>
+    </div>
+    <div class="quiz-options">
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="enableCountdownCheckbox" ${enableCountdown ? 'checked' : ''} onchange="toggleCountdown()">
+        <label for="enableCountdownCheckbox">⏳ Activer le minuteur</label>
+        <input type="number" id="countdownMinutes" class="countdown-minutes" min="1" max="300" step="1" value="${countdownMinutes}" ${enableCountdown ? '' : 'disabled'}>
+        <span>min</span>
       </div>
     </div>
     
@@ -539,6 +639,20 @@ function updateThemes() {
   document.getElementById('themeWarning').style.display = none ? 'block' : 'none';
 }
 
+// Chronomètre et minuteur : un seul à la fois
+function toggleTimer() {
+  if(document.getElementById('enableTimerCheckbox').checked) {
+    document.getElementById('enableCountdownCheckbox').checked = false;
+    toggleCountdown();
+  }
+}
+
+function toggleCountdown() {
+  const on = document.getElementById('enableCountdownCheckbox').checked;
+  document.getElementById('countdownMinutes').disabled = !on;
+  if(on) document.getElementById('enableTimerCheckbox').checked = false;
+}
+
 function setAllThemes(checked) {
   document.querySelectorAll('.theme-cb').forEach(cb => { cb.checked = checked; });
   updateThemes();
@@ -549,11 +663,16 @@ function handleQuizStart() {
   const selected = document.getElementById('numQuestions').value;
   const withTimer = document.getElementById('enableTimerCheckbox').checked;
   if(selectedThemes.length === 0) return;
+  const withCountdown = document.getElementById('enableCountdownCheckbox').checked;
+  if(withCountdown) {
+    const m = parseInt(document.getElementById('countdownMinutes').value, 10);
+    countdownMinutes = Math.min(300, Math.max(1, isNaN(m) ? 30 : m));
+  }
   
   if(selected === 'unlimited') {
-    startQuiz(0, withTimer, true);
+    startQuiz(0, withTimer, true, withCountdown);
   } else {
-    startQuiz(parseInt(selected), withTimer, false);
+    startQuiz(parseInt(selected), withTimer, false, withCountdown);
   }
 }
 
