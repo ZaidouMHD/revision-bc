@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents - Brigadier-Chef 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* ── Liste des documents à télécharger ── */
+    .docs-intro { color: #444; line-height: 1.6; }
+    .docs-groupe { margin-top: 18px; }
+    .docs-groupe h3 { color: #003366; font-size: 15px; margin-bottom: 8px; }
+    .doc {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background: #f7f9fc;
+      border: 1px solid #e3e8f0;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .doc:hover { background: #eef3fb; border-color: #003189; }
+    .doc-icone { font-size: 26px; flex-shrink: 0; }
+    .doc-texte { flex: 1; min-width: 0; }
+    .doc-titre { font-weight: 700; color: #003189; display: block; overflow-wrap: anywhere; }
+    .doc-desc { font-size: 13px; color: #555; display: block; margin-top: 2px; }
+    .doc-taille { font-size: 12px; color: #777; white-space: nowrap; flex-shrink: 0; }
+    @media (max-width: 480px) {
+      .doc { flex-wrap: wrap; }
+      .doc-taille { width: 100%; padding-left: 38px; }
+    }
+  </style>
+  <!-- Web app (PWA) : installation sur l'écran d'accueil + mode hors ligne -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#002395">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Objectif BC">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js'); });
+    }
+  </script>
+</head>
+<body>
+
+<a href="index.html" class="logo-link" style="position:absolute;top:10px;left:15px;z-index:100;cursor:pointer">
+  <img src="https://www.police-nationale.interieur.gouv.fr/sites/policenationale/files/medias/images/Logo%20PN-fon%20dtransparent.png" alt="Logo Police Nationale" style="height:90px;width:auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3))">
+</a>
+
+<header>
+  <h1>📚 Révision Brigadier-Chef de Police</h1>
+  <p>Documentation Professionnelle PN - session 2026</p>
+</header>
+
+<nav class="nav">
+  <a href="index.html" title="Accueil">🏠<span class="nav-txt">Accueil</span></a>
+  <a href="fiches.html" title="Fiches">📚<span class="nav-txt">Fiches</span></a>
+  <a href="qcm.html" title="QCM Immédiat">⚡<span class="nav-txt">QCM Immédiat</span></a>
+  <a href="quiz.html" title="Quiz Complet">🏆<span class="nav-txt">Quiz Complet</span></a>
+  <a href="glossaire.html" title="Glossaire">📖<span class="nav-txt">Glossaire</span></a>
+  <a href="documents.html" class="active" title="Documents">📄<span class="nav-txt">Documents</span></a>
+  <a href="jeu.html" title="Le jeu">🎮<span class="nav-txt">Jeu</span></a>
+</nav>
+
+<div class="container">
+  <div class="fiche">
+    <h2>📄 Textes officiels à télécharger</h2>
+    <p class="docs-intro">Les textes de référence utilisés pour les fiches et les questions du site, au format PDF. Ce sont des textes publics (arrêtés, code de déontologie, guide de la fonction publique, sujet d'examen). Pour une version à jour, consultez aussi Légifrance.</p>
+
+    <div class="docs-groupe">
+      <h3>⚖️ Déontologie et emploi de la force</h3>
+      <a class="doc" href="documents/code-deontologie-commente.pdf" download>
+        <span class="doc-icone">📕</span>
+        <span class="doc-texte">
+          <span class="doc-titre">Code de déontologie commenté</span>
+          <span class="doc-desc">Code de déontologie de la police et de la gendarmerie nationales (art. R.434-1 et suivants du CSI), avec commentaires du ministère</span>
+        </span>
+        <span class="doc-taille">PDF - 236 Ko</span>
+      </a>
+      <a class="doc" href="documents/emploi-de-la-force-principaux-textes.pdf" download>
+        <span class="doc-icone">📕</span>
+        <span class="doc-texte">
+          <span class="doc-titre">L'emploi de la force : principaux textes</span>
+          <span class="doc-desc">Légitime défense, état de nécessité, art. L.435-1 et L.211-9 CSI, R.434-18 et textes associés</span>
+        </span>
+        <span class="doc-taille">PDF - 168 Ko</span>
+      </a>
+    </div>
+
+    <div class="docs-groupe">
+      <h3>📋 Règlement et formation</h3>
+      <a class="doc" href="documents/rgepn.pdf" download>
+        <span class="doc-icone">📘</span>
+        <span class="doc-texte">
+          <span class="doc-titre">RGEPN (arrêté du 6 juin 2006)</span>
+          <span class="doc-desc">Règlement général d'emploi de la police nationale, version consolidée</span>
+        </span>
+        <span class="doc-taille">PDF - 815 Ko</span>
+      </a>
+      <a class="doc" href="documents/rgepn-articles-examen-bc.pdf" download>
+        <span class="doc-icone">📘</span>
+        <span class="doc-texte">
+          <span class="doc-titre">RGEPN : articles utiles pour l'examen BC</span>
+          <span class="doc-desc">Extraits du RGEPN au programme</span>
+        </span>
+        <span class="doc-taille">PDF - 80 Ko</span>
+      </a>
+      <a class="doc" href="documents/arrete-27-juillet-2015-formation-tsi.pdf" download>
+        <span class="doc-icone">📘</span>
+        <span class="doc-texte">
+          <span class="doc-titre">Arrêté du 27 juillet 2015 (modifié en 2024)</span>
+          <span class="doc-desc">Formation continue obligatoire aux techniques et à la sécurité en intervention, sport opérationnel</span>
+        </span>
+        <span class="doc-taille">PDF - 77 Ko</span>
+      </a>
+    </div>
+
+    <div class="docs-groupe">
+      <h3>⏱️ Temps de travail</h3>
+      <a class="doc" href="documents/aportt-arrete-5-septembre-2019.pdf" download>
+        <span class="doc-icone">📗</span>
+        <span class="doc-texte">
+          <span class="doc-titre">APORTT (arrêté du 5 septembre 2019)</span>
+          <span class="doc-desc">Organisation relative au temps de travail dans les services de la police nationale, version consolidée</span>
+        </span>
+        <span class="doc-taille">PDF - 172 Ko</span>
+      </a>
+    </div>
+
+    <div class="docs-groupe">
+      <h3>👥 Management</h3>
+      <a class="doc" href="documents/guide-encadrant-fonction-publique.pdf" download>
+        <span class="doc-icone">📙</span>
+        <span class="doc-texte">
+          <span class="doc-titre">Guide de l'encadrante et de l'encadrant (fonction publique, 2017)</span>
+          <span class="doc-desc">Guide pratique sur le rôle, les missions et les outils de l'encadrant</span>
+        </span>
+        <span class="doc-taille">PDF - 2,2 Mo</span>
+      </a>
+    </div>
+
+    <div class="docs-groupe">
+      <h3>📝 Annales</h3>
+      <a class="doc" href="documents/sujet-bc-2022.pdf" download>
+        <span class="doc-icone">📄</span>
+        <span class="doc-texte">
+          <span class="doc-titre">Sujet de l'examen Brigadier-Chef classique, session 2022</span>
+          <span class="doc-desc">Pour s'entraîner dans les conditions de l'examen</span>
+        </span>
+        <span class="doc-taille">PDF - 129 Ko</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 - Réalisé par <strong>MOHAMED Zaïdou</strong> - Révision Brigadier-Chef de Police
+</footer>
+
+</body>
+</html>
