@@ -433,7 +433,8 @@ function onTimeUp() {
       question: q.q,
       userAnswer: '⏰ Pas de réponse (temps écoulé)',
       correctAnswer: q.o[q.a],
-      explanation: q.e
+      explanation: q.e,
+      source: q.s
     }));
     quizIdx = quizQ.length;
   }
@@ -528,7 +529,7 @@ function showQuizQ(){
     html += `<button class="opt" onclick="answerQuiz(this,${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
   });
   
-  html += `<div class="expl" id="qexpl">💡 ${q.e}</div>
+  html += `<div class="expl" id="qexpl">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}</div>
     <button class="btn green" id="qnextbtn" style="display:none;margin-top:12px" onclick="nextQuizQ()">Question suivante ➡️</button>
   </div>`;
   
@@ -617,7 +618,8 @@ function answerQuiz(btn, chosen){
       question: q.q,
       userAnswer: q.o[chosen],
       correctAnswer: q.o[q.a],
-      explanation: q.e
+      explanation: q.e,
+      source: q.s
     });
   }
   
@@ -707,6 +709,7 @@ function showErrorReview() {
       <div class="answer">Ta réponse : <strong>${error.userAnswer}</strong></div>
       <div class="correct">Bonne réponse : <strong>${error.correctAnswer}</strong></div>
       <div style="margin-top:10px;color:#555;font-size:14px">💡 Explication : ${error.explanation}</div>
+      ${error.source ? `<div style="margin-top:6px;color:#777;font-size:12px;font-style:italic">📌 Source : ${error.source}</div>` : ''}
     </div>`;
   });
 }

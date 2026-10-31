@@ -401,7 +401,7 @@ const BADGES = [
    QUESTIONS
    ========================================================= */
 function hash(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
-const QS = (typeof Q !== 'undefined' ? Q : []).map(x => ({ id: hash(x.t + '|' + x.q), t: x.t, q: x.q, o: x.o.slice(), a: x.a, e: x.e }));
+const QS = (typeof Q !== 'undefined' ? Q : []).map(x => ({ id: hash(x.t + '|' + x.q), t: x.t, q: x.q, o: x.o.slice(), a: x.a, e: x.e, s: x.s }));
 function pool(themes) { return themes === 'ALL' ? QS : QS.filter(x => themes.includes(x.t)); }
 
 /* =========================================================
@@ -1238,7 +1238,7 @@ function answer(oi, btn) {
     ? (st.l === 3 ? (B.justMastered ? `${starsHtml(3, 22)} <b>Question maîtrisée !</b>` : `${starsHtml(3, 22)} Toujours maîtrisée`)
                   : `${starsHtml(st.l, 22)} ${st.l}/3 - encore ${3 - st.l} bonne${3 - st.l > 1 ? 's' : ''} réponse${3 - st.l > 1 ? 's' : ''} d'affilée pour la maîtriser`)
     : `${starsHtml(0, 22)} 0/3 - progression de cette question remise à zéro`;
-  exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b>' : '❌ <b>Raté.</b>') + '<br><small>' + prog + '</small><br><br>' + escapeHtml(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  exp.innerHTML = (ok ? '✅ <b>Bonne réponse !</b>' : '❌ <b>Raté.</b>') + '<br><small>' + prog + '</small><br><br>' + escapeHtml(q.e).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>') + (q.s ? '<br><small><i>📌 Source : ' + escapeHtml(q.s) + '</i></small>' : '');
   exp.style.display = 'block';
   const nx = document.getElementById('qNext'); nx.style.display = 'block';
   nx.textContent = (B.hp <= 0 || B.hearts <= 0) ? 'TERMINER ▶' : 'SUIVANT ▶';
