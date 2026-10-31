@@ -22,6 +22,7 @@ button.opt { display: block; width: 100%; padding: 11px 14px; margin: 6px 0; tex
 button.opt:hover:not([disabled]) { border-color: #0055aa; background: #f0f8ff; }
 button.opt.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
 button.opt.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+.expl .src { display: block; margin-top: 8px; font-size: 12px; color: #6b5d00; font-style: italic; }
 .expl { margin-top: 10px; padding: 12px; background: #fffde7; border-left: 4px solid #ffc107; border-radius: 5px; font-size: 13px; display: none; line-height: 1.6; }
 .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
 .filter-bar button { padding: 8px 16px; border: 2px solid #003366; border-radius: 20px; cursor: pointer; background: white; font-size: 13px; color: #003366; }

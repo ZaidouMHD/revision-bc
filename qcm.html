@@ -311,7 +311,7 @@ function renderQCM(f) {
     q.o.forEach((opt, j) => {
       html += `<button class="opt" onclick="answerQ(this,${gi},${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
     });
-    html += `<div class="expl" id="expl${gi}">💡 ${q.e}</div></div>`;
+    html += `<div class="expl" id="expl${gi}">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}</div></div>`;
   });
   document.getElementById('qcmlist').innerHTML = html;
 }
