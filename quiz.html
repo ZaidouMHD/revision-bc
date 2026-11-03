@@ -196,6 +196,13 @@
     .quiz-selector button.exam-btn:hover { background: #f5c518; }
     .exam-intro ul { text-align: left; max-width: 520px; margin: 10px auto 16px; line-height: 1.6; }
     .exam-back { color: #003366; cursor: pointer; text-decoration: underline; font-size: 14px; }
+    .opt.chosen {
+      border: 2px solid #003366 !important;
+      background: #cfdcf3 !important;
+      color: #002244 !important;
+      font-weight: bold;
+    }
+    .opt.chosen::after { content: "  ✔ ma réponse"; font-size: 12px; color: #003366; }
     .exam-note {
       background: rgba(255,255,255,0.18);
       border-radius: 8px;
@@ -352,6 +359,8 @@ let isUnlimited = false; // ===== NOUVELLE VAR =====
 const EXAM = { total: 60, minutes: 120, groups: [['A','B','C','D','E'], ['F','I']] };
 let examMode = false;
 let savedCountdownMinutes = null;
+let examAnswers = [];      // réponse choisie pour chaque question (null = pas de réponse)
+let examFinalized = false;
 
 // ===== THÈMES =====
 const THEMES = [
@@ -450,6 +459,7 @@ function updateCountdownDisplay() {
 function onTimeUp() {
   stopTimer();
   timeUp = true;
+  if(examMode) { finalizeExam(); showScore(); return; }
   const firstUnanswered = quizAnswered ? quizIdx + 1 : quizIdx;
   if(isUnlimited) {
     // Mode illimité : pas de liste fixe, on arrête simplement le quiz
@@ -492,6 +502,8 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
     quizPool = Q.filter(q => EXAM.groups.flat().includes(q.t));
     const perGroup = EXAM.total / EXAM.groups.length;
     quizQ = shuffle(EXAM.groups.flatMap(g => shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup)));
+    examAnswers = new Array(quizQ.length).fill(null);
+    examFinalized = false;
   } else if(unlimited) {
     quizQ = shuffle(pool); // Toutes les questions des thèmes choisis en mode illimité
   } else {
@@ -550,7 +562,7 @@ function showQuizQ(){
     ${timerHTML}
     <div style="font-size:13px;color:#666">Question ${quizIdx+1}${isUnlimited ? '' : ' / ' + quizQ.length} - Thème ${q.t}</div>
     <div class="progress-bar"><div class="progress-fill" style="width:${isUnlimited ? '0%' : pct+'%'}"></div></div>
-    <div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>
+    ${examMode ? '<div style="font-size:13px;color:#003366">🎓 Examen blanc : correction à la fin</div>' : `<div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>`}
     ${(enableCountdown || enableTimer) && !examMode ? '<button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>' : ''}
     ${stopBtnHTML}
   </div>
@@ -558,6 +570,16 @@ function showQuizQ(){
   <div class="qcard">
     <h3>${q.q}</h3>`;
   
+  if(examMode) {
+    q.o.forEach((opt,j) => {
+      html += `<button class="opt" onclick="examSelect(${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
+    });
+    html += `<button class="btn green" id="qnextbtn" style="display:none;margin-top:12px" onclick="nextQuizQ()">${quizIdx + 1 < quizQ.length ? 'Question suivante ➡️' : 'Terminer l\'examen ✅'}</button>
+  </div>`;
+    document.getElementById('quizarea').innerHTML = html;
+    return;
+  }
+
   q.o.forEach((opt,j) => {
     html += `<button class="opt" onclick="answerQuiz(this,${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
   });
@@ -661,6 +683,37 @@ function answerQuiz(btn, chosen){
   document.getElementById('qnextbtn').style.display = 'block';
 }
 
+// Examen blanc : la réponse est enregistrée sans correction (modifiable avant de passer à la suite)
+function examSelect(chosen) {
+  if(isPaused) return;
+  examAnswers[quizIdx] = chosen;
+  quizAnswered = true;
+  document.querySelectorAll('.qcard .opt').forEach((b, j) => b.classList.toggle('chosen', j === chosen));
+  document.getElementById('qnextbtn').style.display = 'block';
+}
+
+// Examen blanc : correction de toutes les réponses à la fin
+function finalizeExam() {
+  if(examFinalized) return;
+  examFinalized = true;
+  quizScore = 0;
+  quizErrors = [];
+  unansweredCount = 0;
+  quizQ.forEach((q, i) => {
+    const chosen = examAnswers[i];
+    if(chosen === q.a) { quizScore++; return; }
+    if(chosen === null) unansweredCount++;
+    quizErrors.push({
+      question: q.q,
+      userAnswer: chosen === null ? '⏰ Pas de réponse' : q.o[chosen],
+      correctAnswer: q.o[q.a],
+      explanation: q.e,
+      source: q.s
+    });
+  });
+  quizIdx = quizQ.length;
+}
+
 function nextQuizQ(){
   quizIdx++;
   showQuizQ();
@@ -674,6 +727,7 @@ function stopUnlimitedQuiz() {
 
 function showScore(){
   stopTimer();
+  if(examMode) finalizeExam();
   const pct = quizIdx > 0 ? Math.round((quizScore/quizIdx)*100) : 0;
   const mention = pct>=80 ? '🏆 Excellent !' : pct>=60 ? '👍 Bien' : '📚 À revoir';
   
@@ -768,6 +822,7 @@ function showExamIntro() {
       <li><strong>${EXAM.total} questions</strong> tirées au hasard : ${EXAM.total / 2} en <strong>temps de travail</strong> (A à E) et ${EXAM.total / 2} en <strong>TSI</strong> (F et I)</li>
       <li>Minuteur de <strong>${EXAM.minutes / 60} heures</strong> ; à zéro, les questions non traitées sont comptées fausses</li>
       <li>Pas de pause, comme le jour de l'examen</li>
+      <li><strong>Aucune correction pendant l'épreuve</strong> : tu peux changer ta réponse tant que tu n'es pas passé à la question suivante</li>
       <li>Note sur 20 à la fin, puis correction de tes erreurs avec la source</li>
     </ul>
     <button onclick="startExam()">▶️ Commencer l'examen blanc</button>
