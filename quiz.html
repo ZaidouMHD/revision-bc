@@ -181,6 +181,29 @@
       margin: 0 0 15px;
       font-size: 14px;
     }
+    /* Examen blanc */
+    .exam-zone {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed #b8c4d6;
+    }
+    .exam-zone p { font-size: 14px; color: #444; margin: 0 0 8px; }
+    .quiz-selector button.exam-btn {
+      background: #ffd54f;
+      color: #1d1d1d;
+      font-weight: bold;
+    }
+    .quiz-selector button.exam-btn:hover { background: #f5c518; }
+    .exam-intro ul { text-align: left; max-width: 520px; margin: 10px auto 16px; line-height: 1.6; }
+    .exam-back { color: #003366; cursor: pointer; text-decoration: underline; font-size: 14px; }
+    .exam-note {
+      background: rgba(255,255,255,0.18);
+      border-radius: 8px;
+      padding: 10px;
+      margin: 12px 0;
+      font-weight: bold;
+    }
+    .exam-note span { font-size: 30px; }
     .timeout-info {
       background: rgba(255,255,255,0.15);
       border-radius: 6px;
@@ -324,6 +347,12 @@ let pausedLeftMs = 0;
 let pausedAnswered = false;
 let isUnlimited = false; // ===== NOUVELLE VAR =====
 
+// ===== EXAMEN BLANC BC 2026 =====
+// Programme de l'écrit : temps de travail (A à E) et TSI (F et I), moitié-moitié
+const EXAM = { total: 60, minutes: 120, groups: [['A','B','C','D','E'], ['F','I']] };
+let examMode = false;
+let savedCountdownMinutes = null;
+
 // ===== THÈMES =====
 const THEMES = [
   { group: '⏱ Temps de travail', items: [
@@ -459,7 +488,11 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   quizPool = pool;
   isPaused = false;
   pauseCount = 0;
-  if(unlimited) {
+  if(examMode) {
+    quizPool = Q.filter(q => EXAM.groups.flat().includes(q.t));
+    const perGroup = EXAM.total / EXAM.groups.length;
+    quizQ = shuffle(EXAM.groups.flatMap(g => shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup)));
+  } else if(unlimited) {
     quizQ = shuffle(pool); // Toutes les questions des thèmes choisis en mode illimité
   } else {
     const maxQuestions = Math.min(numQuestions, pool.length);
@@ -518,7 +551,7 @@ function showQuizQ(){
     <div style="font-size:13px;color:#666">Question ${quizIdx+1}${isUnlimited ? '' : ' / ' + quizQ.length} - Thème ${q.t}</div>
     <div class="progress-bar"><div class="progress-fill" style="width:${isUnlimited ? '0%' : pct+'%'}"></div></div>
     <div style="font-size:13px;color:#003366">Score : ${quizScore} / ${quizIdx}</div>
-    ${enableCountdown || enableTimer ? '<button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>' : ''}
+    ${(enableCountdown || enableTimer) && !examMode ? '<button class="pause-btn" id="pauseBtn" onclick="pauseQuiz()">⏸️ Pause</button>' : ''}
     ${stopBtnHTML}
   </div>
   <div id="pausePanel"></div>
@@ -663,7 +696,10 @@ function showScore(){
   }
 
   let modeInfo = '';
-  if(isUnlimited) {
+  if(examMode) {
+    const note = quizQ.length ? Math.round(quizScore / quizQ.length * 200) / 10 : 0;
+    modeInfo = `<div class="exam-note">🎓 Examen blanc BC 2026<br><span>${String(note).replace('.', ',')} / 20</span></div>`;
+  } else if(isUnlimited) {
     modeInfo = `<p style="margin:5px 0;opacity:0.8;font-style:italic">Mode : 🔄 Quiz Illimité</p>`;
   }
   
@@ -714,7 +750,40 @@ function showErrorReview() {
   });
 }
 
+function leaveExamMode() {
+  if(!examMode) return;
+  examMode = false;
+  enableCountdown = false;
+  if(savedCountdownMinutes !== null) countdownMinutes = savedCountdownMinutes;
+  savedCountdownMinutes = null;
+}
+
+function showExamIntro() {
+  leaveExamMode();
+  document.getElementById('quizarea').innerHTML = `
+  <div class="quiz-selector exam-intro">
+    <h3>🎓 Examen blanc BC 2026</h3>
+    <p>Conditions de l'écrit du <strong>30 novembre</strong> : QCM noté sur 20.</p>
+    <ul>
+      <li><strong>${EXAM.total} questions</strong> tirées au hasard : ${EXAM.total / 2} en <strong>temps de travail</strong> (A à E) et ${EXAM.total / 2} en <strong>TSI</strong> (F et I)</li>
+      <li>Minuteur de <strong>${EXAM.minutes / 60} heures</strong> ; à zéro, les questions non traitées sont comptées fausses</li>
+      <li>Pas de pause, comme le jour de l'examen</li>
+      <li>Note sur 20 à la fin, puis correction de tes erreurs avec la source</li>
+    </ul>
+    <button onclick="startExam()">▶️ Commencer l'examen blanc</button>
+    <p style="margin-top:12px"><a class="exam-back" onclick="showQuizSelector()">⬅️ Revenir au quiz libre</a></p>
+  </div>`;
+}
+
+function startExam() {
+  savedCountdownMinutes = countdownMinutes;
+  examMode = true;
+  countdownMinutes = EXAM.minutes;
+  startQuiz(EXAM.total, false, false, true);
+}
+
 function showQuizSelector() {
+  leaveExamMode();
   document.getElementById('quizarea').innerHTML = `
   <div class="quiz-selector">
     <h3>🏆 Mode Quiz Complet</h3>
@@ -761,6 +830,11 @@ function showQuizSelector() {
     </div>
     
     <button id="startQuizBtn" onclick="handleQuizStart()">▶️ Commencer le Quiz</button>
+
+    <div class="exam-zone">
+      <p><strong>Ou en conditions réelles :</strong> ${EXAM.total} questions temps de travail + TSI, ${EXAM.minutes / 60} h, note sur 20</p>
+      <button class="exam-btn" onclick="showExamIntro()">🎓 Examen blanc BC 2026</button>
+    </div>
   </div>`;
   updateThemes();
   toggleTimer();
@@ -811,8 +885,9 @@ function handleQuizStart() {
   }
 }
 
-// Affiche le menu au chargement
-showQuizSelector();
+// Affiche le menu au chargement (quiz.html?examen=1 ouvre directement l'examen blanc)
+if(new URLSearchParams(location.search).has('examen')) showExamIntro();
+else showQuizSelector();
 </script>
 
 </body>
