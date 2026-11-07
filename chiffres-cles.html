@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<title>Chiffres clés BC 2026</title>
+<style>
+  @page { size: A4; margin: 7mm 8mm 7mm 8mm; }
+  :root { --bleu: #00238a; --bleu-clair: #e8edfb; --rouge: #c0182b; --gris: #555; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "DejaVu Sans", Arial, sans-serif; font-size: 7.9pt; line-height: 1.2; color: #111; background: #fff; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  header { background: var(--bleu); color: #fff; padding: 5px 9px; border-radius: 4px; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  header h1 { margin: 0; font-size: 13pt; letter-spacing: .3px; }
+  header span { font-size: 8pt; opacity: .9; }
+  .cols { columns: 2; column-gap: 7mm; }
+  section { break-inside: avoid; margin: 0 0 4.5px; border: 1px solid #cfd6ea; border-radius: 4px; padding: 4px 6px 5px; }
+  h2 { margin: 0 0 3px; font-size: 9.4pt; color: var(--bleu); border-bottom: 1.5px solid var(--bleu); padding-bottom: 1px; }
+  table { width: 100%; border-collapse: collapse; margin: 2px 0; }
+  td, th { border: 1px solid #d5d9e4; padding: 1px 3px; vertical-align: top; }
+  th { background: var(--bleu-clair); text-align: left; font-size: 8pt; }
+  td.n, th.n { text-align: center; white-space: nowrap; font-weight: 700; }
+  ul { margin: 1px 0; padding-left: 13px; }
+  li { margin: 0.5px 0; }
+  b.k { color: var(--rouge); }
+  .piege { background: #fff4d6; border-left: 3px solid #e0a100; padding: 2px 5px; margin-top: 3px; font-size: 8pt; }
+  .src { color: var(--gris); font-size: 7pt; margin-top: 2px; }
+  footer { font-size: 7pt; color: var(--gris); text-align: center; margin-top: 2px; }
+
+  @media screen {
+    html { background: #e9ecf3; }
+    body { max-width: 210mm; margin: 0 auto 20px; padding: 10px 12px 14px; background: #fff; font-size: 10pt; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+    .page { margin-bottom: 18px; }
+    .barre { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; background: #fff; padding: 8px 0 10px; border-bottom: 2px solid var(--bleu); margin-bottom: 10px; }
+    .barre a, .barre button { font: inherit; font-size: 10pt; text-decoration: none; border: 1px solid var(--bleu); color: var(--bleu); background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+    .barre .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .barre .plein { background: var(--bleu); color: #fff; }
+  }
+  @media screen and (max-width: 700px) {
+    body { padding: 8px 16px 14px; box-shadow: none; }
+    .cols { columns: 1; }
+    header { flex-direction: column; }
+    header h1 { font-size: 12pt; }
+  }
+  @media print { .barre { display: none; } }
+</style>
+</head>
+<body>
+<nav class="barre">
+  <a href="index.html">🏠 Accueil</a>
+  <div class="actions">
+    <button type="button" onclick="window.print()">🖨️ Imprimer</button>
+    <a class="plein" href="documents/chiffres-cles-bc-2026.pdf" download>⬇️ Télécharger le PDF</a>
+  </div>
+</nav>
+
+<!-- ===================== PAGE 1 : TEMPS DE TRAVAIL ===================== -->
+<div class="page">
+<header><h1>⏱ Temps de travail : chiffres clés</h1><span>Examen BC · 30 novembre 2026</span></header>
+<div class="cols">
+
+<section>
+<h2>Durées et repos</h2>
+<table>
+<tr><td>Durée annuelle de travail</td><td class="n">1 607 h</td></tr>
+<tr><td>Repos quotidien minimum</td><td class="n">11 h</td></tr>
+<tr><td>Repos hebdomadaire minimum (24 h + 11 h)</td><td class="n">35 h</td></tr>
+<tr><td>Pause obligatoire, dès 6 h de travail ininterrompu (temps de travail, au milieu de la journée)</td><td class="n">20 min</td></tr>
+<tr><td>Interruption méridienne (entre 11 h 30 et 14 h 30)</td><td class="n">45 min à 2 h</td></tr>
+<tr><td>Pas d'interruption de service si la journée commence avant / finit après</td><td class="n">7 h / 19 h</td></tr>
+</table>
+<ul>
+<li><b>Hebdomadaire</b> : 5 jours + <b>RL</b> (dimanche, par principe) + <b>RC</b> (samedi ou lundi). Grande semaine <b>6/2</b>, petite semaine <b>4/2</b>.</li>
+<li><b>Cyclique de jour</b> : repos de cycle = RC + RL (2 jours).</li>
+</ul>
+<div class="src">Décret 2000-815 · APORTT Fiches 5 et 6</div>
+</section>
+
+<section>
+<h2>Travail de nuit (APORTT art. 10)</h2>
+<table>
+<tr><td>Période nocturne</td><td class="n">21 h – 6 h</td></tr>
+<tr><td>Travailleur de nuit : <b>soit</b> 3 h de nuit, au moins 2 fois par semaine</td><td class="n">3 h × 2/sem.</td></tr>
+<tr><td><b>soit</b> (critère alternatif) heures de nuit par année civile</td><td class="n">270 h</td></tr>
+<tr><td>Durée maximale, en moyenne par 24 h (sur 3 mois civils)</td><td class="n">8 h</td></tr>
+<tr><td>Rappel sur descente de nuit : fin avant 13 h → repos minimum</td><td class="n">8 h</td></tr>
+</table>
+<div class="piege">Rappel sur descente de nuit qui finit (ou commence) <b>après 13 h</b> → exempté de la nuit suivante.</div>
+</section>
+
+<section>
+<h2>Dérogations (missions spécifiques, art. 68-69)</h2>
+<table>
+<tr><th>Délai max, compté depuis le <u>début</u> de la mission</th><th class="n"></th></tr>
+<tr><td>Repos <b>journaliers</b> manqués</td><td class="n">12 jours</td></tr>
+<tr><td>Repos <b>hebdomadaires</b> manqués</td><td class="n">21 jours</td></tr>
+<tr><td>Repos hebdo réduit, au plus tard après 12 jours de travail</td><td class="n">24 h</td></tr>
+<tr><td>Repos hebdo manqué accolé (11 + 24 + 24)</td><td class="n">59 h min.</td></tr>
+</table>
+<div class="src">Astuce : 12 = journalier, 21 = hebdo · APORTT Fiches 14 et 15</div>
+</section>
+
+<section>
+<h2>Coefficients RPS (APORTT art. 43) ★ officiel</h2>
+<table>
+<tr><td>Heure de nuit 21 h-6 h (cyclique ; hebdo : travailleur de nuit, lun.-sam.)</td><td class="n">0,1</td></tr>
+<tr><td>Dimanche (cyclique ; hebdo : travailleur de nuit)</td><td class="n">0,4</td></tr>
+<tr><td>Prise de service décalée sur <b>RC</b></td><td class="n">0,25</td></tr>
+<tr><td>Prise de service décalée sur <b>RL ou JF</b></td><td class="n">0,60</td></tr>
+<tr><td>Heure de repos journalier manqué</td><td class="n">0,15</td></tr>
+</table>
+<div class="piege">Non cumulables : on retient le <b>plus élevé</b> (dimanche de nuit = 0,4). RPS et RCSS sont exclusifs pour une même vacation. <b>Exclus des RPS</b> : CCD, CC, PATS et contractuels art. 10.</div>
+</section>
+
+<section>
+<h2>Permanence et astreinte</h2>
+<ul>
+<li><b>Permanence</b> : <b>uniquement en hebdomadaire</b>, présence au service (RC, RL, JF, nuit). PA sur volontariat.</li>
+<li><b>Astreinte</b> : à domicile ou à proximité, hebdomadaire uniquement. <b>PA, réservistes, apprentis, cadets exclus</b>. Sans intervention = pas du temps de travail.</li>
+<li>Tableaux diffusés <b>au moins 14 jours avant</b>, modifiables pour motifs exceptionnels.</li>
+<li>Compensations hors dépassement à prendre sous <b>21 jours</b>.</li>
+</ul>
+<table>
+<tr><th>Permanence (CEA et PA)</th><th class="n">Taux</th></tr>
+<tr><td>Sur RC (6 h-21 h)</td><td class="n">125 %</td></tr>
+<tr><td>Sur RL ou jour férié (6 h-21 h)</td><td class="n">175 %</td></tr>
+<tr><td>Nuit du samedi au dimanche</td><td class="n">200 %</td></tr>
+<tr><td>Toutes les autres nuits</td><td class="n">150 %</td></tr>
+</table>
+<div class="src">Officiers hors art. 10 : temps pour temps (12 h max) · CCD et CC art. 10 : décalage des repos</div>
+</section>
+
+<section>
+<h2>Rappel au service</h2>
+<table>
+<tr><th>Rappel</th><th class="n">Hebdo</th><th class="n">Cyclique</th></tr>
+<tr><td>Sur RL ou JF</td><td class="n">200 %</td><td class="n">≤ 4 h : 1 vac.<br>> 4 h : 2 vac.</td></tr>
+<tr><td>Sur RC ou de nuit</td><td class="n">150 %</td><td class="n">150 %</td></tr>
+<tr><td>Autres cas</td><td class="n">100 %</td><td class="n">150 %</td></tr>
+<tr><td>Sur astreinte (déplacement)</td><td class="n" colspan="2">100 % + 1 h de trajet</td></tr>
+</table>
+<ul>
+<li>Rappel = agent avisé <b>après avoir quitté</b> le service. Butoir : <b>2 semaines</b> consécutives de rappels/reports.</li>
+<li><b>Jamais</b> rappelable : CA, congés bonifiés, CET, ARTT accolés au CET, plan prévisionnel (sauf ministre) · CMO, CLM, CLD, BS.</li>
+</ul>
+<div class="piege">Permanence sur RL = <b>175 %</b> mais <b>rappel</b> sur RL = <b>200 %</b>.</div>
+</section>
+
+<section>
+<h2>Dépassement horaire et report de repos</h2>
+<table>
+<tr><th>Dépassement</th><th class="n">Cyclique</th><th class="n">Hebdo</th></tr>
+<tr><td>Sur RL ou JF</td><td class="n">200 %</td><td class="n">200 %</td></tr>
+<tr><td>Sur RC / de nuit</td><td class="n">150 %</td><td class="n">150 %</td></tr>
+<tr><td>Jour ordinaire, de jour</td><td class="n">150 %</td><td class="n">100 %</td></tr>
+</table>
+<ul>
+<li><b>Report de repos</b> (RL) : avisé <b>pendant</b> le service ; compensation forfaitaire <b>2 journées</b> ; PATS, PA, contractuels exclus.</li>
+</ul>
+</section>
+
+<section>
+<h2>RCSS</h2>
+<table>
+<tr><td>Récupération</td><td class="n">année civile</td></tr>
+<tr><td>Seuil du compte actif (au-delà : récupération sous 30 jours)</td><td class="n">160 h</td></tr>
+<tr><td>Délai de récupération au-delà de 160 h</td><td class="n">30 jours</td></tr>
+<tr><td>RC versables au CET par an (compte actif ou historique)</td><td class="n">5 jours max</td></tr>
+<tr><td>Compte historique : stock &gt; 160 h au 31/12/2019, plus alimenté</td><td class="n">gelé</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Congés, CET, ARTT</h2>
+<table>
+<tr><td>Congé annuel (5 × obligations hebdo)</td><td class="n">25 jours</td></tr>
+<tr><td>Jours de fractionnement (5-7 j / 8 j et + hors 1er mai-31 oct.)</td><td class="n">+1 / +2</td></tr>
+<tr><td>CA sur le CET : avoir pris dans l'année au moins</td><td class="n">20 jours</td></tr>
+<tr><td>CA reportés pour nécessité de service, à prendre avant le</td><td class="n">1er mai</td></tr>
+<tr><td>Plafond CET</td><td class="n">60 jours</td></tr>
+<tr><td>CET : premiers jours utilisables seulement en congés</td><td class="n">15 jours</td></tr>
+<tr><td>Alimentation du CET</td><td class="n">1er-31 janv.</td></tr>
+<tr><td>ARTT/RPS au plan prévisionnel : reliquat protégé jusqu'à (2 fois max)</td><td class="n">10 jours</td></tr>
+<tr><td>Congé maternité 1er-2e enfant (6 + 10 sem.)</td><td class="n">16 sem.</td></tr>
+<tr><td>3e enfant (8 + 18) / jumeaux / triplés</td><td class="n">26 / 34 / 46</td></tr>
+<tr><td>ASA enfant malade (temps plein / seul à charge)</td><td class="n">6 / 12 jours</td></tr>
+<tr><td>Don de jours reçus, par an et par bénéficiaire</td><td class="n">90 jours</td></tr>
+<tr><td>Arrêt de travail à transmettre sous (récidive en 24 mois : salaire réduit de moitié)</td><td class="n">48 h</td></tr>
+</table>
+<div class="src">Guide des règles de temps de travail · APORTT · taux de permanence, rappel et dépassement : instruction générale d'organisation du travail (2002), à laquelle renvoie l'art. 113-34 du RGEPN</div>
+</section>
+
+</div>
+</div>
+
+<!-- ===================== PAGE 2 : TSI ===================== -->
+<div class="page">
+<header><h1>🔬 TSI et intervention : chiffres clés</h1><span>Examen BC · 30 novembre 2026</span></header>
+<div class="cols">
+
+<section>
+<h2>Art. L.435-1 CSI : les 5 cas d'usage des armes</h2>
+<p style="margin:1px 0 2px">En uniforme ou insignes apparents, <b>absolue nécessité</b> et <b>stricte proportionnalité</b> :</p>
+<ul>
+<li><b>1°</b> Atteintes à la vie ou à l'intégrité, ou personnes armées menaçantes</li>
+<li><b>2°</b> Défense des lieux / des personnes confiées, <b>après 2 sommations</b></li>
+<li><b>3°</b> Personne en fuite dangereuse, <b>après 2 sommations</b></li>
+<li><b>4°</b> Véhicule qui n'obtempère pas, occupants dangereux</li>
+<li><b>5°</b> Périple meurtrier : empêcher la réitération dans un temps rapproché</li>
+</ul>
+<div class="piege">Légitime défense = art. 122-5 CP · état de nécessité = 122-7 CP · ordre de la loi = 122-4 CP.</div>
+</section>
+
+<section>
+<h2>Menottage et palpation</h2>
+<ul>
+<li><b>Art. 803 CPP</b>, <b>3 conditions alternatives</b> (une suffit) : dangereux pour autrui, dangereux pour lui-même, risque de fuite. Jamais systématique.</li>
+<li><b>Palpation (R.434-16, instruction 2014-140-D), 3 cas</b> : contrôle d'identité pour comportement (78-2 al. 1) ; après interpellation ; réquisition du parquet + dangerosité.</li>
+<li>Même sexe : <b>obligatoire</b> pour GAV / retenus ; sinon chaque fois que possible. À l'abri du regard du public.</li>
+<li>Fouille intégrale (63-7 CPP) : OPJ, espace fermé, même sexe.</li>
+</ul>
+</section>
+
+<section>
+<h2>Formation TSI (arrêté du 27 juillet 2015)</h2>
+<table>
+<tr><td>Volume annuel minimum</td><td class="n">12 h</td></tr>
+<tr><td>dont emploi de l'arme / pratiques prof. en intervention</td><td class="n">3 h / 9 h</td></tr>
+<tr><td>Séances de tir par an (1 h minimum chacune)</td><td class="n">3</td></tr>
+<tr><td>Cartouches par an</td><td class="n">90</td></tr>
+<tr><td>Séance type</td><td class="n">4 h</td></tr>
+<tr><td>Sport opérationnel (temps de travail, non rémunéré)</td><td class="n">2 h/sem.</td></tr>
+<tr><td>Recyclage HK UMP (au-delà de 24 mois : nouvelle habilitation)</td><td class="n">≤ 12 mois</td></tr>
+</table>
+<div class="src">Carence au tir : parcours normé · dangerosité → retrait de l'arme par le chef de service (RGEPN 114-6)</div>
+</section>
+
+<section>
+<h2>Armes et AFI</h2>
+<table>
+<tr><th>Arme</th><th class="n">Catégorie</th><th>À retenir</th></tr>
+<tr><td>SIG Sauer SP 2022</td><td class="n">B1</td><td>9 mm, <b>pas de sûreté manuelle</b></td></tr>
+<tr><td>Taser 7 (PIE)</td><td class="n">B6</td><td>1,20-3 m / 3,50-7 m ; <b>interdit en MO</b></td></tr>
+<tr><td>LBD 40</td><td class="n">A2-4</td><td>recyclage triennal ; en MO : <b>cadre de réaction uniquement</b> + binôme superviseur-tireur</td></tr>
+<tr><td>HK UMP</td><td class="n">A2</td><td>recyclage annuel ; proscrit en MO en unité constituée</td></tr>
+<tr><td>GL-304 Condor</td><td class="n">A2-6</td><td>grenade à main à <b>effet sonore</b></td></tr>
+<tr><td>Aérosols (CS 5 %)</td><td class="n">-</td><td>jets brefs ~1 s, pas à moins de 1 m ; rincer à l'eau froide</td></tr>
+</table>
+<div class="piege">1re règle RGS : <b>considérer toute arme comme chargée</b>. Index le long du pontet, canon vers une zone de sécurité. Tout usage de l'arme, même involontaire : <b>TSUA sans délai</b> ; perte ou vol : compte rendu immédiat. Tir : 3 séances / 90 cartouches par an.</div>
+</section>
+
+<section>
+<h2>Maintien de l'ordre (SNMO décembre 2021)</h2>
+<ul>
+<li><b>Attroupement</b> (431-3 CP) : voie publique ou lieu <b>public</b>. Dispersion après <b>2 sommations</b> (L.211-9 CSI).</li>
+<li>Annonce : « Attention ! Attention ! Vous participez à un attroupement. Obéissance à la loi. Vous devez vous disperser et quitter les lieux. »</li>
+<li>« <b>Première</b> / <b>Dernière</b> sommation : nous allons faire usage de la force. Quittez immédiatement les lieux. »</li>
+<li><b>Après 2 sommations</b> (sur ordre) : grenades lacrymogènes à la main + GAIL <b>uniquement</b>. <b>Après réitération</b> (sur ordre) : + GENL, grenade sonore, lanceurs (binôme). <b>Cadre de réaction</b> (voies de fait, violences, terrain, à l'initiative du CFP, sans sommation) : + <b>LBD</b> (binôme). <b>PIE toujours interdit.</b></li>
+<li>Superviseur LBD : évalue la situation d'ensemble, s'assure de la compréhension des ordres, désigne l'objectif.</li>
+<li>Abandon de la GLI-F4 (→ GM2L) ; GMD remplacée par la <b>GENL</b> ; RIO obligatoire, cagoule proscrite.</li>
+</ul>
+</section>
+
+<section>
+<h2>Refus d'obtempérer et DIVA</h2>
+<ul>
+<li>Délit : <b>L.233-1</b> Code de la route ; aggravé <b>L.233-1-1</b>. Instruction du <b>16 mai 2025</b>.</li>
+<li>Arme : légitime défense <b>ou</b> L.435-1, absolue nécessité + proportionnalité.</li>
+<li><b>DIVA (L.214-2 CSI), 3 cas</b> : non-arrêt aux sommations ; mise en danger délibérée ; crime/délit flagrant.</li>
+<li>Inspection DIVA <b>semestrielle</b> + après chaque emploi ; comptes rendus à la DFPN chaque <b>trimestre</b>.</li>
+<li>Jamais devant ou derrière le véhicule tant que le conducteur est au volant.</li>
+</ul>
+</section>
+
+<section>
+<h2>Tuerie de masse et EEI</h2>
+<ul>
+<li><b>Tuerie de masse (DPN-3.1, annexe E)</b> : se protéger · alerter/évacuer · rendre compte · intervenir pour <b>FIXER ou CONFINER</b> · neutraliser si échec · secourir.</li>
+<li><b>EEI / arme d'épaule (DPN-3.1.3)</b> : DÉTECTER · se protéger · alerter/évacuer · rendre compte · <b>FIGER</b> par injonctions · neutraliser.</li>
+<li>COP : par principe le plus gradé des primo-intervenants, vite désigné formellement par le CIC. BBS ≈ <b>20 kg</b>.</li>
+</ul>
+<table>
+<tr><th>Distance de sécurité (à couvert)</th><th class="n"></th></tr>
+<tr><td>Personne porteuse d'un EEI (à pied)</td><td class="n">60 m</td></tr>
+<tr><td>Personne porteuse dans un véhicule</td><td class="n">100 m</td></tr>
+<tr><td>Objet suspect abandonné</td><td class="n">100 m</td></tr>
+<tr><td>Véhicule suspect abandonné</td><td class="n">200 m</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Intervention, VU et divers</h2>
+<ul>
+<li><b>3 niveaux</b> : élémentaire (UIPS, GSP) · intermédiaire (BAC, CDI, CSI, BRI) · spécialisé (RAID, GIPN).</li>
+<li><b>3 phases</b> : préparation · conduite · débriefing (à chaud) / RETEX (à froid).</li>
+<li><b>3 filières</b> : voie publique · judiciaire · renseignement.</li>
+<li><b>MRO</b> : que se passe-t-il ? → quel cadre légal ? → comment intervenir ?</li>
+<li><b>PLI</b> : Protection · Liaison · Interpellation (rôles interchangeables).</li>
+<li><b>PRIO</b> (violences urbaines) : renseigner dans la <b>demi-heure</b> ; tous les incendies de véhicules.</li>
+<li>Note DGPN du 4 nov. 2015 : compression thoracique la plus <b>brève</b> possible ; pas de lien sur la tête ou le cou.</li>
+</ul>
+</section>
+
+</div>
+<footer>Fiche de révision personnelle · sources : APORTT, guide des règles de temps de travail, CSI, CPP, instructions DGPN du dossier « REVISION CHEF »</footer>
+</div>
+
+</body>
+</html>
