@@ -499,9 +499,14 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   isPaused = false;
   pauseCount = 0;
   if(examMode) {
-    quizPool = Q.filter(q => EXAM.groups.flat().includes(q.t));
+    // Les mises en situation (QX) ne servent qu'à l'examen blanc : toutes incluses, complétées par la banque Q
+    const QXL = typeof QX !== 'undefined' ? QX : [];
+    quizPool = Q.concat(QXL).filter(q => EXAM.groups.flat().includes(q.t));
     const perGroup = EXAM.total / EXAM.groups.length;
-    quizQ = shuffle(EXAM.groups.flatMap(g => shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup)));
+    quizQ = shuffle(EXAM.groups.flatMap(g => {
+      const cas = shuffle(QXL.filter(q => g.includes(q.t))).slice(0, perGroup);
+      return cas.concat(shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup - cas.length));
+    }));
     examAnswers = new Array(quizQ.length).fill(null);
     examFinalized = false;
   } else if(unlimited) {
