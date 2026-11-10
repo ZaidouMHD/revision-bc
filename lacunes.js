@@ -36,9 +36,10 @@ function lacClear() {
 }
 
 // Enregistre les réponses d'un quiz terminé
-function lacRecord(log) {
+// nouvelleSession = false : réponse ajoutée à la séance en cours (QCM immédiat, réponse par réponse)
+function lacRecord(log, nouvelleSession = true) {
   const d = lacLoad();
-  d.sessions = (d.sessions || 0) + 1;
+  if (nouvelleSession || !d.sessions) d.sessions = (d.sessions || 0) + 1;
   d.last = Date.now();
   log.forEach(x => {
     const r = d.q[x.question] || { ok: 0, ko: 0 };

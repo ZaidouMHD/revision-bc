@@ -1,6 +1,6 @@
 // Service worker - Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v15';
+const VERSION = 'v16';
 const CACHE = `revision-bc-${VERSION}`;
 
 // Chemins relatifs au dossier du site : "/" sur Netlify, "/Site/" sur GitHub Pages
@@ -13,6 +13,7 @@ const ASSETS = [
   'style.css',
   'data.js',
   'lacunes.js',
+  'theme.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
