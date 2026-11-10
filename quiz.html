@@ -337,6 +337,8 @@
 <script>
 let quizQ = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
 let quizErrors = [];
+let quizLog = [];      // toutes les questions traitées, pour « Revoir les questions »
+let lastScoreHtml = '';
 let enableTimer = false;
 let timerInterval = null;
 let timerSeconds = 0;
@@ -468,13 +470,17 @@ function onTimeUp() {
   } else {
     const rest = quizQ.slice(firstUnanswered);
     unansweredCount = rest.length;
-    rest.forEach(q => quizErrors.push({
-      question: q.q,
-      userAnswer: '⏰ Pas de réponse (temps écoulé)',
-      correctAnswer: q.o[q.a],
-      explanation: q.e,
-      source: q.s
-    }));
+    rest.forEach(q => {
+      const item = {
+        question: q.q,
+        userAnswer: '⏰ Pas de réponse (temps écoulé)',
+        correctAnswer: q.o[q.a],
+        explanation: q.e,
+        source: q.s
+      };
+      quizErrors.push(item);
+      quizLog.push({ ...item, ok: false });
+    });
     quizIdx = quizQ.length;
   }
   showScore();
@@ -526,6 +532,7 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   quizIdx = 0;
   quizScore = 0;
   quizErrors = [];
+  quizLog = [];
   quizAnswered = false;
   
   stopTimer();
@@ -683,6 +690,15 @@ function answerQuiz(btn, chosen){
     });
   }
   
+  quizLog.push({
+    question: q.q,
+    userAnswer: q.o[chosen],
+    correctAnswer: q.o[q.a],
+    explanation: q.e,
+    source: q.s,
+    ok: chosen === q.a
+  });
+
   if(chosen === q.a) quizScore++;
   document.getElementById('qexpl').style.display = 'block';
   document.getElementById('qnextbtn').style.display = 'block';
@@ -703,18 +719,21 @@ function finalizeExam() {
   examFinalized = true;
   quizScore = 0;
   quizErrors = [];
+  quizLog = [];
   unansweredCount = 0;
   quizQ.forEach((q, i) => {
     const chosen = examAnswers[i];
-    if(chosen === q.a) { quizScore++; return; }
-    if(chosen === null) unansweredCount++;
-    quizErrors.push({
+    const item = {
       question: q.q,
       userAnswer: chosen === null ? '⏰ Pas de réponse' : q.o[chosen],
       correctAnswer: q.o[q.a],
       explanation: q.e,
       source: q.s
-    });
+    };
+    quizLog.push({ ...item, ok: chosen === q.a });
+    if(chosen === q.a) { quizScore++; return; }
+    if(chosen === null) unansweredCount++;
+    quizErrors.push(item);
   });
   quizIdx = quizQ.length;
 }
@@ -779,10 +798,47 @@ function showScore(){
     html += `<button class="btn" style="margin-top:20px;background:#d32f2f;color:white" onclick="showErrorReview()">🔍 Voir mes erreurs (${quizErrors.length})</button>`;
   }
 
+  if(quizLog.length > 0) {
+    html += `<button class="btn" style="margin-top:10px;background:#1565c0;color:white;border:2px solid white" onclick="showAllReview()">📋 Revoir les questions (${quizLog.length})</button>`;
+  }
+
   html += `<button class="btn" style="margin-top:10px;background:white;color:#003366" onclick="showQuizSelector()">🔄 Recommencer</button>
   </div>`;
 
+  lastScoreHtml = html;
   document.getElementById('quizarea').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+// Retour à l'écran de résultat sans le recalculer
+function backToScore() {
+  document.getElementById('quizarea').innerHTML = lastScoreHtml;
+  window.scrollTo(0, 0);
+}
+
+// Toutes les questions traitées, bonnes et mauvaises réponses
+function showAllReview() {
+  const nbOk = quizLog.filter(x => x.ok).length;
+  let html = `
+  <div class="error-review" style="border-left-color:#1565c0">
+    <h3 style="color:#1565c0">📋 Revoir les questions (${quizLog.length})</h3>
+    <p style="margin-bottom:15px">✅ ${nbOk} bonne${nbOk > 1 ? 's' : ''} réponse${nbOk > 1 ? 's' : ''} · ❌ ${quizLog.length - nbOk} erreur${quizLog.length - nbOk > 1 ? 's' : ''}</p>
+    <button class="btn" style="background:white;color:#1565c0;border:2px solid #1565c0;margin-bottom:20px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    <div id="allList"></div>
+    <button class="btn" style="background:white;color:#1565c0;border:2px solid #1565c0;margin-top:10px" onclick="backToScore()">⬅️ Retour au résultat</button>
+  </div>`;
+  document.getElementById('quizarea').innerHTML = html;
+  window.scrollTo(0, 0);
+  document.getElementById('allList').innerHTML = quizLog.map((x, i) => `
+    <div class="error-card" style="border-left:4px solid ${x.ok ? '#2e7d32' : '#d32f2f'}">
+      <div class="question">${x.ok ? '✅' : '❌'} Question ${i+1} : ${x.question}</div>
+      ${x.ok
+        ? `<div class="correct">Ta réponse : <strong>${x.userAnswer}</strong></div>`
+        : `<div class="answer">Ta réponse : <strong>${x.userAnswer}</strong></div>
+           <div class="correct">Bonne réponse : <strong>${x.correctAnswer}</strong></div>`}
+      <div style="margin-top:10px;color:#555;font-size:14px">💡 Explication : ${x.explanation}</div>
+      ${x.source ? `<div style="margin-top:6px;color:#777;font-size:12px;font-style:italic">📌 Source : ${x.source}</div>` : ''}
+    </div>`).join('');
 }
 
 function showErrorReview() {
@@ -790,11 +846,14 @@ function showErrorReview() {
   <div class="error-review">
     <h3>🔍 Révision de tes erreurs (${quizErrors.length})</h3>
     <p style="margin-bottom:15px">Voici les questions où tu as fait des erreurs. Relis bien les explications pour progresser !</p>
-    <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-bottom:20px" onclick="showQuizSelector()">⬅️ Retour au menu</button>
+    <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-bottom:20px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    <button class="btn" style="background:white;color:#555;border:2px solid #999;margin-bottom:20px" onclick="showQuizSelector()">🏠 Retour au menu</button>
     <div id="errorList"></div>
+    <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-top:10px" onclick="backToScore()">⬅️ Retour au résultat</button>
   </div>`;
 
   document.getElementById('quizarea').innerHTML = html;
+  window.scrollTo(0, 0);
 
   const errorList = document.getElementById('errorList');
   quizErrors.forEach((error, index) => {
