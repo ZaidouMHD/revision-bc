@@ -288,6 +288,30 @@
     .error-card .correct {
       color: #388e3c;
     }
+    .theme-tag { display: inline-block; font-size: 12px; background: #e8edfb; color: #00238a; border-radius: 10px; padding: 1px 8px; margin-bottom: 4px; }
+
+    /* Bilan des lacunes (écran de résultat) */
+    .lacunes { background: rgba(255,255,255,0.12); border-radius: 8px; padding: 14px; margin-top: 18px; text-align: left; }
+    .lacunes h3 { margin: 0 0 6px; font-size: 18px; color: #fff; }
+    .lacunes p { margin: 0 0 10px; opacity: .9; font-size: 14px; }
+    .lac-table { background: #fff; color: #222; border-radius: 6px; padding: 8px 10px; }
+    .lac-ligne { display: grid; grid-template-columns: minmax(130px, 1.4fr) 2fr auto; gap: 6px 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+    .lac-ligne:last-child { border-bottom: 0; }
+    .lac-ligne.faible .lac-nom { color: #c62828; font-weight: 700; }
+    .lac-barre { height: 10px; background: #eceff4; border-radius: 5px; overflow: hidden; }
+    .lac-barre span { display: block; height: 100%; }
+    .lac-pct { white-space: nowrap; font-weight: 600; }
+    .lac-actions { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+    .lac-actions button, .lac-actions a { font-size: 13px; padding: 5px 10px; border-radius: 5px; border: 1px solid #c62828; background: #fff; color: #c62828; cursor: pointer; text-decoration: none; }
+    .lac-actions button { background: #c62828; color: #fff; }
+    .lac-recurrent { margin-top: 10px; background: #fff4d6; color: #5d4300; border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+    .lac-recurrent a { display: inline-block; margin-top: 6px; background: #00238a; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; }
+    .lac-menu { margin: 15px 0 0; font-size: 14px; }
+    .lac-menu a { color: #00238a; cursor: pointer; text-decoration: underline; }
+    @media (max-width: 600px) {
+      .lac-ligne { grid-template-columns: 1fr auto; }
+      .lac-barre { grid-column: 1 / -1; grid-row: 2; }
+    }
   </style>
   <!-- Web app (PWA) : installation sur l'écran d'accueil + mode hors ligne -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -334,11 +358,15 @@
 </footer>
 
 <script src="data.js"></script>
+<script src="lacunes.js"></script>
 <script>
 let quizQ = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
 let quizErrors = [];
 let quizLog = [];      // toutes les questions traitées, pour « Revoir les questions »
 let lastScoreHtml = '';
+let quizRecorded = false;   // historique des lacunes déjà enregistré pour ce quiz
+let customPool = null;      // entraînement ciblé : liste de questions imposée
+let focusSet = null;        // entraînement ciblé : questions à poser en priorité
 let enableTimer = false;
 let timerInterval = null;
 let timerSeconds = 0;
@@ -476,7 +504,8 @@ function onTimeUp() {
         userAnswer: '⏰ Pas de réponse (temps écoulé)',
         correctAnswer: q.o[q.a],
         explanation: q.e,
-        source: q.s
+        source: q.s,
+        t: q.t
       };
       quizErrors.push(item);
       quizLog.push({ ...item, ok: false });
@@ -500,8 +529,10 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   unansweredCount = 0;
   isUnlimited = unlimited;
   
-  const pool = Q.filter(q => selectedThemes.includes(q.t));
+  const pool = customPool || Q.filter(q => selectedThemes.includes(q.t));
+  customPool = null;
   quizPool = pool;
+  quizRecorded = false;
   isPaused = false;
   pauseCount = 0;
   if(examMode) {
@@ -519,7 +550,11 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
     quizQ = shuffle(pool); // Toutes les questions des thèmes choisis en mode illimité
   } else {
     const maxQuestions = Math.min(numQuestions, pool.length);
-    quizQ = shuffle(pool).slice(0, maxQuestions);
+    // Entraînement ciblé : les questions déjà ratées passent en premier
+    const prio = focusSet ? shuffle(pool.filter(q => focusSet.has(q.q))) : [];
+    const autres = shuffle(pool.filter(q => !prio.includes(q)));
+    quizQ = shuffle(prio.concat(autres).slice(0, maxQuestions));
+    focusSet = null;
   }
   
   // ===== MÉLANGE LES RÉPONSES DE TOUTES LES QUESTIONS =====
@@ -686,7 +721,8 @@ function answerQuiz(btn, chosen){
       userAnswer: q.o[chosen],
       correctAnswer: q.o[q.a],
       explanation: q.e,
-      source: q.s
+      source: q.s,
+      t: q.t
     });
   }
   
@@ -696,6 +732,7 @@ function answerQuiz(btn, chosen){
     correctAnswer: q.o[q.a],
     explanation: q.e,
     source: q.s,
+    t: q.t,
     ok: chosen === q.a
   });
 
@@ -728,7 +765,8 @@ function finalizeExam() {
       userAnswer: chosen === null ? '⏰ Pas de réponse' : q.o[chosen],
       correctAnswer: q.o[q.a],
       explanation: q.e,
-      source: q.s
+      source: q.s,
+      t: q.t
     };
     quizLog.push({ ...item, ok: chosen === q.a });
     if(chosen === q.a) { quizScore++; return; }
@@ -794,6 +832,8 @@ function showScore(){
       <div class="stat-card"><div class="sn">${pct}%</div><div class="sl">📊 Score</div></div>
     </div>`;
 
+  html += lacunesHtml();
+
   if(quizErrors.length > 0) {
     html += `<button class="btn" style="margin-top:20px;background:#d32f2f;color:white" onclick="showErrorReview()">🔍 Voir mes erreurs (${quizErrors.length})</button>`;
   }
@@ -808,6 +848,63 @@ function showScore(){
   lastScoreHtml = html;
   document.getElementById('quizarea').innerHTML = html;
   window.scrollTo(0, 0);
+}
+
+// ===== BILAN DES LACUNES =====
+function lacunesHtml() {
+  if(!quizRecorded && quizLog.length > 0) { lacRecord(quizLog); quizRecorded = true; }
+  const stats = lacThemeStats(quizLog);
+  if(stats.length === 0) return '';
+  const faibles = stats.filter(lacEstFaible);
+  const recurrentes = lacRecurrentes(lacLoad());
+
+  let h = `<div class="lacunes">`;
+  if(faibles.length > 0) {
+    const noms = faibles.map(v => LAC_THEMES[v.t]);
+    h += `<h3>🎯 Tu as des lacunes en ${lacListe(noms)}</h3>
+      <p>Entraîne-toi en priorité sur ${faibles.length > 1 ? 'ces parties' : 'cette partie'}. Relis aussi les explications de tes erreurs pour comprendre pourquoi la réponse était fausse.</p>`;
+  } else {
+    h += `<h3>👏 Pas de lacune marquée sur ce quiz</h3><p>Continue à varier les thèmes pour consolider.</p>`;
+  }
+  h += `<div class="lac-table">` + stats.map(v => {
+    const faible = lacEstFaible(v);
+    const coul = v.pct >= 80 ? '#2e7d32' : v.pct >= 60 ? '#ef6c00' : '#c62828';
+    return `<div class="lac-ligne${faible ? ' faible' : ''}">
+      <div class="lac-nom">${v.t} - ${LAC_THEMES[v.t]}</div>
+      <div class="lac-barre"><span style="width:${v.pct}%;background:${coul}"></span></div>
+      <div class="lac-pct">${v.ok}/${v.n} · ${v.pct} %</div>
+      ${faible ? `<div class="lac-actions">
+        <button onclick="trainTheme('${v.t}')">🎯 S'entraîner</button>
+        <a href="fiches.html#${LAC_FICHE[v.t]}">📚 Revoir la fiche</a>
+      </div>` : ''}
+    </div>`;
+  }).join('') + `</div>`;
+
+  if(recurrentes.length > 0) {
+    h += `<div class="lac-recurrent">🔁 <strong>${recurrentes.length} question${recurrentes.length > 1 ? 's' : ''}</strong> ratée${recurrentes.length > 1 ? 's' : ''} plusieurs fois au fil de tes quiz.
+      <a href="points-a-travailler.html">📄 Mes points à travailler (PDF)</a></div>`;
+  }
+  return h + `</div>`;
+}
+
+// Quiz de 20 questions sur un thème, en commençant par les questions déjà ratées
+function trainTheme(t) {
+  leaveExamMode();
+  selectedThemes = [t];
+  const d = lacLoad();
+  focusSet = new Set(Object.keys(d.q).filter(k => d.q[k].ko > 0 && d.q[k].t === t));
+  startQuiz(20, false, false, false);
+  window.scrollTo(0, 0);
+}
+
+// Quiz sur les questions ratées plusieurs fois (quiz.html?revision=1)
+function trainRecurrentes() {
+  const rec = new Set(lacRecurrentes(lacLoad()).map(x => x.q));
+  const tout = Q.concat(typeof QX !== 'undefined' ? QX : []);
+  const pool = tout.filter(q => rec.has(q.q));
+  if(pool.length === 0) { showQuizSelector(); return; }
+  customPool = pool;
+  startQuiz(pool.length, false, false, false);
 }
 
 // Retour à l'écran de résultat sans le recalculer
@@ -860,9 +957,10 @@ function showErrorReview() {
     errorList.innerHTML += `
     <div class="error-card">
       <div class="question">Question ${index+1} : ${error.question}</div>
+      ${error.t ? `<div class="theme-tag">${error.t} - ${LAC_THEMES[error.t] || ''}</div>` : ''}
       <div class="answer">Ta réponse : <strong>${error.userAnswer}</strong></div>
       <div class="correct">Bonne réponse : <strong>${error.correctAnswer}</strong></div>
-      <div style="margin-top:10px;color:#555;font-size:14px">💡 Explication : ${error.explanation}</div>
+      <div style="margin-top:10px;color:#555;font-size:14px">💡 Pourquoi : ${error.explanation}</div>
       ${error.source ? `<div style="margin-top:6px;color:#777;font-size:12px;font-style:italic">📌 Source : ${error.source}</div>` : ''}
     </div>`;
   });
@@ -950,6 +1048,8 @@ function showQuizSelector() {
     
     <button id="startQuizBtn" onclick="handleQuizStart()">▶️ Commencer le Quiz</button>
 
+    ${lacLoad().sessions > 0 ? `<div class="lac-menu"><a href="points-a-travailler.html">📄 Mes points à travailler</a>${lacRecurrentes(lacLoad()).length > 0 ? ` · <a onclick="trainRecurrentes()">🔁 Refaire mes questions ratées (${lacRecurrentes(lacLoad()).length})</a>` : ''}</div>` : ''}
+
     <div class="exam-zone">
       <p><strong>Ou en conditions réelles :</strong> ${EXAM.total} questions temps de travail + TSI, ${EXAM.minutes / 60} h, note sur 20</p>
       <button class="exam-btn" onclick="showExamIntro()">🎓 Examen blanc BC 2026</button>
@@ -1005,7 +1105,10 @@ function handleQuizStart() {
 }
 
 // Affiche le menu au chargement (quiz.html?examen=1 ouvre directement l'examen blanc)
-if(new URLSearchParams(location.search).has('examen')) showExamIntro();
+const urlParams = new URLSearchParams(location.search);
+if(urlParams.has('examen')) showExamIntro();
+else if(urlParams.has('revision')) trainRecurrentes();
+else if(urlParams.get('theme') && LAC_THEMES[urlParams.get('theme')]) trainTheme(urlParams.get('theme'));
 else showQuizSelector();
 </script>
 

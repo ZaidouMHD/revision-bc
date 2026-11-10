@@ -1,6 +1,6 @@
 // Service worker - Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v14';
+const VERSION = 'v15';
 const CACHE = `revision-bc-${VERSION}`;
 
 // Chemins relatifs au dossier du site : "/" sur Netlify, "/Site/" sur GitHub Pages
@@ -8,10 +8,11 @@ const SCOPE = self.registration.scope;
 const BASE = new URL(SCOPE).pathname;
 const abs = (p) => new URL(p.replace(/^\//, ''), SCOPE).href;
 
-const PAGES = ['./', 'jeu', 'fiches', 'qcm', 'quiz', 'glossaire', 'documents', 'chiffres-cles'].map(abs);
+const PAGES = ['./', 'jeu', 'fiches', 'qcm', 'quiz', 'glossaire', 'documents', 'chiffres-cles', 'points-a-travailler'].map(abs);
 const ASSETS = [
   'style.css',
   'data.js',
+  'lacunes.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

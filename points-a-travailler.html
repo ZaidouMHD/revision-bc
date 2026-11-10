@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes points à travailler</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root { --bleu: #00238a; --bleu-clair: #e8edfb; --rouge: #c62828; --orange: #ef6c00; --vert: #2e7d32; --gris: #555; }
+  * { box-sizing: border-box; }
+  html { background: #e9ecf3; }
+  body { margin: 0 auto 20px; max-width: 210mm; padding: 10px 16px 20px; background: #fff; font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11pt; line-height: 1.35; color: #111; }
+  .barre { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; background: #fff; padding: 8px 0 10px; border-bottom: 2px solid var(--bleu); margin-bottom: 12px; }
+  .barre .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .barre a, .barre button { font: inherit; font-size: 10pt; text-decoration: none; border: 1px solid var(--bleu); color: var(--bleu); background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+  .barre .plein { background: var(--bleu); color: #fff; }
+  header { background: var(--bleu); color: #fff; padding: 8px 12px; border-radius: 5px; margin-bottom: 10px; }
+  header h1 { margin: 0; font-size: 16pt; }
+  header p { margin: 2px 0 0; font-size: 9pt; opacity: .9; }
+  h2 { font-size: 13pt; color: var(--bleu); border-bottom: 2px solid var(--bleu); padding-bottom: 2px; margin: 16px 0 8px; }
+  .resume { background: #fff4d6; border-left: 4px solid #e0a100; padding: 8px 10px; border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  th, td { border: 1px solid #d5d9e4; padding: 4px 6px; text-align: left; vertical-align: middle; }
+  th { background: var(--bleu-clair); }
+  td.n { text-align: center; white-space: nowrap; font-weight: 700; }
+  .statut { font-weight: 700; white-space: nowrap; }
+  .barre-pct { height: 8px; background: #eceff4; border-radius: 4px; overflow: hidden; min-width: 60px; }
+  .barre-pct span { display: block; height: 100%; }
+  .theme { break-inside: avoid-page; }
+  .theme h3 { font-size: 11.5pt; margin: 14px 0 6px; color: var(--rouge); }
+  .theme .liens { font-size: 9.5pt; margin-bottom: 6px; }
+  .theme .liens a { color: var(--bleu); margin-right: 12px; }
+  .carte { border: 1px solid #d5d9e4; border-left: 4px solid var(--rouge); border-radius: 4px; padding: 6px 9px; margin-bottom: 7px; break-inside: avoid; font-size: 10pt; }
+  .carte .q { font-weight: 700; margin-bottom: 3px; }
+  .carte .fois { float: right; font-size: 8.5pt; color: var(--rouge); font-weight: 700; margin-left: 8px; }
+  .carte .faux { color: var(--rouge); }
+  .carte .bon { color: var(--vert); }
+  .carte .pourquoi { margin-top: 3px; color: #333; }
+  .carte .src { margin-top: 2px; font-size: 8.5pt; color: var(--gris); font-style: italic; }
+  .vide { text-align: center; padding: 30px 10px; color: var(--gris); }
+  .vide a { color: var(--bleu); }
+  .aide { font-size: 9pt; color: var(--gris); margin-top: 14px; }
+  footer { font-size: 8pt; color: var(--gris); text-align: center; margin-top: 14px; }
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    html, body { background: #fff; }
+    body { max-width: none; padding: 0; font-size: 9.5pt; }
+    .barre, .ecran, .theme .liens { display: none !important; }
+    header, th, .resume, .barre-pct span { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<nav class="barre">
+  <a href="quiz.html">⬅️ Retour au quiz</a>
+  <div class="actions">
+    <button type="button" class="plein" onclick="window.print()">📄 Enregistrer en PDF / imprimer</button>
+  </div>
+</nav>
+
+<header>
+  <h1>🎯 Mes points à travailler</h1>
+  <p id="sousTitre">Examen BC · 30 novembre 2026</p>
+</header>
+
+<main id="contenu"></main>
+
+<p class="aide ecran">Pour obtenir le PDF : bouton « Enregistrer en PDF / imprimer », puis choisis « Enregistrer au format PDF » comme imprimante (sur téléphone : Partager → Imprimer → Enregistrer en PDF). Ton historique reste uniquement sur cet appareil et ce navigateur.</p>
+<footer>Fiche personnelle générée à partir de tes réponses aux quiz du site Révision BC</footer>
+
+<script src="data.js"></script>
+<script src="lacunes.js"></script>
+<script>
+(function () {
+  const d = lacLoad();
+  const zone = document.getElementById('contenu');
+  // Textes à jour depuis la banque de questions (les corrections du site sont prises en compte)
+  const banque = {};
+  Q.concat(typeof QX !== 'undefined' ? QX : []).forEach(q => { banque[q.q] = q; });
+  const esc = s => String(s == null ? '' : s);
+
+  const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('sousTitre').textContent =
+    `Examen BC · 30 novembre 2026 · fiche du ${date} · ${d.sessions || 0} quiz enregistré${(d.sessions || 0) > 1 ? 's' : ''}`;
+
+  if (!d.sessions) {
+    zone.innerHTML = `<div class="vide">Aucun quiz enregistré pour l'instant.<br><br>
+      Fais un <a href="quiz.html">quiz complet</a> ou un examen blanc : tes erreurs seront analysées ici.</div>`;
+    return;
+  }
+
+  const bilan = lacBilanGlobal(d);
+  const faibles = bilan.filter(v => v.n >= 5 && v.pct < 70);
+  const recurrentes = lacRecurrentes(d);
+
+  // Résumé
+  let h = `<div class="resume">`;
+  if (faibles.length) {
+    h += `<strong>Tu as des lacunes en ${lacListe(faibles.map(v => LAC_THEMES[v.t]))}.</strong> Entraîne-toi en priorité sur ${faibles.length > 1 ? 'ces parties' : 'cette partie'}.`;
+  } else {
+    h += `<strong>Pas de partie nettement en dessous de 70 %.</strong>`;
+  }
+  h += recurrentes.length
+    ? ` ${recurrentes.length} question${recurrentes.length > 1 ? 's' : ''} ratée${recurrentes.length > 1 ? 's' : ''} plusieurs fois : elles sont détaillées ci-dessous avec la bonne réponse et l'explication.`
+    : ` Aucune question ratée plusieurs fois pour l'instant.`;
+  h += `</div>`;
+
+  // Tableau par thème
+  h += `<h2>Bilan par thème</h2><table><tr><th>Thème</th><th>Partie</th><th class="n">Réponses</th><th class="n">Réussite</th><th></th><th>Statut</th></tr>`;
+  bilan.forEach(v => {
+    const coul = v.pct >= 80 ? 'var(--vert)' : v.pct >= 60 ? 'var(--orange)' : 'var(--rouge)';
+    const statut = v.n < 5 ? '<span style="color:var(--gris)">Trop peu de réponses</span>'
+      : v.pct >= 80 ? `<span class="statut" style="color:var(--vert)">Maîtrisé</span>`
+      : v.pct >= 70 ? `<span class="statut" style="color:var(--orange)">Fragile</span>`
+      : `<span class="statut" style="color:var(--rouge)">À travailler</span>`;
+    h += `<tr><td>${v.t} - ${LAC_THEMES[v.t]}</td><td>${lacPartie(v.t)}</td><td class="n">${v.n}</td><td class="n">${v.pct} %</td>
+      <td><div class="barre-pct"><span style="width:${v.pct}%;background:${coul}"></span></div></td><td>${statut}</td></tr>`;
+  });
+  h += `</table>`;
+
+  // Questions ratées plusieurs fois, groupées par thème
+  if (recurrentes.length) {
+    h += `<h2>Questions ratées plusieurs fois</h2>
+      <div class="ecran" style="margin-bottom:8px"><a href="quiz.html?revision=1" style="display:inline-block;background:var(--rouge);color:#fff;padding:7px 12px;border-radius:6px;text-decoration:none">🔁 Refaire ces ${recurrentes.length} questions</a></div>`;
+    const parTheme = {};
+    recurrentes.forEach(x => { (parTheme[x.t] = parTheme[x.t] || []).push(x); });
+    Object.keys(parTheme).sort().forEach(t => {
+      h += `<section class="theme"><h3>${t} - ${LAC_THEMES[t]} (${parTheme[t].length})</h3>
+        <div class="liens"><a href="quiz.html?theme=${t}">🎯 S'entraîner sur ce thème</a><a href="fiches.html#${LAC_FICHE[t]}">📚 Revoir la fiche</a></div>`;
+      parTheme[t].forEach(x => {
+        const q = banque[x.q];
+        const bonne = q ? q.o[q.a] : x.correct;
+        const expl = q ? q.e : x.e;
+        const src = q ? q.s : x.s;
+        h += `<div class="carte">
+          <span class="fois">raté ${x.ko} fois sur ${x.ok + x.ko}</span>
+          <div class="q">${esc(x.q)}</div>
+          ${x.last ? `<div class="faux">✘ Ta dernière réponse : ${esc(x.last)}</div>` : ''}
+          <div class="bon">✔ Bonne réponse : <strong>${esc(bonne)}</strong></div>
+          <div class="pourquoi">💡 Pourquoi : ${esc(expl)}</div>
+          ${src ? `<div class="src">📌 ${esc(src)}</div>` : ''}
+        </div>`;
+      });
+      h += `</section>`;
+    });
+  }
+
+  h += `<div class="ecran" style="margin-top:18px;text-align:right"><button type="button" onclick="if(confirm('Effacer tout ton historique de réponses ?')){lacClear();location.reload();}" style="font:inherit;font-size:9pt;border:1px solid #999;background:#fff;color:#555;border-radius:5px;padding:5px 9px;cursor:pointer">🗑️ Effacer mon historique</button></div>`;
+  zone.innerHTML = h;
+})();
+</script>
+</body>
+</html>
