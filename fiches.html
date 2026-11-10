@@ -5483,6 +5483,14 @@ function showSubTab(evt, id) {
   evt.currentTarget.classList.add('active');
 }
 
+// fiches.html#temps, #tsi, #deontologie, #management, #ppi : ouvre directement l'onglet
+(function () {
+  const id = location.hash.replace('#', '');
+  if (!id || !document.getElementById('tab-' + id)) return;
+  const btn = [...document.querySelectorAll('.tabs > .tab-btn')].find(b => (b.getAttribute('onclick') || '').includes("'" + id + "'"));
+  if (btn) btn.click();
+})();
+
 </script>
 
 
