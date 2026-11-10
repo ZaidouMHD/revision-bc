@@ -202,6 +202,13 @@
       color: #002244 !important;
       font-weight: bold;
     }
+    .exam-nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+    .exam-nav .btn { width: auto; margin: 0; padding: 10px 16px; }
+    .exam-recap-lien { color: #003366; text-decoration: underline; cursor: pointer; font-size: 14px; }
+    .recap-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; margin-top: 12px; }
+    .recap-case { border: 2px solid #c62828; background: #fff5f5; color: #c62828; border-radius: 6px; padding: 6px 0; font-weight: 700; cursor: pointer; font-size: 14px; line-height: 1.1; }
+    .recap-case.faite { border-color: #003366; background: #e8edfb; color: #003366; }
+    .recap-case small { display: block; font-size: 11px; font-weight: 600; }
     .opt.chosen::after { content: "  ✔ ma réponse"; font-size: 12px; color: #003366; }
     .exam-note {
       background: rgba(255,255,255,0.18);
@@ -547,6 +554,7 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
     }));
     examAnswers = new Array(quizQ.length).fill(null);
     examFinalized = false;
+    examDepuisRecap = false;
   } else if(unlimited) {
     quizQ = shuffle(pool); // Toutes les questions des thèmes choisis en mode illimité
   } else {
@@ -619,10 +627,17 @@ function showQuizQ(){
     <h3>${q.q}</h3>`;
   
   if(examMode) {
+    const deja = examAnswers[quizIdx];
     q.o.forEach((opt,j) => {
-      html += `<button class="opt" onclick="examSelect(${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
+      html += `<button class="opt${deja === j ? ' chosen' : ''}" onclick="examSelect(${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
     });
-    html += `<button class="btn green" id="qnextbtn" style="display:none;margin-top:12px" onclick="nextQuizQ()">${quizIdx + 1 < quizQ.length ? 'Question suivante ➡️' : 'Terminer l\'examen ✅'}</button>
+    const derniere = quizIdx + 1 >= quizQ.length;
+    const libelle = examDepuisRecap ? '📋 Retour au récapitulatif' : (derniere ? '📋 Récapitulatif avant de rendre ma copie' : 'Question suivante ➡️');
+    html += `<div class="exam-nav">
+      ${quizIdx > 0 && !examDepuisRecap ? '<button class="btn" onclick="examPrecedente()">⬅️ Question précédente</button>' : ''}
+      <button class="btn green" id="qnextbtn" style="${deja === null || deja === undefined ? 'display:none' : ''}" onclick="examSuivante()">${libelle}</button>
+    </div>
+    <div style="margin-top:10px"><a class="exam-recap-lien" id="examRecapLien" onclick="examRecap()">📋 Revoir mes réponses (${examAnswers.filter(a => a !== null).length}/${quizQ.length} répondues)</a></div>
   </div>`;
     document.getElementById('quizarea').innerHTML = html;
     return;
@@ -748,7 +763,9 @@ function examSelect(chosen) {
   examAnswers[quizIdx] = chosen;
   quizAnswered = true;
   document.querySelectorAll('.qcard .opt').forEach((b, j) => b.classList.toggle('chosen', j === chosen));
-  document.getElementById('qnextbtn').style.display = 'block';
+  document.getElementById('qnextbtn').style.display = '';
+  const lien = document.getElementById('examRecapLien');
+  if(lien) lien.textContent = `📋 Revoir mes réponses (${examAnswers.filter(a => a !== null).length}/${quizQ.length} répondues)`;
 }
 
 // Examen blanc : correction de toutes les réponses à la fin
@@ -780,6 +797,59 @@ function finalizeExam() {
 function nextQuizQ(){
   quizIdx++;
   showQuizQ();
+}
+
+// ===== EXAMEN BLANC : NAVIGATION ET RÉCAPITULATIF AVANT DE RENDRE LA COPIE =====
+let examDepuisRecap = false;   // la question a été ouverte depuis le récapitulatif
+
+function examSuivante() {
+  if(examDepuisRecap || quizIdx + 1 >= quizQ.length) { examRecap(); return; }
+  quizIdx++;
+  showQuizQ();
+}
+
+function examPrecedente() {
+  if(quizIdx > 0) { quizIdx--; showQuizQ(); }
+}
+
+function examAller(i) {
+  quizIdx = i;
+  examDepuisRecap = true;
+  showQuizQ();
+  window.scrollTo(0, 0);
+}
+
+function examRecap() {
+  examDepuisRecap = false;
+  const nb = examAnswers.filter(a => a !== null).length;
+  const reste = quizQ.length - nb;
+  const left = countdownLeft();
+  document.getElementById('quizarea').innerHTML = `
+  <div class="quiz-top">
+    <div class="timer-display ${countdownClass(left)}" id="timerDisplay">⏳ ${formatTime(left)}</div>
+    <div style="font-size:13px;color:#003366">🎓 Examen blanc : récapitulatif</div>
+  </div>
+  <div class="qcard exam-recap">
+    <h3>📋 Revoir mes réponses</h3>
+    <p>✅ ${nb} question${nb > 1 ? 's' : ''} répondue${nb > 1 ? 's' : ''}${reste ? ` · <strong style="color:#c62828">⚠️ ${reste} sans réponse</strong>` : ''}. Touche un numéro pour revoir la question et changer ta réponse.</p>
+    <div class="recap-grille">
+      ${quizQ.map((q, i) => `<button class="recap-case ${examAnswers[i] === null ? 'vide' : 'faite'}" onclick="examAller(${i})" title="Question ${i + 1}">${i + 1}${examAnswers[i] === null ? '' : `<small>${String.fromCharCode(65 + examAnswers[i])}</small>`}</button>`).join('')}
+    </div>
+    <div class="exam-nav" style="margin-top:16px">
+      <button class="btn" onclick="examAller(${Math.min(quizIdx, quizQ.length - 1)})">⬅️ Reprendre l'examen</button>
+      <button class="btn green" onclick="examRendre()">✅ Rendre ma copie et voir ma note</button>
+    </div>
+  </div>`;
+  window.scrollTo(0, 0);
+}
+
+function examRendre() {
+  const reste = examAnswers.filter(a => a === null).length;
+  if(reste && !confirm(`${reste} question${reste > 1 ? 's' : ''} sans réponse ${reste > 1 ? 'seront comptées fausses' : 'sera comptée fausse'}. Rendre ta copie quand même ?`)) return;
+  examDepuisRecap = false;
+  stopTimer();
+  quizIdx = quizQ.length;
+  showScore();
 }
 
 // ===== NOUVELLE FONCTION : ARRÊTER LE QUIZ ILLIMITÉ =====
