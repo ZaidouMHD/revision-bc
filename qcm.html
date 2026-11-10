@@ -456,8 +456,41 @@ function openBilan() {
 
   h += `<div class="bas">
     <button onclick="closeBilan()">⬅️ Continuer le QCM</button>
+    <button onclick="openRevue(false)" style="background:#1565c0;color:#fff;border-color:#1565c0">📋 Revoir les questions (${seance.length})</button>
     <a href="points-a-travailler.html">📄 Mes points à travailler</a>
   </div>`;
+  document.getElementById('bilan').innerHTML = h;
+  document.getElementById('bilanFond').classList.add('open');
+  document.getElementById('bilanFond').scrollTop = 0;
+}
+
+// Toutes les réponses de la séance (ou seulement les erreurs)
+function openRevue(seulementErreurs) {
+  const liste = seulementErreurs ? seance.filter(x => !x.ok) : seance;
+  const nbOk = seance.filter(x => x.ok).length;
+  const nbKo = seance.length - nbOk;
+  const boutons = `<div class="bas" style="justify-content:flex-start">
+    <button onclick="openBilan()">⬅️ Retour au bilan</button>
+    ${seulementErreurs
+      ? `<button onclick="openRevue(false)" style="background:#1565c0;color:#fff;border-color:#1565c0">📋 Revoir les questions (${seance.length})</button>`
+      : (nbKo ? `<button onclick="openRevue(true)" style="background:#d32f2f;color:#fff;border-color:#d32f2f">🔍 Voir seulement mes erreurs (${nbKo})</button>` : '')}
+    <button onclick="closeBilan()">✏️ Continuer le QCM</button>
+  </div>`;
+  let h = `<button class="fermer" onclick="closeBilan()" aria-label="Fermer">✕</button>
+    <h2>${seulementErreurs ? `🔍 Mes erreurs (${nbKo})` : `📋 Revoir les questions (${seance.length})`}</h2>
+    <div class="chiffres">✅ ${nbOk} bonne${nbOk > 1 ? 's' : ''} réponse${nbOk > 1 ? 's' : ''} · ❌ ${nbKo} erreur${nbKo > 1 ? 's' : ''}</div>
+    ${boutons}<div style="height:10px"></div>`;
+  h += liste.map((x, i) => `<div class="erreur" style="border-left-color:${x.ok ? '#2e7d32' : '#d32f2f'}">
+      <div class="tag">${x.t} - ${LAC_THEMES[x.t]}</div>
+      <div class="q">${x.ok ? '✅' : '❌'} Question ${i + 1} : ${x.question}</div>
+      ${x.ok
+        ? `<div class="bon">Ta réponse : <strong>${x.userAnswer}</strong></div>`
+        : `<div class="faux">Ta réponse : <strong>${x.userAnswer}</strong></div>
+           <div class="bon">Bonne réponse : <strong>${x.correctAnswer}</strong></div>`}
+      <div class="pq">💡 ${x.ok ? 'Explication' : 'Pourquoi'} : ${x.explanation}</div>
+      ${x.source ? `<div class="src">📌 Source : ${x.source}</div>` : ''}
+    </div>`).join('');
+  h += boutons;
   document.getElementById('bilan').innerHTML = h;
   document.getElementById('bilanFond').classList.add('open');
   document.getElementById('bilanFond').scrollTop = 0;
