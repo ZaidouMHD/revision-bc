@@ -921,8 +921,10 @@ function showAllReview() {
     <h3 style="color:#1565c0">📋 Revoir les questions (${quizLog.length})</h3>
     <p style="margin-bottom:15px">✅ ${nbOk} bonne${nbOk > 1 ? 's' : ''} réponse${nbOk > 1 ? 's' : ''} · ❌ ${quizLog.length - nbOk} erreur${quizLog.length - nbOk > 1 ? 's' : ''}</p>
     <button class="btn" style="background:white;color:#1565c0;border:2px solid #1565c0;margin-bottom:20px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    ${quizErrors.length ? `<button class="btn" style="background:#d32f2f;color:white;border:2px solid #d32f2f;margin-bottom:20px" onclick="showErrorReview()">🔍 Voir seulement mes erreurs (${quizErrors.length})</button>` : ''}
     <div id="allList"></div>
     <button class="btn" style="background:white;color:#1565c0;border:2px solid #1565c0;margin-top:10px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    ${quizErrors.length ? `<button class="btn" style="background:#d32f2f;color:white;border:2px solid #d32f2f;margin-top:10px" onclick="showErrorReview()">🔍 Voir seulement mes erreurs (${quizErrors.length})</button>` : ''}
   </div>`;
   document.getElementById('quizarea').innerHTML = html;
   window.scrollTo(0, 0);
@@ -944,9 +946,11 @@ function showErrorReview() {
     <h3>🔍 Révision de tes erreurs (${quizErrors.length})</h3>
     <p style="margin-bottom:15px">Voici les questions où tu as fait des erreurs. Relis bien les explications pour progresser !</p>
     <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-bottom:20px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    <button class="btn" style="background:#1565c0;color:white;border:2px solid #1565c0;margin-bottom:20px" onclick="showAllReview()">📋 Revoir les questions (${quizLog.length})</button>
     <button class="btn" style="background:white;color:#555;border:2px solid #999;margin-bottom:20px" onclick="showQuizSelector()">🏠 Retour au menu</button>
     <div id="errorList"></div>
     <button class="btn" style="background:white;color:#d32f2f;border:2px solid #d32f2f;margin-top:10px" onclick="backToScore()">⬅️ Retour au résultat</button>
+    <button class="btn" style="background:#1565c0;color:white;border:2px solid #1565c0;margin-top:10px" onclick="showAllReview()">📋 Revoir les questions (${quizLog.length})</button>
   </div>`;
 
   document.getElementById('quizarea').innerHTML = html;
