@@ -386,7 +386,7 @@ let isUnlimited = false; // ===== NOUVELLE VAR =====
 
 // ===== EXAMEN BLANC BC 2026 =====
 // Programme de l'écrit : temps de travail (A à E) et TSI (F et I), moitié-moitié
-const EXAM = { total: 80, minutes: 120, groups: [['A','B','C','D','E'], ['F','I']] };
+const EXAM = { total: 100, cas: 25, minutes: 120, groups: [['A','B','C','D','E'], ['F','I']] };
 let examMode = false;
 let savedCountdownMinutes = null;
 let examAnswers = [];      // réponse choisie pour chaque question (null = pas de réponse)
@@ -536,12 +536,13 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
   isPaused = false;
   pauseCount = 0;
   if(examMode) {
-    // Les mises en situation (QX) ne servent qu'à l'examen blanc : toutes incluses, complétées par la banque Q
+    // Les mises en situation (QX) ne servent qu'à l'examen blanc : EXAM.cas tirées au hasard par partie
+    // (pour ne pas retomber sur les mêmes), complétées par la banque Q
     const QXL = typeof QX !== 'undefined' ? QX : [];
     quizPool = Q.concat(QXL).filter(q => EXAM.groups.flat().includes(q.t));
     const perGroup = EXAM.total / EXAM.groups.length;
     quizQ = shuffle(EXAM.groups.flatMap(g => {
-      const cas = shuffle(QXL.filter(q => g.includes(q.t))).slice(0, perGroup);
+      const cas = shuffle(QXL.filter(q => g.includes(q.t))).slice(0, Math.min(EXAM.cas, perGroup));
       return cas.concat(shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup - cas.length));
     }));
     examAnswers = new Array(quizQ.length).fill(null);
@@ -985,7 +986,7 @@ function showExamIntro() {
     <h3>🎓 Examen blanc BC 2026</h3>
     <p>Conditions de l'écrit du <strong>30 novembre</strong> : QCM noté sur 20.</p>
     <ul>
-      <li><strong>${EXAM.total} questions</strong> tirées au hasard : ${EXAM.total / 2} en <strong>temps de travail</strong> (A à E) et ${EXAM.total / 2} en <strong>TSI</strong> (F et I)</li>
+      <li><strong>${EXAM.total} questions</strong> tirées au hasard : ${EXAM.total / 2} en <strong>temps de travail</strong> (A à E) et ${EXAM.total / 2} en <strong>TSI</strong> (F et I), dont ${EXAM.cas} mises en situation par partie, différentes à chaque examen</li>
       <li>Minuteur de <strong>${EXAM.minutes / 60} heures</strong> ; à zéro, les questions non traitées sont comptées fausses</li>
       <li>Pas de pause, comme le jour de l'examen</li>
       <li><strong>Aucune correction pendant l'épreuve</strong> : tu peux changer ta réponse tant que tu n'es pas passé à la question suivante</li>
