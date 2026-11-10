@@ -1,6 +1,6 @@
 // Service worker - Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v16';
+const VERSION = 'v17';
 const CACHE = `revision-bc-${VERSION}`;
 
 // Chemins relatifs au dossier du site : "/" sur Netlify, "/Site/" sur GitHub Pages
@@ -92,7 +92,10 @@ self.addEventListener('fetch', (event) => {
     const key = pageKey(req.url);
     event.respondWith((async () => {
       try {
-        const res = await fetch(req);
+        // no-cache : le navigateur revérifie toujours auprès du serveur (GitHub Pages garde sinon 10 min)
+        const res = url.origin === self.location.origin
+          ? await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
+          : await fetch(req);
         if (res.ok && url.origin === self.location.origin) {
           const copy = await clean(res.clone());
           (await caches.open(CACHE)).put(key, copy);
@@ -111,7 +114,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const cached = (await cache.match(req, { ignoreSearch: isCode })) || (isCode ? await cache.match(pageKey(req.url)) : null);
-    const network = fetch(req).then((res) => {
+    const network = (isCode ? fetch(req, { cache: 'no-cache' }) : fetch(req)).then((res) => {
       if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
       return res;
     });
