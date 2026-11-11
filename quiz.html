@@ -208,6 +208,9 @@
     .recap-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; margin-top: 12px; }
     .recap-case { border: 2px solid #c62828; background: #fff5f5; color: #c62828; border-radius: 6px; padding: 6px 0; font-weight: 700; cursor: pointer; font-size: 14px; line-height: 1.1; }
     .recap-case.faite { border-color: #003366; background: #e8edfb; color: #003366; }
+    .recap-case.marquee { border-color: #d4a017; background: #fff3c4; color: #7a5a00; box-shadow: 0 0 0 2px #f5d76e; }
+    .qcard .etoile { float: right; margin: -6px -4px 4px 10px; background: none; border: 2px solid #d4a017; color: #d4a017; border-radius: 50%; width: 40px; height: 40px; font-size: 22px; line-height: 1; cursor: pointer; padding: 0; }
+    .qcard .etoile.on { background: #fff3c4; color: #b8860b; }
     .recap-case small { display: block; font-size: 11px; font-weight: 600; }
     .opt.chosen::after { content: "  ✔ ma réponse"; font-size: 12px; color: #003366; }
     .exam-note {
@@ -554,6 +557,7 @@ function startQuiz(numQuestions = 20, withTimer = false, unlimited = false, with
       return cas.concat(shuffle(Q.filter(q => g.includes(q.t))).slice(0, perGroup - cas.length));
     }));
     examAnswers = new Array(quizQ.length).fill(null);
+    examMarques = new Array(quizQ.length).fill(false);
     examFinalized = false;
     examDepuisRecap = false;
   } else if(unlimited) {
@@ -625,6 +629,7 @@ function showQuizQ(){
   </div>
   <div id="pausePanel"></div>
   <div class="qcard">
+    ${examMode ? `<button type="button" class="etoile${examMarques[quizIdx] ? ' on' : ''}" id="etoileBtn" onclick="examMarquer()" title="Marquer cette question pour y revenir">${examMarques[quizIdx] ? '★' : '☆'}</button>` : ''}
     <h3>${q.q}</h3>`;
   
   if(examMode) {
@@ -802,6 +807,16 @@ function nextQuizQ(){
 }
 
 // ===== EXAMEN BLANC : NAVIGATION ET RÉCAPITULATIF AVANT DE RENDRE LA COPIE =====
+let examMarques = [];   // questions marquées d'une étoile (doute, à revoir)
+
+function examMarquer() {
+  examMarques[quizIdx] = !examMarques[quizIdx];
+  const b = document.getElementById('etoileBtn');
+  if(b) {
+    b.textContent = examMarques[quizIdx] ? '★' : '☆';
+    b.classList.toggle('on', examMarques[quizIdx]);
+  }
+}
 let examDepuisRecap = false;   // la question a été ouverte depuis le récapitulatif
 
 function examSuivante() {
@@ -843,9 +858,9 @@ function examRecap() {
   </div>
   <div class="qcard exam-recap">
     <h3>📋 Revoir mes réponses</h3>
-    <p>✅ ${nb} question${nb > 1 ? 's' : ''} répondue${nb > 1 ? 's' : ''}${reste ? ` · <strong style="color:#c62828">⚠️ ${reste} sans réponse</strong>` : ''}. Touche un numéro pour revoir la question et changer ta réponse.</p>
+    <p>✅ ${nb} question${nb > 1 ? 's' : ''} répondue${nb > 1 ? 's' : ''}${reste ? ` · <strong style="color:#c62828">⚠️ ${reste} sans réponse</strong>` : ''}. Touche un numéro pour revoir la question et changer ta réponse.${examMarques.some(Boolean) ? ` <span style="color:#a67c00;font-weight:700">⭐ ${examMarques.filter(Boolean).length} marquée${examMarques.filter(Boolean).length > 1 ? 's' : ''} pour y revenir.</span>` : ''}</p>
     <div class="recap-grille">
-      ${quizQ.map((q, i) => `<button class="recap-case ${examAnswers[i] === null ? 'vide' : 'faite'}" onclick="examAller(${i})" title="Question ${i + 1}">${i + 1}${examAnswers[i] === null ? '' : `<small>${String.fromCharCode(65 + examAnswers[i])}</small>`}</button>`).join('')}
+      ${quizQ.map((q, i) => `<button class="recap-case ${examAnswers[i] === null ? 'vide' : 'faite'}${examMarques[i] ? ' marquee' : ''}" onclick="examAller(${i})" title="Question ${i + 1}">${examMarques[i] ? '★ ' : ''}${i + 1}${examAnswers[i] === null ? '' : `<small>${String.fromCharCode(65 + examAnswers[i])}</small>`}</button>`).join('')}
     </div>
     <div class="exam-nav" style="margin-top:16px">
       <button class="btn" onclick="examReprendre()">⬅️ Reprendre l'examen</button>
@@ -1073,7 +1088,7 @@ function showExamIntro() {
       <li><strong>${EXAM.total} questions</strong> tirées au hasard : ${EXAM.total / 2} en <strong>temps de travail</strong> (A à E) et ${EXAM.total / 2} en <strong>TSI</strong> (F et I), dont ${EXAM.cas} mises en situation par partie, différentes à chaque examen</li>
       <li>Minuteur de <strong>${EXAM.minutes / 60} heures</strong> ; à zéro, les questions non traitées sont comptées fausses</li>
       <li>Pas de pause, comme le jour de l'examen</li>
-      <li><strong>Aucune correction pendant l'épreuve</strong> : tu peux changer ta réponse tant que tu n'es pas passé à la question suivante</li>
+      <li><strong>Aucune correction pendant l'épreuve</strong> : tu peux revenir sur n'importe quelle question et changer ta réponse avant de rendre ta copie ; marque d'une ⭐ les questions où tu as un doute pour les retrouver dans le récapitulatif</li>
       <li>Note sur 20 à la fin, puis correction de tes erreurs avec la source</li>
     </ul>
     <button onclick="startExam()">▶️ Commencer l'examen blanc</button>
