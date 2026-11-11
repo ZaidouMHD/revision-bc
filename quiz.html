@@ -632,10 +632,11 @@ function showQuizQ(){
       html += `<button class="opt${deja === j ? ' chosen' : ''}" onclick="examSelect(${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
     });
     const derniere = quizIdx + 1 >= quizQ.length;
-    const libelle = examDepuisRecap ? '📋 Retour au récapitulatif' : (derniere ? '📋 Récapitulatif avant de rendre ma copie' : 'Question suivante ➡️');
+    const libelle = derniere ? '📋 Récapitulatif avant de rendre ma copie' : 'Question suivante ➡️';
     html += `<div class="exam-nav">
-      ${quizIdx > 0 && !examDepuisRecap ? '<button class="btn" onclick="examPrecedente()">⬅️ Question précédente</button>' : ''}
-      <button class="btn green" id="qnextbtn" style="${deja === null || deja === undefined ? 'display:none' : ''}" onclick="examSuivante()">${libelle}</button>
+      ${quizIdx > 0 ? '<button class="btn" onclick="examPrecedente()">⬅️ Question précédente</button>' : ''}
+      ${examDepuisRecap && !derniere ? '<button class="btn" onclick="examRecap()">📋 Retour au récapitulatif</button>' : ''}
+      <button class="btn green" id="qnextbtn" onclick="examSuivante()">${libelle}</button>
     </div>
     <div style="margin-top:10px"><a class="exam-recap-lien" id="examRecapLien" onclick="examRecap()">📋 Revoir mes réponses (${examAnswers.filter(a => a !== null).length}/${quizQ.length} répondues)</a></div>
   </div>`;
@@ -803,13 +804,23 @@ function nextQuizQ(){
 let examDepuisRecap = false;   // la question a été ouverte depuis le récapitulatif
 
 function examSuivante() {
-  if(examDepuisRecap || quizIdx + 1 >= quizQ.length) { examRecap(); return; }
+  if(quizIdx + 1 >= quizQ.length) { examRecap(); return; }
+  examDepuisRecap = false;
   quizIdx++;
   showQuizQ();
 }
 
 function examPrecedente() {
-  if(quizIdx > 0) { quizIdx--; showQuizQ(); }
+  if(quizIdx > 0) { examDepuisRecap = false; quizIdx--; showQuizQ(); }
+}
+
+// Reprendre : première question sans réponse (ou la question en cours si tout est répondu)
+function examReprendre() {
+  const libre = examAnswers.findIndex(a => a === null);
+  quizIdx = libre >= 0 ? libre : Math.min(quizIdx, quizQ.length - 1);
+  examDepuisRecap = false;
+  showQuizQ();
+  window.scrollTo(0, 0);
 }
 
 function examAller(i) {
@@ -836,7 +847,7 @@ function examRecap() {
       ${quizQ.map((q, i) => `<button class="recap-case ${examAnswers[i] === null ? 'vide' : 'faite'}" onclick="examAller(${i})" title="Question ${i + 1}">${i + 1}${examAnswers[i] === null ? '' : `<small>${String.fromCharCode(65 + examAnswers[i])}</small>`}</button>`).join('')}
     </div>
     <div class="exam-nav" style="margin-top:16px">
-      <button class="btn" onclick="examAller(${Math.min(quizIdx, quizQ.length - 1)})">⬅️ Reprendre l'examen</button>
+      <button class="btn" onclick="examReprendre()">⬅️ Reprendre l'examen</button>
       <button class="btn green" onclick="examRendre()">✅ Rendre ma copie et voir ma note</button>
     </div>
   </div>`;

@@ -1,6 +1,6 @@
 // Service worker - Révision BC SUEP
 // Incrémente VERSION (v1 -> v2...) si une mise à jour ne s'affiche pas sur le téléphone.
-const VERSION = 'v24';
+const VERSION = 'v25';
 const CACHE = `revision-bc-${VERSION}`;
 
 // Chemins relatifs au dossier du site : "/" sur Netlify, "/Site/" sur GitHub Pages
