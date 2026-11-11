@@ -1,17 +1,7 @@
-// « Signaler cette question » : les signalements des collègues sont envoyés à un formulaire Google,
-// recopiés chaque jour dans le dépôt GitHub (dossier signalements/) par une action automatique.
+// « Signaler cette question » : les signalements des collègues sont envoyés à un relais (ntfy.sh),
+// puis recopiés dans le dépôt GitHub (dossier signalements/) par une action automatique.
 const SIGNAL_CONFIG = {
-  // Adresse « formResponse » du formulaire Google, et identifiants (entry.xxxx) de ses champs.
-  // Tant que formUrl est vide, le signalement est seulement gardé sur l'appareil.
-  formUrl: '',
-  champs: {
-    motif: '',      // Motif (question mal posée, article erroné, réponse fausse, autre)
-    raison: '',     // Raison écrite par le collègue
-    question: '',   // Texte de la question
-    reponse: '',    // Bonne réponse affichée par le site
-    theme: '',      // Thème (A à I)
-    page: ''        // Page d'où vient le signalement
-  }
+  relais: 'https://ntfy.sh/revision-bc-signal-7ff63c90d526845c'
 };
 
 const SIGNAL_MOTIFS = ['Question mal posée', 'Article ou source erroné', 'Réponse fausse', 'Autre'];
@@ -105,11 +95,10 @@ function envoyerSignal(i) {
     boite.innerHTML = `<h3>Merci !</h3><p>${msg}</p><div class="act"><button type="button" class="ok" onclick="fermerSignal()">Fermer</button></div>`;
   };
 
-  const c = SIGNAL_CONFIG;
-  if (!c.formUrl) { fin("Ton signalement est enregistré sur cet appareil. L'envoi automatique n'est pas encore activé sur le site."); return; }
-  const corps = new URLSearchParams();
-  Object.entries(c.champs).forEach(([cle, entry]) => { if (entry) corps.append(entry, sig[cle] || ''); });
-  fetch(c.formUrl, { method: 'POST', mode: 'no-cors', body: corps })
+  if (!SIGNAL_CONFIG.relais) { fin("Ton signalement est enregistré sur cet appareil."); return; }
+  const envoi = { motif: sig.motif, raison: sig.raison, question: sig.question, reponse: sig.reponse, theme: sig.theme, page: sig.page };
+  fetch(SIGNAL_CONFIG.relais, { method: 'POST', body: JSON.stringify(envoi) })
+    .then(r => { if (!r.ok) throw new Error(r.status); })
     .then(() => fin('Ton signalement a bien été envoyé. La question sera vérifiée.'))
     .catch(() => fin("L'envoi a échoué (pas de connexion ?). Ton signalement est gardé sur cet appareil."));
 }

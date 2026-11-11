@@ -1,10 +1,10 @@
 name: Signalements des questions
 
-# Chaque jour, recopie dans signalements/ les signalements envoyés depuis le site
-# (réponses du formulaire Google, publiées en CSV).
+# Recopie dans signalements/ les signalements envoyés depuis le site.
+# Le relais garde les messages 12 heures : on passe toutes les 3 heures.
 on:
   schedule:
-    - cron: '17 5 * * *'
+    - cron: '17 */3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -16,16 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Télécharger les réponses du formulaire
-        env:
-          CSV_URL: ${{ vars.SIGNALEMENTS_CSV_URL }}
-        run: |
-          if [ -z "$CSV_URL" ]; then
-            echo "Variable SIGNALEMENTS_CSV_URL non définie : rien à faire."
-            exit 0
-          fi
-          curl -fsSL "$CSV_URL" -o signalements/signalements.csv
-          python3 .github/scripts/signalements.py signalements/signalements.csv signalements/README.md
+      - name: Récupérer les signalements
+        run: python3 .github/scripts/signalements.py revision-bc-signal-7ff63c90d526845c signalements
 
       - name: Enregistrer dans le dépôt
         run: |
