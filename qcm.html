@@ -191,6 +191,7 @@
 
 <script src="data.js"></script>
 <script src="lacunes.js"></script>
+<script src="signal.js"></script>
 <script>
 
 // ===== CONFIG DES FILTRES =====
@@ -367,7 +368,7 @@ function renderQCM(f, ratesDabord = false) {
     q.o.forEach((opt, j) => {
       html += `<button class="opt" onclick="answerQ(this,${gi},${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
     });
-    html += `<div class="expl" id="expl${gi}">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}</div></div>`;
+    html += `<div class="expl" id="expl${gi}">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}${lienSignal({ question: q.q, reponse: q.o[q.a], theme: q.t })}</div></div>`;
   });
   document.getElementById('qcmlist').innerHTML = html;
 }
@@ -451,6 +452,7 @@ function openBilan() {
       <div class="bon">Bonne réponse : <strong>${x.correctAnswer}</strong></div>
       <div class="pq">💡 Pourquoi : ${x.explanation}</div>
       ${x.source ? `<div class="src">📌 Source : ${x.source}</div>` : ''}
+      ${lienSignal({ question: x.question, reponse: x.correctAnswer, theme: x.t })}
     </div>`).join('');
   }
 
@@ -489,6 +491,7 @@ function openRevue(seulementErreurs) {
            <div class="bon">Bonne réponse : <strong>${x.correctAnswer}</strong></div>`}
       <div class="pq">💡 ${x.ok ? 'Explication' : 'Pourquoi'} : ${x.explanation}</div>
       ${x.source ? `<div class="src">📌 Source : ${x.source}</div>` : ''}
+      ${lienSignal({ question: x.question, reponse: x.correctAnswer, theme: x.t })}
     </div>`).join('');
   h += boutons;
   document.getElementById('bilan').innerHTML = h;
