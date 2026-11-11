@@ -366,6 +366,7 @@
 
 <script src="data.js"></script>
 <script src="lacunes.js"></script>
+<script src="signal.js"></script>
 <script>
 let quizQ = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
 let quizErrors = [];
@@ -648,7 +649,7 @@ function showQuizQ(){
     html += `<button class="opt" onclick="answerQuiz(this,${j})">${String.fromCharCode(65+j)}. ${opt}</button>`;
   });
   
-  html += `<div class="expl" id="qexpl">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}</div>
+  html += `<div class="expl" id="qexpl">💡 ${q.e}${q.s ? `<span class="src">📌 Source : ${q.s}</span>` : ''}${lienSignal({ question: q.q, reponse: q.o[q.a], theme: q.t })}</div>
     <button class="btn green" id="qnextbtn" style="display:none;margin-top:12px" onclick="nextQuizQ()">Question suivante ➡️</button>
   </div>`;
   
@@ -1019,6 +1020,7 @@ function showAllReview() {
            <div class="correct">Bonne réponse : <strong>${x.correctAnswer}</strong></div>`}
       <div style="margin-top:10px;color:#555;font-size:14px">💡 Explication : ${x.explanation}</div>
       ${x.source ? `<div style="margin-top:6px;color:#777;font-size:12px;font-style:italic">📌 Source : ${x.source}</div>` : ''}
+      ${lienSignal({ question: x.question, reponse: x.correctAnswer, theme: x.t })}
     </div>`).join('');
 }
 
@@ -1048,6 +1050,7 @@ function showErrorReview() {
       <div class="correct">Bonne réponse : <strong>${error.correctAnswer}</strong></div>
       <div style="margin-top:10px;color:#555;font-size:14px">💡 Pourquoi : ${error.explanation}</div>
       ${error.source ? `<div style="margin-top:6px;color:#777;font-size:12px;font-style:italic">📌 Source : ${error.source}</div>` : ''}
+      ${lienSignal({ question: error.question, reponse: error.correctAnswer, theme: error.t })}
     </div>`;
   });
 }
